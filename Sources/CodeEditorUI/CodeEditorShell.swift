@@ -3,7 +3,8 @@ import Runestone
 import TreeSitter
 import RunestoneUI
 
-/// Represents an edited item
+/// Represents an edited item in the code editor, it uses a path to reference it, and expect that it
+/// can be loaded and saved via the HostServices variable.
 public class EditedItem: Identifiable, Hashable, Equatable {
     public static func == (lhs: EditedItem, rhs: EditedItem) -> Bool {
         lhs.path == rhs.path && lhs.data === rhs.data
@@ -18,8 +19,13 @@ public class EditedItem: Identifiable, Hashable, Equatable {
     
     /// The path of the file that we are editing
     public var path: String
+    
+    /// User-defined paylog for additional data
     public var data: AnyObject?
     
+    /// - Parameters:
+    ///  - path: the path that will be passed to the HostServices API to load and save the file
+    ///  - data: this is data that can be attached to this object and extracted a later point by the user
     public init (path: String, data: AnyObject?) {
         self.path = path
         self.data = data
@@ -30,6 +36,7 @@ public class EditedItem: Identifiable, Hashable, Equatable {
 public struct CodeEditorShell: View {
     @Binding var openFiles: [EditedItem]
     @State var selected = 0
+    @State var TODO: String = ""
     
     public init (openFiles: Binding<[EditedItem]>) {
         self._openFiles = openFiles
@@ -45,7 +52,7 @@ public struct CodeEditorShell: View {
             Text ("foo")
         }
         .pickerStyle(.segmented)
-        CodeEditorView(item: openFiles [selected])
+        CodeEditorView(item: openFiles [selected], contents: $TODO)
     }
 }
 

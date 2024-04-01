@@ -17,15 +17,15 @@ enum CodeEditorStatus {
 
 public struct CodeEditorView: View {
     @Environment(HostServices.self) var hostServices: HostServices
-    @State var contents: String
+    @Binding var contents: String
     @State var status: CodeEditorStatus
     
     var item: EditedItem
     
-    public init (item: EditedItem) {
+    public init (item: EditedItem, contents: Binding<String>) {
         self.item = item
         self._status = State(initialValue: .ok)
-        self._contents = State(initialValue: "")
+        self._contents = contents
     }
     
     public var body: some View {
@@ -45,6 +45,13 @@ public struct CodeEditorView: View {
     }
 }
 
+struct DemoCodeEditorView: View {
+    @State var text: String = ""
+    
+    var body: some View {
+        CodeEditorView(item: EditedItem(path: "/Users/miguel/cvs/godot-master/modules/gdscript/tests/scripts/utils.notest.gd", data: nil), contents: $text)
+    }
+}
 #Preview {
-    CodeEditorView(item: EditedItem(path: "/Users/miguel/cvs/godot-master/modules/gdscript/tests/scripts/utils.notest.gd", data: nil))
+    DemoCodeEditorView()
 }
