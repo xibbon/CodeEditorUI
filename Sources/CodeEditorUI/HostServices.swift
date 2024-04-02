@@ -26,6 +26,16 @@ public enum HostServiceIOError: Error, CustomStringConvertible {
     }
 }
 
+public struct DirectoryElement {
+    public init(name: String, isDir: Bool) {
+        self.name = name
+        self.isDir = isDir
+    }
+    
+    public var name: String
+    public var isDir: Bool
+}
+
 ///
 /// The HostServices is intended to provide an API that the CodeEditor can use to interact with its host environment,
 /// in the case of Godot on iPad, the paths that we use are resolved by Godot and can either by physical files, or
@@ -36,13 +46,20 @@ open class HostServices {
     /// - Parameters:
     ///  - load: this callback takes a path and returns the contents of the file on success, or an error code
     ///  - save: this callback takes the contents to save, and the destination path, it will return nil on success, or a status code indicating the error on failure.
-    public init (load: @escaping (_ path: String)->Result<String,HostServiceIOError>, save: @escaping (_ contents: String, _ path: String) -> HostServiceIOError?) {
+    public init (
+        load: @escaping (_ path: String)->Result<String,HostServiceIOError>,
+        save: @escaping (_ contents: String, _ path: String) -> HostServiceIOError?,
+        fileList: @escaping (_ path: String) -> [DirectoryElement]
+        
+    ) {
         cbLoadFile = load
         cbSaveContents = save
+        cbFileList = fileList
     }
     
-    public var cbLoadFile: (String)->Result<String,HostServiceIOError>
-    public var cbSaveContents: (String, String) -> HostServiceIOError?
+    var cbLoadFile: (String)->Result<String,HostServiceIOError>
+    var cbSaveContents: (String, String) -> HostServiceIOError?
+    var cbFileList: (String) -> [DirectoryElement]
     
     /// Loads a file
     /// - Returns: the string with the contents of the file or the error detailing the problem
@@ -55,4 +72,59 @@ open class HostServices {
     open func saveContents (contents: String, path: String) -> HostServiceIOError? {
         return cbSaveContents (contents, path)
     }
+    
+    open func fileListing (at: String) -> [DirectoryElement] {
+        return cbFileList (at)
+    }
+    
+    public static func makeTestHostServices () -> HostServices {
+        HostServices { path in
+            
+            do {
+                return .success (try String(contentsOf: URL (filePath: path)))
+            } catch (let err) {
+                if !FileManager.default.fileExists(atPath: path) {
+                    return .failure(.fileNotFound(path))
+                }
+                return .failure(.generic(err.localizedDescription))
+            }
+        } save: { contents, path in
+            do {
+                try contents.write(toFile: "/too", atomically: false, encoding: .utf8)
+            } catch (let err) {
+                return .generic(err.localizedDescription)
+            }
+            return nil
+        } fileList: { at in
+            var result: [DirectoryElement] = []
+            do {
+                for element in try FileManager.default.contentsOfDirectory(atPath: at) {
+                    var isDir: ObjCBool = false
+                    if FileManager.default.fileExists(atPath: "\(at)/\(element)", isDirectory: &isDir) {
+                        result.append (DirectoryElement(name: element, isDir: isDir.boolValue))
+                    }
+                }
+            } catch {
+                return result
+            }
+            result.sort(by: {
+                if $0.isDir {
+                    if $1.isDir {
+                        return $0.name < $1.name
+                    } else {
+                        return false
+                    }
+                } else {
+                    if $1.isDir {
+                        return true
+                    } else {
+                        return $0.name < $1.name
+                    }
+                }
+            })
+            return result
+        }
+    }
+
 }
+
