@@ -43,12 +43,14 @@ public class CodeEditorState {
         }
     }
     
-    public var onChange: ((_ source: EditedItem, _ newText: String, _ rect: CGRect?, _ selection: (TextLocation, TextLocation))->())? = nil
+    /// This callback receives both an instance to the state so it can direct the process, and a handle to the TextView that triggered the change
+    /// and can be used to extract information about the change.
+    public var onChange: ((CodeEditorState, TextView)->())? = nil
     
-    func change (_ source: EditedItem, _ newText: String, _ rect: CGRect?, _ selection: (TextLocation, TextLocation)) {
+    func change (_ textView: TextView) {
         guard let onChange else {
             return
         }
-        onChange (source, newText, rect, selection)
+        onChange (self, textView)
     }
 }

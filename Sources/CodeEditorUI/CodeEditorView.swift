@@ -11,7 +11,7 @@
 import SwiftUI
 import RunestoneUI
 import TreeSitterGDScriptRunestone
-
+import Runestone
 
 enum CodeEditorStatus {
     case ok
@@ -22,18 +22,22 @@ public struct CodeEditorView: View {
     @Environment(HostServices.self) var hostServices: HostServices
     @Binding var contents: String
     @State var status: CodeEditorStatus
-    let onChange: (_ content: String, _ location: CGRect?, _ selectionRange: (TextLocation,TextLocation))->()
+    let onChange: (_ textView: TextView)->()
     var item: EditedItem
     
-    public init (item: EditedItem, contents: Binding<String>, onChange: @escaping (_ content: String, _ location: CGRect?, _ selectionRange: (TextLocation,TextLocation))->()) {
+    public init (item: EditedItem, contents: Binding<String>, onChange: @escaping (_ textView: TextView) ->()) {
         self.item = item
         self._status = State(initialValue: .ok)
         self._contents = contents
         self.onChange = onChange
     }
     
+    func textViewChanged (_ textView: TextView) {
+        
+    }
+    
     public var body: some View {
-        TextViewUI(text: $contents)
+        TextViewUI(text: $contents, onChange: textViewChanged)
             .onAppear {
                 switch hostServices.loadFile (path: item.path){
                 case .success(let contents):
@@ -52,7 +56,7 @@ struct DemoCodeEditorView: View {
     @State var text: String = "This is just a sample"
     
     var body: some View {
-        CodeEditorView(item: EditedItem(path: "/Users/miguel/cvs/godot-master/modules/gdscript/tests/scripts/utils.notest.gd", content: text, data: nil), contents: $text, onChange: { a, b, c in })
+        CodeEditorView(item: EditedItem(path: "/Users/miguel/cvs/godot-master/modules/gdscript/tests/scripts/utils.notest.gd", content: text, data: nil), contents: $text, onChange: { textView in })
     }
 }
 #Preview {

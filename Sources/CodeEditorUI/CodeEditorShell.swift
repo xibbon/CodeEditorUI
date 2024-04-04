@@ -114,8 +114,8 @@ public struct CodeEditorShell: View {
                     .environment(state)
                 
                 if currentIdx >= 0 && currentIdx < state.openFiles.count {
-                    CodeEditorView(item: state.openFiles [currentIdx], contents: $state.openFiles[currentIdx].content) { text, rect, selection in
-                        state.change (state.openFiles [currentIdx], text, rect, selection)
+                    CodeEditorView(item: state.openFiles [currentIdx], contents: $state.openFiles[currentIdx].content) { textView in
+                        state.change (textView)
                     }
                 }
             }

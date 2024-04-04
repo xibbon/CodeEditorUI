@@ -8,8 +8,9 @@
 import SwiftUI
 
 public struct CompletionsDisplayView: View {
+    let prefix: String
     @Binding var completions: [CompletionEntry]
-    @Binding var selected = 0
+    @Binding var selected: Int
     
     func getDefaultAcceptButton () -> some View {
         Image (systemName: "return")
@@ -19,7 +20,7 @@ public struct CompletionsDisplayView: View {
             .clipShape(RoundedRectangle(cornerRadius: 4))
     }
     
-    func kindToIcon (kind: CompletionEntry.CompletionKind) {
+    func kindToIcon (kind: CompletionEntry.CompletionKind) -> String {
         switch kind {
         case .class:
             return "cube"
@@ -44,24 +45,66 @@ public struct CompletionsDisplayView: View {
         }
     }
     
-    func item (_ v: CompletionEntry) -> some View {
+    /// Makes bold text for the text that we were matching against
+    func boldify (_ source: String, _ hayStack: String) -> LocalizedStringKey {
+        var result = ""
+        let sourceLower = source.lowercased()
+        var scan = sourceLower [sourceLower.startIndex...]
+        for hs in hayStack {
+            let match = hs.lowercased().first ?? hs
+            if let p = scan.firstIndex(of: match) {
+                result += "[\(hs)]"
+                scan = scan [p...]
+            } else {
+                result += "\(hs)"
+            }
+        }
+        return LocalizedStringKey(stringLiteral: result)
+    }
+
+    /// Makes bold text for the text that we were matching against
+    func boldify2 (_ source: String, _ hayStack: String) -> Text {
+        var result = ""
+        var ra = AttributedString()
+        let sourceLower = source.lowercased()
+        var scan = sourceLower [sourceLower.startIndex...]
+        for hs in hayStack {
+            let match = hs.lowercased().first ?? hs
+            
+            var ch = AttributedString ("\(hs)")
+            if scan.count > 0, let p = scan.firstIndex(of: match) {
+                ch.foregroundColor = .primary
+                scan = scan [scan.index(after: p)...]
+            } else {
+                ch.foregroundColor = .secondary
+            }
+            ra.append (ch)
+        }
+        return Text (ra)
+    }
+    
+    func item (prefix: String, _ v: CompletionEntry) -> some View {
         HStack (spacing: 0){
-            Image (systemName: "function")
+            Image (systemName: kindToIcon (kind: v.kind))
                 .padding (4)
                 .background { Color.cyan.brightness(0.2) }
                 .padding ([.trailing], 5)
-            Text ("get") + Text (v.display).foregroundStyle(.secondary)
+            #if false
+            Text (boldify (prefix, v.display)).foregroundStyle(.secondary)
+            #else
+            boldify2 (prefix, v.display)
+            #endif
         }
         .padding (3)
         .padding ([.horizontal], 3)
     }
 
-    var body: some View {
+    public var body: some View {
         VStack (alignment: .leading){
             Grid (alignment: .leading) {
                 ForEach (Array(completions.enumerated()), id: \.offset) { idx, entry in
                     GridRow {
-                        item (entry)
+                        item (prefix: prefix, entry)
                             .background {
                                 if idx == selected {
                                     Color.blue.opacity(0.3)
@@ -86,12 +129,33 @@ public struct CompletionsDisplayView: View {
         .overlay {
             RoundedRectangle(cornerRadius: 6, style: .circular)
                 .stroke(Color.gray, lineWidth: 1) // Add a border
-                
+
                 //.shadow(color: Color.gray, radius: 3, x: 3, y: 3)
         }
     }
 }
 
-#Preview {
-    SwiftUIView()
+#if DEBUG
+struct DemoCompletionsDisplayView: View {
+    @State var completions: [CompletionEntry] = DemoCompletionsDisplayView.makeTestData ()
+    @State var selected = 0
+    
+    static func makeTestData () -> [CompletionEntry] {
+        return [
+            CompletionEntry(kind: .function, display: "print", insert: "print("),
+            CompletionEntry(kind: .function, display: "print_error", insert: "print_error("),
+            CompletionEntry(kind: .function, display: "print_another", insert: "print_another("),
+            CompletionEntry(kind: .class, display: "Poraint", insert: "Poraint"),
+            CompletionEntry(kind: .variable, display: "apriornster", insert: "apriornster"),
+            CompletionEntry(kind: .signal, display: "paraceleuinephedert", insert: "$paraceleuinephedert")
+        ]
+    }
+    var body: some View {
+        CompletionsDisplayView(prefix: "print", completions: $completions, selected: $selected)
+    }
 }
+
+#Preview {
+    DemoCompletionsDisplayView()
+}
+#endif
