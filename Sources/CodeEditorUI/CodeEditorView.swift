@@ -33,7 +33,7 @@ public struct CodeEditorView: View {
     }
     
     public var body: some View {
-        TextViewUI(text: $contents, onChange: onChange)
+        TextViewUI(text: $contents)
             .onAppear {
                 switch hostServices.loadFile (path: item.path){
                 case .success(let contents):
