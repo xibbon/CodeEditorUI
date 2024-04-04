@@ -35,8 +35,9 @@ public class EditedItem: Identifiable, Hashable, Equatable {
     /// - Parameters:
     ///  - path: the path that will be passed to the HostServices API to load and save the file
     ///  - data: this is data that can be attached to this object and extracted a later point by the user
-    public init (path: String, data: AnyObject?) {
+    public init (path: String, content: String, data: AnyObject?) {
         self.path = path
+        self.content = content
         self.data = data
     }
 }
@@ -67,7 +68,13 @@ public struct CodeEditorShell: View {
     func closeFile (_ idx: Int) {
         state.openFiles.remove(at: idx)
         if idx == state.currentEditor {
-            state.currentEditor = max (0, state.currentEditor-1)
+            if state.openFiles.count == 0 {
+                state.currentEditor = nil
+            } else {
+                if let ce = state.currentEditor {
+                    state.currentEditor = ce-1
+                }
+            }
         }
     }
     
@@ -87,7 +94,7 @@ public struct CodeEditorShell: View {
                 Button ("Retry") {
                     errorSaving = false
                     DispatchQueue.main.async {
-                        attemptSave(saveIdx)
+                        attemptClose(saveIdx)
                     }
                 }
                 Button ("Cancel") {
@@ -101,21 +108,31 @@ public struct CodeEditorShell: View {
                 Text (errorMessage)
             }
             Divider()
-            PathBrowser (path: state.openFiles[state.currentEditor].path)
-                .environment(state)
-            if state.currentEditor >= 0 && state.currentEditor < state.openFiles.count {
-                CodeEditorView(item: state.openFiles [state.currentEditor], contents: $state.openFiles[state.currentEditor].content)
+
+            if let currentIdx = state.currentEditor {
+                PathBrowser (path: state.openFiles[currentIdx].path)
+                    .environment(state)
+                
+                if currentIdx >= 0 && currentIdx < state.openFiles.count {
+                    CodeEditorView(item: state.openFiles [currentIdx], contents: $state.openFiles[currentIdx].content) { text, rect, selection in
+                        state.change (state.openFiles [currentIdx], text, rect, selection)
+                    }
+                }
             }
         }
     }
 }
 
 struct DemoCodeEditorShell: View {
-    @State var state: CodeEditorState = CodeEditorState(openFiles: [EditedItem(path: "/Users/miguel/cvs/godot-master/modules/gdscript/tests/scripts/utils.notest.gd", data: nil)])
+    @State var state: CodeEditorState = CodeEditorState(hostServices: HostServices.makeTestHostServices())
     @State var hostServices = HostServices.makeTestHostServices()
+    
     var body: some View {
         CodeEditorShell (state: $state)
             .environment(hostServices)
+            .onAppear {
+                state.openFile(path: "/Users/miguel/cvs/godot-master/modules/gdscript/tests/scripts/utils.notest.gd", data: nil)
+            }
     }
 }
 #Preview {

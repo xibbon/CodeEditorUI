@@ -42,7 +42,7 @@ struct EditorTab: View {
 }
 
 struct EditorTabs: View {
-    @Binding var selected: Int
+    @Binding var selected: Int?
     @Binding var items: [EditedItem]
     let closeRequest: (Int) -> ()
     @ScaledMetric var dividerSize = 12
@@ -50,12 +50,14 @@ struct EditorTabs: View {
     var body: some View {
         ScrollView (.horizontal){
             HStack (spacing: 0){
-                ForEach (Array (items.enumerated()), id: \.offset) { idx, item in
-                    EditorTab(item: $items [idx], selected: idx == selected, close: { closeRequest (idx) }, select: { selected = idx } )
-                    if idx+1 < selected || idx > selected {
-                        if idx+1 < items.count {
-                            Divider()
-                                .frame(maxHeight: dividerSize)
+                if let selected {
+                    ForEach (Array (items.enumerated()), id: \.offset) { idx, item in
+                        EditorTab(item: $items [idx], selected: idx == selected, close: { closeRequest (idx) }, select: { self.selected = idx } )
+                        if idx+1 < selected || idx > selected {
+                            if idx+1 < items.count {
+                                Divider()
+                                    .frame(maxHeight: dividerSize)
+                            }
                         }
                     }
                 }
@@ -66,21 +68,21 @@ struct EditorTabs: View {
 
 
 struct DemoEditorTabs: View {
-    @State var selected = 2
+    @State var selected: Int? = 2
     @State var items: [EditedItem] = [
-        EditedItem (path: "some/file/foo.txt", data: nil),
-        EditedItem (path: "res://another.txt", data: nil),
-        EditedItem (path: "res://third.txt", data: nil),
-        EditedItem (path: "some/file/foo.txt", data: nil),
-        EditedItem (path: "res://another.txt", data: nil),
-        EditedItem (path: "res://third.txt", data: nil),
+        EditedItem (path: "some/file/foo.txt", content: "Demo", data: nil),
+        EditedItem (path: "res://another.txt", content: "Demo", data: nil),
+        EditedItem (path: "res://third.txt", content: "Demo", data: nil),
+        EditedItem (path: "some/file/foo.txt", content: "Demo", data: nil),
+        EditedItem (path: "res://another.txt", content: "Demo", data: nil),
+        EditedItem (path: "res://third.txt", content: "Demo", data: nil),
     ]
     
     var body: some View {
         EditorTabs(selected: $selected, items: $items) { closeIdx in
             items.remove(at: closeIdx)
             if closeIdx == selected {
-                selected = max (0, selected-1)
+                selected = max (0, (selected ?? 0)-1)
             }
         }
     }

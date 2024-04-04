@@ -59,7 +59,7 @@ open class HostServices {
     
     var cbLoadFile: (String)->Result<String,HostServiceIOError>
     var cbSaveContents: (String, String) -> HostServiceIOError?
-    var cbFileList: (String) -> [DirectoryElement]
+    public var cbFileList: (String) -> [DirectoryElement]
     
     /// Loads a file
     /// - Returns: the string with the contents of the file or the error detailing the problem

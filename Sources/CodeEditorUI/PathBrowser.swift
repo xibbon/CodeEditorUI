@@ -64,9 +64,6 @@ struct PathBrowser: View {
                         }
                     }
                 }
-                Menu ("This triggers the submenus to show up") {
-                    Text ("no idea why")
-                }
             }
         }
     }
