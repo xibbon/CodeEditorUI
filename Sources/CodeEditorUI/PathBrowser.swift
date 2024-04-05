@@ -78,7 +78,6 @@ struct PathBrowser: View {
                 }
             }
         }
-        .background { Color (uiColor: .systemBackground) }
         .font (.subheadline)
         .padding([.vertical], 4)
     }

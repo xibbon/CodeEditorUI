@@ -81,6 +81,7 @@ public struct CodeEditorShell: View {
                 }
             }
         }
+        .background { Color (uiColor: .systemBackground) }
     }
 }
 
@@ -97,5 +98,8 @@ struct DemoCodeEditorShell: View {
     }
 }
 #Preview {
-    DemoCodeEditorShell ()
+    ZStack {
+        Color.red
+        DemoCodeEditorShell ()
+    }
 }

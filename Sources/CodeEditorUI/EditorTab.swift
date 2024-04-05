@@ -63,7 +63,6 @@ struct EditorTabs: View {
                 }
             }
         }
-        .background { Color(uiColor: .systemBackground) }
     }
 }
 
