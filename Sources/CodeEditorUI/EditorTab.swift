@@ -63,6 +63,7 @@ struct EditorTabs: View {
                 }
             }
         }
+        .background { Color(uiColor: .systemBackground) }
     }
 }
 
@@ -89,5 +90,9 @@ struct DemoEditorTabs: View {
 }
 
 #Preview {
-    DemoEditorTabs()
+    ZStack {
+        Color.gray
+        
+        DemoEditorTabs()
+    }
 }

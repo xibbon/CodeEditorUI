@@ -67,6 +67,7 @@ struct PathBrowser: View {
             }
         }
     }
+    
     var body: some View {
         ScrollView (.horizontal) {
             HStack {
@@ -77,11 +78,18 @@ struct PathBrowser: View {
                 }
             }
         }
+        .background { Color (uiColor: .systemBackground) }
         .font (.subheadline)
         .padding([.vertical], 4)
     }
 }
 
 #Preview {
-    PathBrowser(path: "res://addons/files/text.gd")
+    ZStack {
+        Color.gray
+        
+        PathBrowser(path: "res://addons/files/text.gd")
+            .environment(HostServices.makeTestHostServices())
+            .environment(CodeEditorState())
+    }
 }
