@@ -20,6 +20,15 @@ public class CodeEditorState {
     var currentEditor: Int? = nil
     var completionRequest: CompletionRequest? = nil
     
+    /// Configures whether the editors show line numbers
+    public var showLines: Bool = true
+    
+    /// Configures whether the editors show tabs
+    public var showTabs: Bool = false
+    
+    /// Configures whether the editors show various space indicators
+    public var showSpaces: Bool = false
+    
     /// Initializes the code editor state that you can use to control what is shown
     public init (hostServices: HostServices? = nil, openFiles: [EditedItem] = []) {
         self.hostServices = hostServices ?? HostServices.makeTestHostServices()

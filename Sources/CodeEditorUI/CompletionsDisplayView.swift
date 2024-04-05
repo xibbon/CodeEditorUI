@@ -113,7 +113,8 @@ public struct CompletionsDisplayView: View {
     }
 
     public var body: some View {
-        let highlight = colorScheme == .dark ? Color.red : Color(red: 0.8, green: 0.87, blue: 0.96)
+        // 54 59 70
+        let highlight = colorScheme == .dark ? Color(red: 0.21, green: 0.23, blue: 0.275) : Color(red: 0.8, green: 0.87, blue: 0.96)
 
         ScrollView(.vertical){
             LazyVGrid(columns: [

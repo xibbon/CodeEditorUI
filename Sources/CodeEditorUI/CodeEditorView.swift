@@ -24,8 +24,10 @@ public struct CodeEditorView: View {
     @State var status: CodeEditorStatus
     let onChange: (_ textView: TextView)->()
     var item: EditedItem
+    let state: CodeEditorState
     
-    public init (item: EditedItem, contents: Binding<String>, onChange: @escaping (_ textView: TextView) ->()) {
+    public init (state: CodeEditorState, item: EditedItem, contents: Binding<String>, onChange: @escaping (_ textView: TextView) ->()) {
+        self.state = state
         self.item = item
         self._status = State(initialValue: .ok)
         self._contents = contents
@@ -43,9 +45,12 @@ public struct CodeEditorView: View {
                     case .failure:
                         status = .notFound
                     }
-                    
                 }
                 .language (item.language)
+                .lineHeightMultiplier(1.0)
+                .showTabs(state.showTabs)
+                .showLineNumbers(state.showLines)
+                .showSpaces(state.showSpaces)
             if let req = item.completionRequest {
                 CompletionsDisplayView(prefix: req.prefix, completions: req.completions)
                     .background { Color (uiColor: .systemBackground) }
@@ -59,7 +64,8 @@ struct DemoCodeEditorView: View {
     @State var text: String = "This is just a sample"
     
     var body: some View {
-        CodeEditorView(item: EditedItem(path: "/Users/miguel/cvs/godot-master/modules/gdscript/tests/scripts/utils.notest.gd", content: text, data: nil), contents: $text, onChange: { textView in })
+        CodeEditorView(state: CodeEditorState(), item: EditedItem(path: "/Users/miguel/cvs/godot-master/modules/gdscript/tests/scripts/utils.notest.gd", content: text, data: nil), contents: $text, onChange: { textView in })
+            .environment(HostServices.makeTestHostServices())
     }
 }
 #Preview {
