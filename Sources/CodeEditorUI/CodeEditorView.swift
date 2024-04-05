@@ -33,7 +33,7 @@ public struct CodeEditorView: View {
     }
     
     public var body: some View {
-        ZStack {
+        ZStack (alignment: .topLeading){
             TextViewUI(text: $contents, onChange: onChange)
                 .onAppear {
                     switch hostServices.loadFile (path: item.path){
@@ -49,6 +49,7 @@ public struct CodeEditorView: View {
             if let req = item.completionRequest {
                 CompletionsDisplayView(prefix: req.prefix, completions: req.completions)
                     .background { Color (uiColor: .systemBackground) }
+                    .offset(x: req.at.minX, y: req.at.maxY+8)
             }
         }
     }
