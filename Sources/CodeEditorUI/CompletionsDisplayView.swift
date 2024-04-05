@@ -11,7 +11,8 @@ public struct CompletionsDisplayView: View {
     @Environment(\.colorScheme) var colorScheme
     let prefix: String
     var completions: [CompletionEntry]
-    @State var selected = 0
+    @Binding var selected: Int
+    var onComplete: () -> ()
     
     func getDefaultAcceptButton (_ color: Color) -> some View {
         Image (systemName: "return")
@@ -117,29 +118,39 @@ public struct CompletionsDisplayView: View {
         let highlight = colorScheme == .dark ? Color(red: 0.21, green: 0.23, blue: 0.275) : Color(red: 0.8, green: 0.87, blue: 0.96)
 
         ScrollView(.vertical){
-            LazyVGrid(columns: [
-                GridItem(.flexible(), alignment: .leading),
-                GridItem(.fixed(30), spacing: 3)]){
-                    ForEach (Array(completions.enumerated()), id: \.offset) { idx, entry in
-
-                        HStack {
-                            kindToImage(kind: entry.kind)
-                            item (prefix: prefix, entry)
-                        }
-                        .padding ([.leading], 7)
-                        .background {
+            ScrollViewReader { proxy in
+                LazyVGrid(columns: [
+                    GridItem(.flexible(), alignment: .leading),
+                    GridItem(.fixed(30), spacing: 3)]){
+                        ForEach (Array(completions.enumerated()), id: \.offset) { idx, entry in
+                            HStack {
+                                kindToImage(kind: entry.kind)
+                                item (prefix: prefix, entry)
+                            }
+                            .tag(idx)
+                            .padding([.leading], 7)
+                            .background {
+                                if idx == selected {
+                                    highlight
+                                }
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: 4))
+                            .onChange(of: selected) { newV in
+                                proxy.scrollTo(newV)
+                            }
+                            .onTapGesture(count: 2) {
+                                onComplete()
+                            }
+                            .onTapGesture { selected = idx }
                             if idx == selected {
-                                highlight
+                                getDefaultAcceptButton(highlight)
+                                    .onTapGesture { onComplete () }
+                            } else {
+                                Text("")
                             }
                         }
-                        .clipShape(RoundedRectangle(cornerRadius: 4))
-                        if idx == selected {
-                            getDefaultAcceptButton(highlight)
-                        } else {
-                            Text("")
-                        }
                     }
-                }
+            }
         }
         .frame(minWidth: 200, maxWidth: 350, maxHeight: 34*6)
         .padding(4)
@@ -183,7 +194,7 @@ struct DemoCompletionsDisplayView: View {
     var body: some View {
         HStack {
             VStack {
-                CompletionsDisplayView(prefix: "print", completions: completions)
+                CompletionsDisplayView(prefix: "print", completions: completions, selected: $selected, onComplete: { print ("Completing!") })
                 Spacer ()
             }
             Spacer ()

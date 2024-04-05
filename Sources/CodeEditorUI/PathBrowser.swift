@@ -74,6 +74,7 @@ struct PathBrowser: View {
                 ForEach (Array (components.enumerated()), id: \.offset) { idx, v in
                     if idx == 0 {
                         Text (prefix)
+                            .foregroundStyle(.secondary)
                     }
                     DirectoryView (prefix: prefix, basePath: PathBrowser.makePath (prefix: prefix, components, idx), element: String(v))
                     Image (systemName: "chevron.compact.right")

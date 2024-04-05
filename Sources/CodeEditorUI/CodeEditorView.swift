@@ -34,6 +34,18 @@ public struct CodeEditorView: View {
         self.onChange = onChange
     }
     
+    func insertCompletion () {
+        guard let req = item.completionRequest else { return }
+        let insertFull = req.completions[item.selected].insert
+        let count = req.prefix.count
+        let startLoc = req.on.selectedRange.location-count
+        if startLoc >= 0 {
+            var r = NSRange (location: startLoc, length: count)
+            req.on.replace(r, withText: insertFull)
+        }
+        item.cancelCompletion()
+    }
+    
     public var body: some View {
         ZStack (alignment: .topLeading){
             TextViewUI(text: $contents, onChange: onChange)
@@ -46,13 +58,42 @@ public struct CodeEditorView: View {
                         status = .notFound
                     }
                 }
+                .onKeyPress(.downArrow) {
+                    if let req = item.completionRequest {
+                        if item.selected < req.completions.count {
+                            item.selected += 1
+                        }
+                        return .handled
+                    }
+                    return .ignored
+                }
+                .onKeyPress(.upArrow) {
+                    if item.completionRequest != nil {
+                        if item.selected > 0 {
+                            item.selected -= 1
+                        }
+                        return .handled
+                    }
+                    return .ignored
+                }
+                .onKeyPress(.return) {
+                    if let req = item.completionRequest {
+                        insertCompletion ()
+                        return .handled
+                    }
+                    return .ignored
+                }
                 .language (item.language)
                 .lineHeightMultiplier(1.0)
                 .showTabs(state.showTabs)
                 .showLineNumbers(state.showLines)
                 .showSpaces(state.showSpaces)
             if let req = item.completionRequest {
-                CompletionsDisplayView(prefix: req.prefix, completions: req.completions)
+                CompletionsDisplayView(
+                    prefix: req.prefix,
+                    completions: req.completions,
+                    selected: Binding<Int> (get: { item.selected}, set: { newV in  item.selected = newV }),
+                    onComplete: insertCompletion)
                     .background { Color (uiColor: .systemBackground) }
                     .offset(x: req.at.minX, y: req.at.maxY+8)
             }

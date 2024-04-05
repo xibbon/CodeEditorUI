@@ -65,8 +65,10 @@ public class CodeEditorState {
     }
 }
 
+/// This packet describes the parameters to trigger the code compeltion window
 struct CompletionRequest {
     let at: CGRect
+    let on: TextView
     let prefix: String
     let completions: [CompletionEntry]
 }

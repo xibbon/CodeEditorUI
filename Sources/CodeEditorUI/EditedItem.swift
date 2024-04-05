@@ -57,8 +57,28 @@ public class EditedItem: Identifiable, Hashable, Equatable {
     }
     
     var completionRequest: CompletionRequest? = nil
+    var selected = 0
     
-    public func requestCompletion (at: CGRect, prefix: String, completions: [CompletionEntry]) {
-        completionRequest = CompletionRequest(at: at, prefix: prefix, completions: completions)
+    // This is because we do not have a way of reliably knowing if the user moved away the cursor
+    func monitorLocation (on textView: TextView, location: NSRange) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds (300)) {
+            if self.completionRequest == nil {
+                return
+            }
+            if textView.selectedRange != location {
+                self.cancelCompletion()
+            }
+            self.monitorLocation(on: textView, location: location)
+        }
+    }
+                                      
+    public func requestCompletion (at location: CGRect, on textView: TextView, prefix: String, completions: [CompletionEntry]) {
+        completionRequest = CompletionRequest(at: location, on: textView, prefix: prefix, completions: completions)
+        monitorLocation(on: textView, location: textView.selectedRange)
+        selected = 0
+    }
+    
+    public func cancelCompletion () {
+        completionRequest = nil
     }
 }
