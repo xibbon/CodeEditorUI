@@ -2,9 +2,11 @@ import SwiftUI
 import Runestone
 import TreeSitter
 import RunestoneUI
+import TreeSitterGDScriptRunestone
 
 /// Represents an edited item in the code editor, it uses a path to reference it, and expect that it
 /// can be loaded and saved via the HostServices variable.
+@Observable
 public class EditedItem: Identifiable, Hashable, Equatable {
     public static func == (lhs: EditedItem, rhs: EditedItem) -> Bool {
         lhs.path == rhs.path && lhs.data === rhs.data
@@ -32,13 +34,26 @@ public class EditedItem: Identifiable, Hashable, Equatable {
     
     public var content: String = ""
     
+    public var language: TreeSitterLanguage? = nil
+    
     /// - Parameters:
     ///  - path: the path that will be passed to the HostServices API to load and save the file
     ///  - data: this is data that can be attached to this object and extracted a later point by the user
     public init (path: String, content: String, data: AnyObject?) {
+        if path.hasSuffix(".gd") {
+            language = TreeSitterLanguage.gdscript
+        } else {
+            language = nil
+        }
         self.path = path
         self.content = content
         self.data = data
+    }
+    
+    var completionRequest: CompletionRequest? = nil
+    
+    public func requestCompletion (at: CGRect, prefix: String, completions: [CompletionEntry]) {
+        completionRequest = CompletionRequest(at: at, prefix: prefix, completions: completions)
     }
 }
 
@@ -109,14 +124,13 @@ public struct CodeEditorShell: View {
             }
             Divider()
 
-            if let currentIdx = state.currentEditor {
-                PathBrowser (path: state.openFiles[currentIdx].path)
+            if let currentIdx = state.currentEditor, currentIdx >= 0, currentIdx < state.openFiles.count  {
+                let current = state.openFiles [currentIdx]
+                PathBrowser (path: current.path)
                     .environment(state)
                 
-                if currentIdx >= 0 && currentIdx < state.openFiles.count {
-                    CodeEditorView(item: state.openFiles [currentIdx], contents: $state.openFiles[currentIdx].content) { textView in
-                        state.change (textView)
-                    }
+                CodeEditorView(item: current, contents: Binding<String>(get: { current.content }, set: { newV in current.content = newV })) { textView in
+                    state.change (current, textView)
                 }
             }
         }

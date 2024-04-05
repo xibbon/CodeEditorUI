@@ -32,23 +32,25 @@ public struct CodeEditorView: View {
         self.onChange = onChange
     }
     
-    func textViewChanged (_ textView: TextView) {
-        
-    }
-    
     public var body: some View {
-        TextViewUI(text: $contents, onChange: textViewChanged)
-            .onAppear {
-                switch hostServices.loadFile (path: item.path){
-                case .success(let contents):
-                    self.contents = contents
-                    status = .ok
-                case .failure:
-                    status = .notFound
+        ZStack {
+            TextViewUI(text: $contents, onChange: onChange)
+                .onAppear {
+                    switch hostServices.loadFile (path: item.path){
+                    case .success(let contents):
+                        self.contents = contents
+                        status = .ok
+                    case .failure:
+                        status = .notFound
+                    }
+                    
                 }
-
+                .language (item.language)
+            if let req = item.completionRequest {
+                CompletionsDisplayView(prefix: req.prefix, completions: req.completions)
+                    .background { Color (uiColor: .systemBackground) }
             }
-            //.language(.gdscript)
+        }
     }
 }
 

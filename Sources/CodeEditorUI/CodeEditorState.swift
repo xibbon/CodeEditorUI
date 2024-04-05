@@ -18,6 +18,7 @@ public class CodeEditorState {
     public var hostServices: HostServices
     var openFiles: [EditedItem]
     var currentEditor: Int? = nil
+    var completionRequest: CompletionRequest? = nil
     
     /// Initializes the code editor state that you can use to control what is shown
     public init (hostServices: HostServices? = nil, openFiles: [EditedItem] = []) {
@@ -45,12 +46,18 @@ public class CodeEditorState {
     
     /// This callback receives both an instance to the state so it can direct the process, and a handle to the TextView that triggered the change
     /// and can be used to extract information about the change.
-    public var onChange: ((CodeEditorState, TextView)->())? = nil
+    public var onChange: ((CodeEditorState, EditedItem, TextView)->())? = nil
     
-    func change (_ textView: TextView) {
+    func change (_ editedItem: EditedItem, _ textView: TextView) {
         guard let onChange else {
             return
         }
-        onChange (self, textView)
+        onChange (self, editedItem, textView)
     }
+}
+
+struct CompletionRequest {
+    let at: CGRect
+    let prefix: String
+    let completions: [CompletionEntry]
 }
