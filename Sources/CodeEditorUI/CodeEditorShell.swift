@@ -75,7 +75,8 @@ public struct CodeEditorShell: View {
                 let current = state.openFiles [currentIdx]
                 PathBrowser (path: current.path)
                     .environment(state)
-                
+                    .padding ([.horizontal], 4)
+                Divider()
                 CodeEditorView(state: state, item: current, contents: Binding<String>(get: { current.content }, set: { newV in current.content = newV })) { textView in
                     state.change (current, textView)
                 }
