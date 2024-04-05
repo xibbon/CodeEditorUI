@@ -70,8 +70,11 @@ struct PathBrowser: View {
     
     var body: some View {
         ScrollView (.horizontal) {
-            HStack {
+            HStack (spacing: 2){
                 ForEach (Array (components.enumerated()), id: \.offset) { idx, v in
+                    if idx == 0 {
+                        Text (prefix)
+                    }
                     DirectoryView (prefix: prefix, basePath: PathBrowser.makePath (prefix: prefix, components, idx), element: String(v))
                     Image (systemName: "chevron.compact.right")
                         .foregroundColor(.secondary)
@@ -85,8 +88,6 @@ struct PathBrowser: View {
 
 #Preview {
     ZStack {
-        Color.gray
-        
         PathBrowser(path: "res://addons/files/text.gd")
             .environment(HostServices.makeTestHostServices())
             .environment(CodeEditorState())
