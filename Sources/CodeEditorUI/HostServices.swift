@@ -49,22 +49,36 @@ open class HostServices {
     public init (
         load: @escaping (_ path: String)->Result<String,HostServiceIOError>,
         save: @escaping (_ contents: String, _ path: String) -> HostServiceIOError?,
-        fileList: @escaping (_ path: String) -> [DirectoryElement]
-        
+        fileList: @escaping (_ path: String) -> [DirectoryElement],
+        requestFileSaveAs: @escaping (_ title: String, _ path: String, _ complete: @escaping ([String])->()) -> ()
     ) {
         cbLoadFile = load
         cbSaveContents = save
         cbFileList = fileList
+        cbRequestFileSaveAs = requestFileSaveAs
     }
     
     var cbLoadFile: (String)->Result<String,HostServiceIOError>
     var cbSaveContents: (String, String) -> HostServiceIOError?
     public var cbFileList: (String) -> [DirectoryElement]
+    public var cbRequestFileSaveAs: (_ title: String, _ path: String, _ complete: @escaping ([String])->()) -> ()
     
     /// Loads a file
     /// - Returns: the string with the contents of the file or the error detailing the problem
     open func loadFile (path: String) -> Result<String,HostServiceIOError> {
         return cbLoadFile (path)
+    }
+    
+    /// Triggers a request in the UI for picking a file to be saved as, currently this
+    /// will default to filters for all files and "gd" extension
+    ///
+    /// - Parameters:
+    ///  - title: The title for the dialog box
+    ///  - path: the current path for the file
+    ///  - complete: callback to invoke when the operation is completed with the list of arguments
+    ///  selected (for now, just one value)
+    open func requestFileSaveAs (title: String, path: String, complete: @escaping ([String]) -> ()) {
+        cbRequestFileSaveAs(title, path, complete)
     }
     
     /// Saves the string contained in contents to the specified path
@@ -123,6 +137,8 @@ open class HostServices {
                 }
             })
             return result
+        } requestFileSaveAs: { title, path, complete in
+            complete (["picked.gd"])
         }
     }
 

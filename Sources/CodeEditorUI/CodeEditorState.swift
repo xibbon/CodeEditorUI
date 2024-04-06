@@ -87,9 +87,16 @@ public class CodeEditorState {
         }
     }
     
+    //
+    // Triggers the workflow to save the current file with a new path
     public func saveFileAs() {
         guard let currentEditor else { return }
-        // TODO: need a hook to request a filename
+        let path = openFiles[currentEditor].path
+        hostServices.requestFileSaveAs(title: "Save Script As", path: path) { ret in
+            guard let newPath = ret.first else { return }
+            self.openFiles [currentEditor].path = newPath
+            self.saveCurrentFile()
+        }
     }
     
     public func saveAllFiles() {
