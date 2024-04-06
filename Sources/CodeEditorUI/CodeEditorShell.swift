@@ -9,65 +9,33 @@ public struct CodeEditorShell: View {
     @Environment(HostServices.self) var hostServices
     @Binding var state: CodeEditorState
     @State var TODO: String = ""
-    @State var errorSaving: Bool = false
-    @State var errorMessage: String = ""
-    @State var saveIdx: Int = 0
     
     public init (state: Binding<CodeEditorState>) {
         self._state = state
     }
 
-    func attemptSave (_ idx: Int) -> Bool {
-        saveIdx = idx
-        if let error = hostServices.saveContents(contents: state.openFiles[idx].content, path: state.openFiles[idx].path) {
-            errorMessage = error.localizedDescription
-            errorSaving = true
-            return false
-        }
-        return true
-    }
-    
-    func closeFile (_ idx: Int) {
-        state.openFiles.remove(at: idx)
-        if idx == state.currentEditor {
-            if state.openFiles.count == 0 {
-                state.currentEditor = nil
-            } else {
-                if let ce = state.currentEditor {
-                    state.currentEditor = ce-1
-                }
-            }
-        }
-    }
-    
-    func attemptClose (_ idx: Int) {
-        if attemptSave (idx) {
-            closeFile (idx)
-        }
-    }
-    
     public var body: some View {
         VStack (spacing: 0) {
             EditorTabs(selected: $state.currentEditor, items: $state.openFiles, closeRequest: { idx in
                 
-                attemptClose (idx)
+                state.attemptClose (idx)
             })
-            .alert("Error", isPresented: $errorSaving) {
+            .alert("Error", isPresented: Binding<Bool>(get: { state.saveError}, set: { newV in state.saveError = newV })) {
                 Button ("Retry") {
-                    errorSaving = false
+                    state.saveError = false
                     DispatchQueue.main.async {
-                        attemptClose(saveIdx)
+                        state.attemptClose(state.saveIdx)
                     }
                 }
                 Button ("Cancel") {
-                    errorSaving = false
+                    state.saveError = false
                 }
                 Button ("Ignore") {
-                    closeFile (saveIdx)
-                    errorSaving = false
+                    state.closeFile (state.saveIdx)
+                    state.saveError = false
                 }
             } message: {
-                Text (errorMessage)
+                Text (state.saveErrorMessage)
             }
             Divider()
 

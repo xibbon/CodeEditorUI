@@ -19,6 +19,9 @@ public class CodeEditorState {
     var openFiles: [EditedItem]
     var currentEditor: Int? = nil
     var completionRequest: CompletionRequest? = nil
+    var saveError: Bool = false
+    var saveErrorMessage = ""
+    var saveIdx = 0
     
     /// Configures whether the editors show line numbers
     public var showLines: Bool = true
@@ -47,7 +50,59 @@ public class CodeEditorState {
         }
     }
     
-    public func selectFile (path: String) {
+    public func attemptSave (_ idx: Int) -> Bool {
+        saveIdx = idx
+        if let error = hostServices.saveContents(contents: openFiles[idx].content, path: openFiles[idx].path) {
+            saveErrorMessage = error.localizedDescription
+            saveError = true
+            return false
+        }
+        return true
+    }
+    
+    func attemptClose (_ idx: Int) {
+        if attemptSave (idx) {
+            closeFile (idx)
+        }
+    }
+    
+    func closeFile (_ idx: Int) {
+        openFiles.remove(at: idx)
+        if idx == currentEditor {
+            if openFiles.count == 0 {
+                currentEditor = nil
+            } else {
+                if let ce = currentEditor {
+                    currentEditor = ce-1
+                }
+            }
+        }
+    }
+    
+    public func saveCurrentFile() {
+        guard let idx = currentEditor else { return }
+        if let error = hostServices.saveContents(contents: openFiles[idx].content, path: openFiles[idx].path) {
+            saveErrorMessage = error.localizedDescription
+            saveError = true
+        }
+    }
+    
+    public func saveFileAs() {
+        guard let currentEditor else { return }
+        // TODO: need a hook to request a filename
+    }
+    
+    public func saveAllFiles() {
+        for idx in 0..<openFiles.count {
+            saveIdx = idx
+            if let error = hostServices.saveContents(contents: openFiles[idx].content, path: openFiles[idx].path) {
+                saveErrorMessage = error.localizedDescription
+                saveError = true
+            }
+        }
+    }
+    
+    public func selectFile(path: String) {
         if let idx = openFiles.firstIndex(where: { $0.path == path }) {
             currentEditor = idx
         }
