@@ -88,6 +88,7 @@ public struct CodeEditorView: View {
                 .showTabs(state.showTabs)
                 .showLineNumbers(state.showLines)
                 .showSpaces(state.showSpaces)
+                .characterPairs(codingPairs)
             if let req = item.completionRequest {
                 CompletionsDisplayView(
                     prefix: req.prefix,
@@ -111,4 +112,17 @@ struct DemoCodeEditorView: View {
 }
 #Preview {
     DemoCodeEditorView()
+}
+
+let codingPairs = [
+    BasicCharacterPair(leading: "(", trailing: ")"),
+    BasicCharacterPair(leading: "{", trailing: "}"),
+    BasicCharacterPair(leading: "[", trailing: "]"),
+    BasicCharacterPair(leading: "\"", trailing: "\""),
+    BasicCharacterPair(leading: "'", trailing: "'")
+]
+
+struct BasicCharacterPair: CharacterPair {
+    let leading: String
+    let trailing: String
 }
