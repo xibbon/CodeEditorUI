@@ -9,6 +9,7 @@ public struct CodeEditorShell: View {
     @Environment(HostServices.self) var hostServices
     @Binding var state: CodeEditorState
     @State var TODO: String = ""
+    @State var showDiagnosticDetails = false
     
     public init (state: Binding<CodeEditorState>) {
         self._state = state
@@ -41,12 +42,46 @@ public struct CodeEditorShell: View {
 
             if let currentIdx = state.currentEditor, currentIdx >= 0, currentIdx < state.openFiles.count  {
                 let current = state.openFiles [currentIdx]
-                PathBrowser (path: current.path)
+                PathBrowser (item: current)
                     .environment(state)
                     .padding ([.horizontal], 4)
                 Divider()
-                CodeEditorView(state: state, item: current, contents: Binding<String>(get: { current.content }, set: { newV in current.content = newV })) { textView in
-                    state.change (current, textView)
+                CodeEditorView(state: state, item: current, contents: Binding<String>(get: { current.content }, set: { newV in current.content = newV }))
+                Divider()
+                HStack {
+                    if let firstError = current.errors?.first {
+                        ShowIssue (issue: firstError)
+                            .fontDesign(.monospaced)
+                            .lineLimit(1)
+                    }
+                    Spacer ()
+                    if let warnings = current.warnings {
+                        Button (action: { showDiagnosticDetails.toggle () }) {
+                            HStack (spacing: 4){
+                                Image (systemName: "exclamationmark.triangle.fill")
+                                Text ("\(warnings.count)")
+                            }.foregroundStyle(Color.yellow)
+                        }
+                    }
+                    if let errors = current.errors {
+                        Button (action: { showDiagnosticDetails.toggle() }) {
+                            HStack (spacing: 4) {
+                                Image (systemName: "xmark.circle.fill")
+                                Text ("\(errors.count)")
+                            }.foregroundStyle(Color.red)
+                        }
+                    }
+                    if showDiagnosticDetails {
+                        Button (action: { showDiagnosticDetails = false }) {
+                            Image (systemName: "xmark.circle")
+                        }
+                    }
+                }
+                .padding ([.trailing])
+                .font(.footnote)
+                if showDiagnosticDetails, current.errors != nil || current.warnings != nil {
+                    DiagnosticDetailsView(errors: current.errors, warnings: current.warnings)
+                        .frame(maxHeight: 120)
                 }
             }
         }
@@ -62,7 +97,15 @@ struct DemoCodeEditorShell: View {
         CodeEditorShell (state: $state)
             .environment(hostServices)
             .onAppear {
-                state.openFile(path: "/Users/miguel/cvs/godot-master/modules/gdscript/tests/scripts/utils.notest.gd", data: nil)
+                switch state.openFile(path: "/Users/miguel/cvs/godot-master/modules/gdscript/tests/scripts/utils.notest.gd", delegate: nil) {
+                case .success(let item):
+                    item.validationResult (
+                        functions: [],
+                        errors: [Issue(kind: .error, col: 1, line: 1, message: "Demo Error, with a very long descrption that makes it up for the very difficult task of actually having to wrap around")],
+                        warnings: [Issue(kind: .warning, col: 1, line: 1, message: "Demo Warning")])
+                case .failure(let err):
+                    break
+                }
             }
     }
 }

@@ -83,7 +83,6 @@ public struct CompletionsDisplayView: View {
     
     /// Makes bold text for the text that we were matching against
     func boldify (_ source: String, _ hayStack: String) -> Text {
-        var result = ""
         var ra = AttributedString()
         let sourceLower = source.lowercased()
         var scan = sourceLower [sourceLower.startIndex...]
@@ -135,7 +134,7 @@ public struct CompletionsDisplayView: View {
                                 }
                             }
                             .clipShape(RoundedRectangle(cornerRadius: 4))
-                            .onChange(of: selected) { newV in
+                            .onChange(of: selected) { oldV, newV in
                                 proxy.scrollTo(newV)
                             }
                             .onTapGesture(count: 2) {

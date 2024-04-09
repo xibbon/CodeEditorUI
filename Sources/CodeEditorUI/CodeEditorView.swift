@@ -22,16 +22,18 @@ public struct CodeEditorView: View {
     @Environment(HostServices.self) var hostServices: HostServices
     @Binding var contents: String
     @State var status: CodeEditorStatus
-    let onChange: (_ textView: TextView)->()
     var item: EditedItem
     let state: CodeEditorState
     
-    public init (state: CodeEditorState, item: EditedItem, contents: Binding<String>, onChange: @escaping (_ textView: TextView) ->()) {
+    public init (state: CodeEditorState, item: EditedItem, contents: Binding<String>) {
         self.state = state
         self.item = item
         self._status = State(initialValue: .ok)
         self._contents = contents
-        self.onChange = onChange
+    }
+    
+    func onChange (_ textView: TextView) {
+        item.editedItemDelegate?.editedTextChanged(item, textView)
     }
     
     func insertCompletion () {
@@ -40,7 +42,7 @@ public struct CodeEditorView: View {
         let count = req.prefix.count
         let startLoc = req.on.selectedRange.location-count
         if startLoc >= 0 {
-            var r = NSRange (location: startLoc, length: count)
+            let r = NSRange (location: startLoc, length: count)
             req.on.replace(r, withText: insertFull)
         }
         item.cancelCompletion()
@@ -48,7 +50,7 @@ public struct CodeEditorView: View {
     
     public var body: some View {
         ZStack (alignment: .topLeading){
-            TextViewUI(text: $contents, onChange: onChange)
+            TextViewUI(text: $contents, onChange: onChange, gotoRequest: Binding<Int?>(get: { item.gotoLineRequest }, set: { newV in item.gotoLineRequest = newV }))
                 .onAppear {
                     switch hostServices.loadFile (path: item.path){
                     case .success(let contents):
@@ -77,7 +79,7 @@ public struct CodeEditorView: View {
                     return .ignored
                 }
                 .onKeyPress(.return) {
-                    if let req = item.completionRequest {
+                    if item.completionRequest != nil {
                         insertCompletion ()
                         return .handled
                     }
@@ -106,8 +108,17 @@ struct DemoCodeEditorView: View {
     @State var text: String = "This is just a sample"
     
     var body: some View {
-        CodeEditorView(state: CodeEditorState(), item: EditedItem(path: "/Users/miguel/cvs/godot-master/modules/gdscript/tests/scripts/utils.notest.gd", content: text, data: nil), contents: $text, onChange: { textView in })
+        CodeEditorView(state: CodeEditorState(),
+                       item: EditedItem(
+                        path: "/Users/miguel/cvs/godot-master/modules/gdscript/tests/scripts/utils.notest.gd",
+                        content: text,
+                        editedItemDelegate: nil),
+                       contents: $text)
             .environment(HostServices.makeTestHostServices())
+    }
+    
+    func changed(_ editedItem: EditedItem, _ textView: TextView) {
+        //
     }
 }
 #Preview {

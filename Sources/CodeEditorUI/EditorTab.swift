@@ -70,12 +70,12 @@ struct EditorTabs: View {
 struct DemoEditorTabs: View {
     @State var selected: Int? = 2
     @State var items: [EditedItem] = [
-        EditedItem (path: "some/file/foo.txt", content: "Demo", data: nil),
-        EditedItem (path: "res://another.txt", content: "Demo", data: nil),
-        EditedItem (path: "res://third.txt", content: "Demo", data: nil),
-        EditedItem (path: "some/file/foo.txt", content: "Demo", data: nil),
-        EditedItem (path: "res://another.txt", content: "Demo", data: nil),
-        EditedItem (path: "res://third.txt", content: "Demo", data: nil),
+        EditedItem (path: "some/file/foo.txt", content: "Demo", editedItemDelegate: nil),
+        EditedItem (path: "res://another.txt", content: "Demo", editedItemDelegate: nil),
+        EditedItem (path: "res://third.txt", content: "Demo", editedItemDelegate: nil),
+        EditedItem (path: "some/file/foo.txt", content: "Demo", editedItemDelegate: nil),
+        EditedItem (path: "res://another.txt", content: "Demo", editedItemDelegate: nil),
+        EditedItem (path: "res://third.txt", content: "Demo", editedItemDelegate: nil),
     ]
     
     var body: some View {

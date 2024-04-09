@@ -19,10 +19,13 @@ struct PathBrowser: View {
         var id: Int
     }
     let prefix: String
+    var item: EditedItem
     var components: [Substring]
     @State var showContents: IdentifiableInt? = nil
     
-    init (path: String) {
+    init (item: EditedItem) {
+        let path = item.path
+        self.item = item
         self.prefix = path.hasPrefix("res://") ? "res://" : "/"
         
         components = path.dropFirst (path.hasPrefix ("res://") ? 6 : 0).split (separator: "/")
@@ -59,9 +62,26 @@ struct PathBrowser: View {
                     if v.isDir {
                         DirectoryView (prefix: prefix, basePath: "\(basePath)/\(v)", element: v.name)
                     } else {
-                        Button (action: { editorState.openFile(path: "\(basePath)/\(v.name)", data: nil) }) {
+                        Button (action: { editorState.openFile(path: "\(basePath)/\(v.name)", delegate: nil) }) {
                             Label(v.name, systemImage: v.isDir ? "folder.fill" : PathBrowser.iconFor(v.name))
                         }
+                    }
+                }
+            }
+        }
+    }
+    
+    struct FunctionView: View {
+        let functions: [(String,Int)]
+        @Binding var gotoLineRequest: Int?
+
+        var body: some View {
+            Menu ("Jump To") {
+                ForEach (functions, id: \.0) { fp in
+                    Button (action: {
+                        gotoLineRequest = fp.1
+                    }) {
+                        Label (fp.0, systemImage: "function")
                     }
                 }
             }
@@ -80,6 +100,12 @@ struct PathBrowser: View {
                     Image (systemName: "chevron.compact.right")
                         .foregroundColor(.secondary)
                 }
+                if item.functions.count > 0 {
+                    FunctionView (functions: item.functions, gotoLineRequest: Binding<Int?>(get: {item.gotoLineRequest}, set: {newV in item.gotoLineRequest = newV}))
+                } else {
+                    Text ("No function")
+                        .foregroundStyle(.secondary)
+                }
             }
         }
         .font (.subheadline)
@@ -89,7 +115,7 @@ struct PathBrowser: View {
 
 #Preview {
     ZStack {
-        PathBrowser(path: "res://addons/files/text.gd")
+        PathBrowser(item: EditedItem(path: "res://addons/files/text.gd", content: "demo", editedItemDelegate: nil))
             .environment(HostServices.makeTestHostServices())
             .environment(CodeEditorState())
     }

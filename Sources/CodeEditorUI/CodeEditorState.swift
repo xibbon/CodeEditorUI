@@ -39,14 +39,15 @@ public class CodeEditorState {
         currentEditor = openFiles.count > 0 ? 0 : nil
     }
     
-    public func openFile (path: String, data: AnyObject?) -> HostServiceIOError? {
+    public func openFile (path: String, delegate: EditedItemDelegate?) -> Result<EditedItem,HostServiceIOError> {
         switch hostServices.loadFile(path: path) {
         case .success(let content):
-            openFiles.append(EditedItem(path: path, content: content, data: data))
+            let item = EditedItem(path: path, content: content, editedItemDelegate: delegate)
+            openFiles.append(item)
             currentEditor = openFiles.count - 1
-            return nil
-        case .failure(let failure):
-            return failure
+            return .success(item)
+        case .failure(let code):
+            return .failure(code)
         }
     }
     
@@ -117,14 +118,14 @@ public class CodeEditorState {
     
     /// This callback receives both an instance to the state so it can direct the process, and a handle to the TextView that triggered the change
     /// and can be used to extract information about the change.
-    public var onChange: ((CodeEditorState, EditedItem, TextView)->())? = nil
-    
-    func change (_ editedItem: EditedItem, _ textView: TextView) {
-        guard let onChange else {
-            return
-        }
-        onChange (self, editedItem, textView)
-    }
+//    public var onChange: ((CodeEditorState, EditedItem, TextView)->())? = nil
+//    
+//    func change (_ editedItem: EditedItem, _ textView: TextView) {
+//        guard let onChange else {
+//            return
+//        }
+//        onChange (self, editedItem, textView)
+//    }
 }
 
 /// This packet describes the parameters to trigger the code compeltion window
