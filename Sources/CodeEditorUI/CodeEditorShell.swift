@@ -47,6 +47,7 @@ public struct CodeEditorShell: View {
                     .padding ([.horizontal], 4)
                 Divider()
                 CodeEditorView(state: state, item: current, contents: Binding<String>(get: { current.content }, set: { newV in current.content = newV }))
+                    .id(current)
                 Divider()
                 HStack {
                     if !showDiagnosticDetails, let firstError = current.errors?.first {
