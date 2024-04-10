@@ -75,13 +75,13 @@ struct PathBrowser: View {
     
     struct FunctionView: View {
         let functions: [(String,Int)]
-        @Binding var gotoLineRequest: Int?
+        let gotoMethod: (Int) -> ()
 
         var body: some View {
             Menu ("Jump To") {
                 ForEach (functions, id: \.0) { fp in
                     Button (action: {
-                        gotoLineRequest = fp.1
+                        gotoMethod (fp.1)
                     }) {
                         Label (fp.0, systemImage: "function")
                     }
@@ -103,7 +103,9 @@ struct PathBrowser: View {
                         .foregroundColor(.secondary)
                 }
                 if item.functions.count > 0 {
-                    FunctionView (functions: item.functions, gotoLineRequest: Binding<Int?>(get: {item.gotoLineRequest}, set: {newV in item.gotoLineRequest = newV}))
+                    FunctionView (functions: item.functions) { line in 
+                        item.commands.requestGoto(line: line)
+                    }
                 } else {
                     Text ("No function")
                         .foregroundStyle(.secondary)

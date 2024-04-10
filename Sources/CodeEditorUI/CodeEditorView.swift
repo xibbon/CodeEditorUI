@@ -50,8 +50,19 @@ public struct CodeEditorView: View {
     
     public var body: some View {
         ZStack (alignment: .topLeading){
-            TextViewUI(text: $contents, onChange: onChange, gotoRequest: Binding<Int?>(get: { item.gotoLineRequest }, set: { newV in item.gotoLineRequest = newV }))
-                .onAppear {
+//            TextViewUI(text: $contents,
+//                       onChange: onChange,
+//                       gotoRequest: Binding<Int?>(
+//                        get: { item.gotoLineRequest },
+//                        set: { newV in item.gotoLineRequest = newV }),
+//                       findRequest: Binding<FindKind?>(
+//                        get: { item.findRequest },
+//                        set: { newV in item.findRequest = newV })
+//                       )
+            TextViewUI (text: $contents,
+                        onChange: onChange,
+                        commands: item.commands)
+            .onAppear {
                     switch hostServices.loadFile (path: item.path){
                     case .success(let contents):
                         self.contents = contents

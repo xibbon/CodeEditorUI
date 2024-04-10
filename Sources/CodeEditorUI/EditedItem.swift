@@ -7,6 +7,7 @@
 
 import Foundation
 import Runestone
+import RunestoneUI
 import TreeSitter
 import TreeSitterGDScript
 
@@ -56,7 +57,8 @@ public class EditedItem: Identifiable, Hashable, Equatable {
     /// Detected warnings
     public var warnings: [Issue]? = nil
 
-    public var gotoLineRequest: Int? = nil
+    /// Mechanism to trigger actions on the TextViewUI
+    public var commands = TextViewCommands()
 
     public static func == (lhs: EditedItem, rhs: EditedItem) -> Bool {
         lhs === rhs

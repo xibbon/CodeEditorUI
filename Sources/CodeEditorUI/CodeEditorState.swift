@@ -7,6 +7,7 @@
 
 import Foundation
 import Runestone
+import RunestoneUI
 
 ///
 /// Tracks the state for the editor, you can affect the editor by invoking methods in this API
@@ -113,6 +114,42 @@ public class CodeEditorState {
     public func selectFile(path: String) {
         if let idx = openFiles.firstIndex(where: { $0.path == path }) {
             currentEditor = idx
+        }
+    }
+    
+    public func search (showReplace: Bool) {
+        guard let currentEditor else { return }
+        let item = openFiles[currentEditor]
+        if showReplace {
+            item.commands.requestFindAndReplace()
+        } else {
+            item.commands.requestFind()
+        }
+        //item.findRequest = showReplace ? .findAndReplace : .find
+    }
+    
+    public func goTo (line: Int) {
+        guard let currentEditor else { return }
+        let item = openFiles[currentEditor]
+        item.commands.requestGoto(line: line)
+        //item.gotoLineRequest = line
+    }
+    
+    public func nextTab () {
+        guard let currentEditor else {
+            return
+        }
+        if currentEditor+1 < openFiles.count {
+            self.currentEditor = currentEditor + 1
+        }
+    }
+    
+    public func previousTab () {
+        guard let currentEditor else {
+            return
+        }
+        if currentEditor > 0 {
+            self.currentEditor = currentEditor - 1
         }
     }
     

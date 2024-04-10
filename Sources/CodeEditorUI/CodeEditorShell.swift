@@ -39,7 +39,7 @@ public struct CodeEditorShell: View {
                 Text (state.saveErrorMessage)
             }
             Divider()
-
+            
             if let currentIdx = state.currentEditor, currentIdx >= 0, currentIdx < state.openFiles.count  {
                 let current = state.openFiles [currentIdx]
                 PathBrowser (item: current)
@@ -87,6 +87,7 @@ public struct CodeEditorShell: View {
                 }
             }
         }
+        
         .background { Color (uiColor: .systemBackground) }
     }
 }
