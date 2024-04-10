@@ -16,6 +16,8 @@ struct ShowIssue: View {
                 .foregroundStyle(issue.kind == .error ? Color.red : Color.yellow)
             Text ("\(issue.line),\(issue.col): \(issue.message)")
         }
+        .fontDesign(.monospaced)
+        .font(.footnote)
     }
 }
 struct DiagnosticDetailsView: View {
@@ -42,6 +44,7 @@ struct DiagnosticDetailsView: View {
             }
         }
         .listStyle(.plain)
+        
     }
 }
 

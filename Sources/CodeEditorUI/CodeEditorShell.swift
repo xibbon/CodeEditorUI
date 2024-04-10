@@ -49,10 +49,12 @@ public struct CodeEditorShell: View {
                 CodeEditorView(state: state, item: current, contents: Binding<String>(get: { current.content }, set: { newV in current.content = newV }))
                 Divider()
                 HStack {
-                    if let firstError = current.errors?.first {
-                        ShowIssue (issue: firstError)
-                            .fontDesign(.monospaced)
-                            .lineLimit(1)
+                    if !showDiagnosticDetails, let firstError = current.errors?.first {
+                        Button (action: { showDiagnosticDetails.toggle()}) {
+                            ShowIssue (issue: firstError)
+                                .fontDesign(.monospaced)
+                                .lineLimit(1)
+                        }.buttonStyle(.plain)
                     }
                     Spacer ()
                     if let warnings = current.warnings {
