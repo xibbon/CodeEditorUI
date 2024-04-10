@@ -104,6 +104,7 @@ struct DemoCodeEditorShell: View {
                         errors: [Issue(kind: .error, col: 1, line: 1, message: "Demo Error, with a very long descrption that makes it up for the very difficult task of actually having to wrap around")],
                         warnings: [Issue(kind: .warning, col: 1, line: 1, message: "Demo Warning")])
                 case .failure(let err):
+                    print ("Error: \(err)")
                     break
                 }
             }

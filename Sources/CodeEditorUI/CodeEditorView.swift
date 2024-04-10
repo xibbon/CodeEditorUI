@@ -33,7 +33,7 @@ public struct CodeEditorView: View {
     }
     
     func onChange (_ textView: TextView) {
-        item.editedItemDelegate?.editedTextChanged(item, textView)
+        item.editedTextChanged(on: textView)
     }
     
     func insertCompletion () {
