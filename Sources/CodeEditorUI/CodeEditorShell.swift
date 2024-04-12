@@ -8,7 +8,6 @@ import TreeSitterGDScriptRunestone
 public struct CodeEditorShell: View {
     @Environment(HostServices.self) var hostServices
     @Binding var state: CodeEditorState
-    @State var TODO: String = ""
     @State var showDiagnosticDetails = false
     
     public init (state: Binding<CodeEditorState>) {

@@ -1,10 +1,6 @@
 //
 //  PathBrowser.swift
 //
-// TODO: The last item in the path should also list the peer files
-// TODO: should add a hook for the scanned methods from GDScritp
-// TODO: the nested directories are not showing up, not sure why, but if I add a menu at the bottom, they all show up.
-//
 //  Created by Miguel de Icaza on 4/2/24.
 //
 

@@ -4,9 +4,6 @@
 //
 //  Created by Miguel de Icaza on 3/29/24.
 //
-// TODO: onAppear is not triggered for new files opened, so the buffers are empty
-// TODO: RuneStone crashs when the initial content is empty and we type text.
-
 
 import SwiftUI
 import RunestoneUI
