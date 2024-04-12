@@ -46,34 +46,40 @@ open class HostServices {
     /// - Parameters:
     ///  - load: this callback takes a path and returns the contents of the file on success, or an error code
     ///  - save: this callback takes the contents to save, and the destination path, it will return nil on success, or a status code indicating the error on failure.
+    ///  - fileList: provides a direcotry listing of files at the specified path
+    ///  - requestFileSave: requests that the file be saved, the parameters are the title for the dialog, the path to save it to, and a callback to invoke with the resulting filename to save to.
+    ///  - requestOpen: invokes the system "open" functionality on the specified path, which will determine how to best open a specific file.
     public init (
         load: @escaping (_ path: String)->Result<String,HostServiceIOError>,
         save: @escaping (_ contents: String, _ path: String) -> HostServiceIOError?,
         fileList: @escaping (_ path: String) -> [DirectoryElement],
         requestFileSaveAs: @escaping (_ title: String, _ path: String, _ complete: @escaping ([String])->()) -> (),
-        guessDelegate: @escaping (_ path: String) -> EditedItemDelegate?
+        requestOpen: @escaping (_ path: String) -> ()
     ) {
         cbLoadFile = load
         cbSaveContents = save
         cbFileList = fileList
         cbRequestFileSaveAs = requestFileSaveAs
-        cbGuessDelegate = guessDelegate
+        cbRequestOpen = requestOpen
     }
     
     var cbLoadFile: (String)->Result<String,HostServiceIOError>
     var cbSaveContents: (String, String) -> HostServiceIOError?
+    var cbRequestOpen: (String) -> ()
     public var cbFileList: (String) -> [DirectoryElement]
     public var cbRequestFileSaveAs: (_ title: String, _ path: String, _ complete: @escaping ([String])->()) -> ()
-    public var cbGuessDelegate: (_ path: String) -> EditedItemDelegate?
+    
+    /// Requests that the host process opens the specified path in an appropriate way
+    ///
+    /// When hosted in Godot, this calls the Godot code that determines if this is a scene, a resource, a text file or script that needs to be opened
+    open func requestOpen (path: String) {
+        cbRequestOpen(path)
+    }
     
     /// Loads a file
     /// - Returns: the string with the contents of the file or the error detailing the problem
     open func loadFile (path: String) -> Result<String,HostServiceIOError> {
         return cbLoadFile (path)
-    }
-    
-    open func guessDelegate(path: String) -> EditedItemDelegate? {
-        return cbGuessDelegate (path)
     }
     
     /// Triggers a request in the UI for picking a file to be saved as, currently this
@@ -146,8 +152,8 @@ open class HostServices {
             return result
         } requestFileSaveAs: { title, path, complete in
             complete (["picked.gd"])
-        } guessDelegate: { path in
-            return nil
+        } requestOpen: { file in
+            print ("File \(file) shoudl be opened")
         }
     }
 

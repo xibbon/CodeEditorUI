@@ -62,7 +62,7 @@ struct PathBrowser: View {
                         DirectoryView (prefix: prefix, basePath: "\(basePath)/\(v.name)", element: v.name)
                     } else {
                         Button (action: {
-                            _ = editorState.openFile(path: "\(basePath)/\(v.name)", delegate: nil)
+                            _ = hostServices.requestOpen(path: "\(basePath)/\(v.name)")
                         }) {
                             Label(v.name, systemImage: v.isDir ? "folder.fill" : PathBrowser.iconFor(v.name))
                         }
