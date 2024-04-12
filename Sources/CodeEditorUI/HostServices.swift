@@ -50,23 +50,30 @@ open class HostServices {
         load: @escaping (_ path: String)->Result<String,HostServiceIOError>,
         save: @escaping (_ contents: String, _ path: String) -> HostServiceIOError?,
         fileList: @escaping (_ path: String) -> [DirectoryElement],
-        requestFileSaveAs: @escaping (_ title: String, _ path: String, _ complete: @escaping ([String])->()) -> ()
+        requestFileSaveAs: @escaping (_ title: String, _ path: String, _ complete: @escaping ([String])->()) -> (),
+        guessDelegate: @escaping (_ path: String) -> EditedItemDelegate?
     ) {
         cbLoadFile = load
         cbSaveContents = save
         cbFileList = fileList
         cbRequestFileSaveAs = requestFileSaveAs
+        cbGuessDelegate = guessDelegate
     }
     
     var cbLoadFile: (String)->Result<String,HostServiceIOError>
     var cbSaveContents: (String, String) -> HostServiceIOError?
     public var cbFileList: (String) -> [DirectoryElement]
     public var cbRequestFileSaveAs: (_ title: String, _ path: String, _ complete: @escaping ([String])->()) -> ()
+    public var cbGuessDelegate: (_ path: String) -> EditedItemDelegate?
     
     /// Loads a file
     /// - Returns: the string with the contents of the file or the error detailing the problem
     open func loadFile (path: String) -> Result<String,HostServiceIOError> {
         return cbLoadFile (path)
+    }
+    
+    open func guessDelegate(path: String) -> EditedItemDelegate? {
+        return cbGuessDelegate (path)
     }
     
     /// Triggers a request in the UI for picking a file to be saved as, currently this
@@ -139,6 +146,8 @@ open class HostServices {
             return result
         } requestFileSaveAs: { title, path, complete in
             complete (["picked.gd"])
+        } guessDelegate: { path in
+            return nil
         }
     }
 
