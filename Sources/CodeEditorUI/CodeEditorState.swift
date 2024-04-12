@@ -41,8 +41,9 @@ public class CodeEditorState {
     }
     
     public func openFile (path: String, delegate: EditedItemDelegate?) -> Result<EditedItem,HostServiceIOError> {
-        if let existing = openFiles.first(where: { $0.path == path }) {
-            return .success(existing)
+        if let existingIdx = openFiles.firstIndex(where: { $0.path == path }) {
+            currentEditor = existingIdx
+            return .success(openFiles [existingIdx])
         }
         switch hostServices.loadFile(path: path) {
         case .success(let content):
