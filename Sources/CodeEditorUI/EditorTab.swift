@@ -26,7 +26,9 @@ struct EditorTab: View {
             Text (item.filename)
                 .foregroundStyle(selected ? Color.accentColor : Color.primary)
                 .onTapGesture {
-                    select ()
+                    withAnimation {
+                        self.select ()
+                    }
                 }
                 .font(.subheadline)
 
