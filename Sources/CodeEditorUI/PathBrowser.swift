@@ -33,6 +33,9 @@ struct PathBrowser: View {
     
     static func makePath (prefix: String, _ components: [Substring], _ idx: Int) -> String {
         let r = components [0..<idx+1].joined(separator: "/")
+        if r == "" {
+            return prefix
+        }
         return "\(prefix)/\(r)"
     }
     
@@ -60,7 +63,7 @@ struct PathBrowser: View {
             Menu (element) {
                 ForEach (Array (hostServices.fileListing(at: basePath).enumerated()), id: \.offset) { _, v in
                     if v.isDir {
-                        DirectoryView (prefix: prefix, basePath: "\(basePath)/\(v)", element: v.name)
+                        DirectoryView (prefix: prefix, basePath: "\(basePath)/\(v.name)", element: v.name)
                     } else {
                         Button (action: {
                             _ = editorState.openFile(path: "\(basePath)/\(v.name)", delegate: nil)
@@ -98,7 +101,13 @@ struct PathBrowser: View {
                         Text (prefix)
                             .foregroundStyle(.secondary)
                     }
-                    DirectoryView (prefix: prefix, basePath: PathBrowser.makePath (prefix: prefix, components, idx), element: String(v))
+                    if idx == components.count-1 {
+                        // For the last element, we display the contents of all the peers, like Xcode
+                        DirectoryView (prefix: prefix, basePath: PathBrowser.makePath (prefix: prefix, components, idx-1), element: String(v))
+                    } else {
+                        // List the elements of this directory.
+                        DirectoryView (prefix: prefix, basePath: PathBrowser.makePath (prefix: prefix, components, idx), element: String(v))
+                    }
                     Image (systemName: "chevron.compact.right")
                         .foregroundColor(.secondary)
                 }

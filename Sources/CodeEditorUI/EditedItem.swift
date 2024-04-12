@@ -101,11 +101,18 @@ public class EditedItem: Identifiable, Hashable, Equatable {
         self.warnings = warnings
     }
     
+    @MainActor
     public func editedTextChanged (on textView: TextView) {
+        editedItemDelegate?.editedTextChanged(self, textView)
+    }
+
+    @MainActor
+    public func started (on textView: TextView) {
         editedItemDelegate?.editedTextChanged(self, textView)
     }
 }
 
+@MainActor
 public protocol EditedItemDelegate: AnyObject {
     func started (editedItem: EditedItem, textView: TextView)
     func editedTextChanged (_ editedItem: EditedItem, _ textView: TextView)

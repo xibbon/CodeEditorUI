@@ -36,7 +36,11 @@ public struct CodeEditorView: View, DropDelegate {
     func onChange (_ textView: TextView) {
         item.editedTextChanged(on: textView)
     }
-    
+
+    func onLoaded (_ textView: TextView) {
+        item.started(on: textView)
+    }
+
     func insertCompletion () {
         guard let req = item.completionRequest else { return }
         let insertFull = req.completions[item.selected].insert
@@ -100,10 +104,12 @@ public struct CodeEditorView: View, DropDelegate {
         return true
     }
     
+    // Needed so we can show the cursor moving
     public func dropEntered(info: DropInfo) {
         item.commands.textView?.becomeFirstResponder()
     }
     
+    // Update the cursor position near the drop site.
     public func dropUpdated(info: DropInfo) -> DropProposal? {
         let cmd = item.commands
         guard let pos = cmd.closestPosition(to: info.location) else { return nil }
@@ -116,6 +122,7 @@ public struct CodeEditorView: View, DropDelegate {
     public var body: some View {
         ZStack (alignment: .topLeading){
             TextViewUI (text: $contents,
+                        onLoaded: onLoaded,
                         onChange: onChange,
                         commands: item.commands)
             .onAppear {
@@ -171,6 +178,7 @@ public struct CodeEditorView: View, DropDelegate {
         }
     }
 }
+
 let codingPairs = [
     BasicCharacterPair(leading: "(", trailing: ")"),
     BasicCharacterPair(leading: "{", trailing: "}"),
@@ -224,6 +232,7 @@ actor Accumulator {
         }
     }
     
+    // When we are done, invoke the command
     func flush () {
         let value = result
         DispatchQueue.main.async {
