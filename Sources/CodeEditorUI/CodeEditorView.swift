@@ -12,13 +12,14 @@ import SwiftUI
 import RunestoneUI
 import TreeSitterGDScriptRunestone
 import Runestone
+import UniformTypeIdentifiers
 
 enum CodeEditorStatus {
     case ok
     case notFound
 }
 
-public struct CodeEditorView: View {
+public struct CodeEditorView: View, DropDelegate {
     @Environment(HostServices.self) var hostServices: HostServices
     @Binding var contents: String
     @State var status: CodeEditorStatus
@@ -47,72 +48,192 @@ public struct CodeEditorView: View {
         }
         item.cancelCompletion()
     }
+   
+    // Implementation of the DropDelegate method
+    public func performDrop(info: DropInfo) -> Bool {
+        let cmd = item.commands
+        guard let pos = cmd.closestPosition(to: info.location) else { return false }
+        guard let range = cmd.textRange (from: pos, to: pos) else { return false }
+        
+        let result = Accumulator (range: range, cmd: cmd)
+        var pending = 0
+        
+        for provider in info.itemProviders(for: [.text, .fileURL]) {
+            if provider.hasItemConformingToTypeIdentifier(UTType.url.identifier) {
+                pending += 1
+                _ = provider.loadObject(ofClass: URL.self) { url, _ in
+                    Task {
+                        guard let url else {
+                            await result.error()
+                            return
+                        }
+                        let path = url.path(percentEncoded: false)
+                        // This is one of our res:// paths that we encoded as a "/" + "res://" so taht
+                        // swift would let us create a fileURL (necessary because we can have spaces in the
+                        // "res://my fonts/font.ttf" and Swift does not like the host part ("my fonts") having
+                        // a space`
+                        if path.starts(with: "/res://") {
+                            await result.push ("\"\(path.dropFirst(1))\"")
+                        } else {
+                            await result.push ("\"\(url.absoluteString)\"")
+                        }
+                    }
+                }
+            }
+            
+            if provider.hasItemConformingToTypeIdentifier(UTType.text.identifier) {
+                pending += 1
+                provider.loadItem(forTypeIdentifier: UTType.text.identifier) { data, error in
+                    Task {
+                        if let data = data as? Data, let text = String(data: data, encoding: .utf8) {
+                            await result.push (text)
+                        } else {
+                            await result.error ()
+                        }
+                    }
+                }
+            }
+        }
+        Task {
+            await result.waitFor (pending)
+        }
+        return true
+    }
+    
+    public func dropEntered(info: DropInfo) {
+        item.commands.textView?.becomeFirstResponder()
+    }
+    
+    public func dropUpdated(info: DropInfo) -> DropProposal? {
+        let cmd = item.commands
+        guard let pos = cmd.closestPosition(to: info.location) else { return nil }
+        
+        cmd.selectedTextRange = cmd.textRange(from: pos, to: pos)
+        
+        return nil
+    }
     
     public var body: some View {
         ZStack (alignment: .topLeading){
-//            TextViewUI(text: $contents,
-//                       onChange: onChange,
-//                       gotoRequest: Binding<Int?>(
-//                        get: { item.gotoLineRequest },
-//                        set: { newV in item.gotoLineRequest = newV }),
-//                       findRequest: Binding<FindKind?>(
-//                        get: { item.findRequest },
-//                        set: { newV in item.findRequest = newV })
-//                       )
             TextViewUI (text: $contents,
                         onChange: onChange,
                         commands: item.commands)
             .onAppear {
-                    switch hostServices.loadFile (path: item.path){
-                    case .success(let contents):
-                        self.contents = contents
-                        status = .ok
-                    case .failure:
-                        status = .notFound
-                    }
+                switch hostServices.loadFile (path: item.path){
+                case .success(let contents):
+                    self.contents = contents
+                    status = .ok
+                case .failure:
+                    status = .notFound
                 }
-                .onKeyPress(.downArrow) {
-                    if let req = item.completionRequest {
-                        if item.selected < req.completions.count {
-                            item.selected += 1
-                        }
-                        return .handled
+            }
+            .onKeyPress(.downArrow) {
+                if let req = item.completionRequest {
+                    if item.selected < req.completions.count {
+                        item.selected += 1
                     }
-                    return .ignored
+                    return .handled
                 }
-                .onKeyPress(.upArrow) {
-                    if item.completionRequest != nil {
-                        if item.selected > 0 {
-                            item.selected -= 1
-                        }
-                        return .handled
+                return .ignored
+            }
+            .onKeyPress(.upArrow) {
+                if item.completionRequest != nil {
+                    if item.selected > 0 {
+                        item.selected -= 1
                     }
-                    return .ignored
+                    return .handled
                 }
-                .onKeyPress(.return) {
-                    if item.completionRequest != nil {
-                        insertCompletion ()
-                        return .handled
-                    }
-                    return .ignored
+                return .ignored
+            }
+            .onKeyPress(.return) {
+                if item.completionRequest != nil {
+                    insertCompletion ()
+                    return .handled
                 }
-                .language (item.language)
-                .lineHeightMultiplier(1.0)
-                .showTabs(state.showTabs)
-                .showLineNumbers(state.showLines)
-                .showSpaces(state.showSpaces)
-                .characterPairs(codingPairs)
+                return .ignored
+            }
+            .onDrop(of: [.text, .url], delegate: self)
+            .language (item.language)
+            .lineHeightMultiplier(1.0)
+            .showTabs(state.showTabs)
+            .showLineNumbers(state.showLines)
+            .showSpaces(state.showSpaces)
+            .characterPairs(codingPairs)
             if let req = item.completionRequest {
                 CompletionsDisplayView(
                     prefix: req.prefix,
                     completions: req.completions,
                     selected: Binding<Int> (get: { item.selected}, set: { newV in  item.selected = newV }),
                     onComplete: insertCompletion)
-                    .background { Color (uiColor: .systemBackground) }
-                    .offset(x: req.at.minX, y: req.at.maxY+8)
+                .background { Color (uiColor: .systemBackground) }
+                .offset(x: req.at.minX, y: req.at.maxY+8)
             }
         }
     }
+}
+let codingPairs = [
+    BasicCharacterPair(leading: "(", trailing: ")"),
+    BasicCharacterPair(leading: "{", trailing: "}"),
+    BasicCharacterPair(leading: "[", trailing: "]"),
+    BasicCharacterPair(leading: "\"", trailing: "\""),
+    BasicCharacterPair(leading: "'", trailing: "'")
+]
+
+struct BasicCharacterPair: CharacterPair {
+    let leading: String
+    let trailing: String
+}
+
+
+/// We use this accumultator because we can receive multiple drop files, and each one of those is resolved
+/// in the background - when all of those are collected, we can insert the results.
+actor Accumulator {
+    let range: UITextRange
+    let cmd: TextViewCommands
+    
+    init (range: UITextRange, cmd: TextViewCommands) {
+        result = ""
+        count = 0
+        self.range = range
+        self.cmd = cmd
+    }
+    
+    func push (_ item: String) {
+        if result != "" {
+            result += ", "
+        }
+        result += item
+        bump()
+    }
+    
+    func error () {
+        bump()
+    }
+    
+    func bump () {
+        count += 1
+        if count == waitingFor {
+            flush ()
+        }
+    }
+    
+    func waitFor(_ count: Int) {
+        waitingFor = count
+        if count == waitingFor {
+            flush()
+        }
+    }
+    
+    func flush () {
+        let value = result
+        DispatchQueue.main.async {
+            self.cmd.replace(self.range, withText: value)
+        }
+    }
+    
+    var result: String
+    var count: Int
+    var waitingFor = Int.max
 }
 
 struct DemoCodeEditorView: View {
@@ -136,15 +257,3 @@ struct DemoCodeEditorView: View {
     DemoCodeEditorView()
 }
 
-let codingPairs = [
-    BasicCharacterPair(leading: "(", trailing: ")"),
-    BasicCharacterPair(leading: "{", trailing: "}"),
-    BasicCharacterPair(leading: "[", trailing: "]"),
-    BasicCharacterPair(leading: "\"", trailing: "\""),
-    BasicCharacterPair(leading: "'", trailing: "'")
-]
-
-struct BasicCharacterPair: CharacterPair {
-    let leading: String
-    let trailing: String
-}

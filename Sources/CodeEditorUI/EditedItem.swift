@@ -107,6 +107,7 @@ public class EditedItem: Identifiable, Hashable, Equatable {
 }
 
 public protocol EditedItemDelegate: AnyObject {
+    func started (editedItem: EditedItem, textView: TextView)
     func editedTextChanged (_ editedItem: EditedItem, _ textView: TextView)
 }
 
