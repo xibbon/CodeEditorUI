@@ -34,7 +34,7 @@ struct EditorTab: View {
         .padding(internalPadding)
         .padding ([.trailing], internalPadding)
         .background {
-            selected ? Color.accentColor.opacity(0.3) : Color (uiColor: .systemBackground)
+            selected ? Color.accentColor.opacity(0.3) : Color (uiColor: .secondarySystemBackground)
         }
         .clipShape(UnevenRoundedRectangle(topLeadingRadius: 5, bottomLeadingRadius: 0, bottomTrailingRadius: 0, topTrailingRadius: 5, style: .continuous))
         .padding([.horizontal], 3)
@@ -90,7 +90,7 @@ struct DemoEditorTabs: View {
 
 #Preview {
     ZStack {
-        Color.gray
+        Color (uiColor: .systemBackground)
         
         DemoEditorTabs()
     }
