@@ -85,6 +85,8 @@ public struct CodeEditorShell: View {
                     DiagnosticDetailsView(errors: current.errors, warnings: current.warnings)
                         .frame(maxHeight: 120)
                 }
+            } else {
+                Spacer()
             }
         }
         
