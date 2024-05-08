@@ -31,7 +31,7 @@ public class EditedItem: Identifiable, Hashable, Equatable {
         case .detect:
             if path.hasSuffix(".gd") {
                 language = TreeSitterLanguage.gdscript
-            } if path.hasSuffix (".md") {
+            } else if path.hasSuffix (".md") {
                 language = TreeSitterLanguage.markdown
             } else {
                 language = nil
