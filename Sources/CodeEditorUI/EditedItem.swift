@@ -9,20 +9,39 @@ import Foundation
 import Runestone
 import RunestoneUI
 import TreeSitter
-import TreeSitterGDScript
-
+import TreeSitterGDScriptRunestone
+import TreeSitterJSONRunestone
+import TreeSitterMarkdownRunestone
 /// Represents an edited item in the code editor, it uses a path to reference it, and expect that it
 /// can be loaded and saved via the HostServices variable.
 @Observable
 public class EditedItem: Identifiable, Hashable, Equatable {
+    public enum FileHint {
+        case detect
+        case gdscript
+        case json
+        case markdown
+    }
+    
     /// - Parameters:
     ///  - path: the path that will be passed to the HostServices API to load and save the file
     ///  - data: this is data that can be attached to this object and extracted a later point by the user
-    public init (path: String, content: String, editedItemDelegate: EditedItemDelegate?) {
-        if path.hasSuffix(".gd") {
+    public init (path: String, content: String, editedItemDelegate: EditedItemDelegate?, fileHint: FileHint = .detect) {
+        switch fileHint {
+        case .detect:
+            if path.hasSuffix(".gd") {
+                language = TreeSitterLanguage.gdscript
+            } if path.hasSuffix (".md") {
+                language = TreeSitterLanguage.markdown
+            } else {
+                language = nil
+            }
+        case .gdscript:
             language = TreeSitterLanguage.gdscript
-        } else {
-            language = nil
+        case .json:
+            language = TreeSitterLanguage.json
+        case .markdown:
+            language = TreeSitterLanguage.markdown
         }
         self.path = path
         self.content = content

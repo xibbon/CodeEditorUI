@@ -40,14 +40,14 @@ public class CodeEditorState {
         currentEditor = openFiles.count > 0 ? 0 : nil
     }
     
-    public func openFile (path: String, delegate: EditedItemDelegate?) -> Result<EditedItem,HostServiceIOError> {
+    public func openFile (path: String, delegate: EditedItemDelegate?, fileHint: EditedItem.FileHint) -> Result<EditedItem,HostServiceIOError> {
         if let existingIdx = openFiles.firstIndex(where: { $0.path == path }) {
             currentEditor = existingIdx
             return .success(openFiles [existingIdx])
         }
         switch hostServices.loadFile(path: path) {
         case .success(let content):
-            let item = EditedItem(path: path, content: content, editedItemDelegate: delegate)
+            let item = EditedItem(path: path, content: content, editedItemDelegate: delegate, fileHint: hint)
             openFiles.append(item)
             currentEditor = openFiles.count - 1
             return .success(item)
