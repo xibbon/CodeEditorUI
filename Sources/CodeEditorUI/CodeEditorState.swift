@@ -47,7 +47,7 @@ public class CodeEditorState {
         }
         switch hostServices.loadFile(path: path) {
         case .success(let content):
-            let item = EditedItem(path: path, content: content, editedItemDelegate: delegate, fileHint: hint)
+            let item = EditedItem(path: path, content: content, editedItemDelegate: delegate, fileHint: .detect)
             openFiles.append(item)
             currentEditor = openFiles.count - 1
             return .success(item)

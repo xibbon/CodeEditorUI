@@ -102,7 +102,7 @@ struct DemoCodeEditorShell: View {
         CodeEditorShell (state: $state)
             .environment(hostServices)
             .onAppear {
-                switch state.openFile(path: "/Users/miguel/cvs/godot-master/modules/gdscript/tests/scripts/utils.notest.gd", delegate: nil) {
+                switch state.openFile(path: "/Users/miguel/cvs/godot-master/modules/gdscript/tests/scripts/utils.notest.gd", delegate: nil, fileHint: .detect) {
                 case .success(let item):
                     item.validationResult (
                         functions: [],
