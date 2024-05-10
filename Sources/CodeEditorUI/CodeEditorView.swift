@@ -37,6 +37,10 @@ public struct CodeEditorView: View, DropDelegate {
     func onLoaded (_ textView: TextView) {
         item.started(on: textView)
     }
+    
+    func gutterTapped (_ textView: TextView, _ line: Int) {
+        item.gutterTapped(on: textView, line: line)
+    }
 
     func insertCompletion () {
         guard let req = item.completionRequest else { return }
@@ -118,10 +122,14 @@ public struct CodeEditorView: View, DropDelegate {
     
     public var body: some View {
         ZStack (alignment: .topLeading){
+            let b = Bindable(item)
             TextViewUI (text: $contents,
+                        commands: item.commands,
+                        breakpoints: b.breakpoints,
                         onLoaded: onLoaded,
                         onChange: onChange,
-                        commands: item.commands)
+                        gutterTap: gutterTapped
+            )
             .onAppear {
                 switch hostServices.loadFile (path: item.path){
                 case .success(let contents):
@@ -158,7 +166,7 @@ public struct CodeEditorView: View, DropDelegate {
             }
             .onDrop(of: [.text, .url], delegate: self)
             .language (item.language)
-            .lineHeightMultiplier(1.0)
+            .lineHeightMultiplier(state.lineHeightMultiplier)
             .showTabs(state.showTabs)
             .showLineNumbers(state.showLines)
             .showSpaces(state.showSpaces)

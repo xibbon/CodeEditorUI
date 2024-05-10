@@ -12,6 +12,7 @@ import TreeSitter
 import TreeSitterGDScriptRunestone
 import TreeSitterJSONRunestone
 import TreeSitterMarkdownRunestone
+import SwiftUI
 /// Represents an edited item in the code editor, it uses a path to reference it, and expect that it
 /// can be loaded and saved via the HostServices variable.
 @Observable
@@ -22,11 +23,12 @@ public class EditedItem: Identifiable, Hashable, Equatable {
         case json
         case markdown
     }
+    public var breakpoints: Set<Int>
     
     /// - Parameters:
     ///  - path: the path that will be passed to the HostServices API to load and save the file
     ///  - data: this is data that can be attached to this object and extracted a later point by the user
-    public init (path: String, content: String, editedItemDelegate: EditedItemDelegate?, fileHint: FileHint = .detect) {
+    public init (path: String, content: String, editedItemDelegate: EditedItemDelegate?, fileHint: FileHint = .detect, breakpoints: Set<Int> = Set<Int>()) {
         switch fileHint {
         case .detect:
             if path.hasSuffix(".gd") {
@@ -46,6 +48,7 @@ public class EditedItem: Identifiable, Hashable, Equatable {
         self.path = path
         self.content = content
         self.editedItemDelegate = editedItemDelegate
+        self.breakpoints = breakpoints
     }
     
     /// Returns the filename that is suitable to be displayed to the user
@@ -61,7 +64,7 @@ public class EditedItem: Identifiable, Hashable, Equatable {
     public var path: String
     
     /// Delegate
-    var editedItemDelegate: EditedItemDelegate?
+    weak var editedItemDelegate: EditedItemDelegate?
     
     public var content: String = ""
     
@@ -129,12 +132,18 @@ public class EditedItem: Identifiable, Hashable, Equatable {
     public func started (on textView: TextView) {
         editedItemDelegate?.editedTextChanged(self, textView)
     }
+    
+    @MainActor
+    public func gutterTapped (on textView: TextView, line: Int) {
+        editedItemDelegate?.gutterTapped (self, textView, line)
+    }
 }
 
 @MainActor
 public protocol EditedItemDelegate: AnyObject {
     func started (editedItem: EditedItem, textView: TextView)
     func editedTextChanged (_ editedItem: EditedItem, _ textView: TextView)
+    func gutterTapped (_ editedItem: EditedItem, _ textView: TextView, _ line: Int)
 }
 
 public struct Issue {

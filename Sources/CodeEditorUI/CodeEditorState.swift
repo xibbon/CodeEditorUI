@@ -8,6 +8,7 @@
 import Foundation
 import Runestone
 import RunestoneUI
+import SwiftUI
 
 ///
 /// Tracks the state for the editor, you can affect the editor by invoking methods in this API
@@ -23,6 +24,7 @@ public class CodeEditorState {
     var saveError: Bool = false
     var saveErrorMessage = ""
     var saveIdx = 0
+    public var lineHeightMultiplier: CGFloat = 1.2
     
     /// Configures whether the editors show line numbers
     public var showLines: Bool = true
@@ -40,14 +42,14 @@ public class CodeEditorState {
         currentEditor = openFiles.count > 0 ? 0 : nil
     }
     
-    public func openFile (path: String, delegate: EditedItemDelegate?, fileHint: EditedItem.FileHint) -> Result<EditedItem,HostServiceIOError> {
+    public func openFile (path: String, delegate: EditedItemDelegate?, fileHint: EditedItem.FileHint, breakpoints: [Int] = []) -> Result<EditedItem,HostServiceIOError> {
         if let existingIdx = openFiles.firstIndex(where: { $0.path == path }) {
             currentEditor = existingIdx
             return .success(openFiles [existingIdx])
         }
         switch hostServices.loadFile(path: path) {
         case .success(let content):
-            let item = EditedItem(path: path, content: content, editedItemDelegate: delegate, fileHint: .detect)
+            let item = EditedItem(path: path, content: content, editedItemDelegate: delegate, fileHint: .detect, breakpoints: Set<Int>(breakpoints))
             openFiles.append(item)
             currentEditor = openFiles.count - 1
             return .success(item)
