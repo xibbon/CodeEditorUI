@@ -5,13 +5,15 @@ import RunestoneUI
 import TreeSitterGDScriptRunestone
 
 /// This is the host for all of the coding needs that we have
-public struct CodeEditorShell: View {
+public struct CodeEditorShell<EmptyContent:View>: View {
     @Environment(HostServices.self) var hostServices
     @Binding var state: CodeEditorState
     @State var showDiagnosticDetails = false
+    let emptyContent: () -> EmptyContent
     
-    public init (state: Binding<CodeEditorState>) {
+    public init (state: Binding<CodeEditorState>, @ViewBuilder empty: @escaping ()->EmptyContent) {
         self._state = state
+        self.emptyContent = empty
     }
 
     public var body: some View {
@@ -86,7 +88,7 @@ public struct CodeEditorShell: View {
                         .frame(maxHeight: 120)
                 }
             } else {
-                Spacer()
+                emptyContent()
             }
         }
         
@@ -99,7 +101,9 @@ struct DemoCodeEditorShell: View {
     @State var hostServices = HostServices.makeTestHostServices()
     
     var body: some View {
-        CodeEditorShell (state: $state)
+        CodeEditorShell (state: $state) {
+            Text ("No Files Open")
+        }
             .environment(hostServices)
             .onAppear {
                 switch state.openFile(path: "/Users/miguel/cvs/godot-master/modules/gdscript/tests/scripts/utils.notest.gd", delegate: nil, fileHint: .detect) {
