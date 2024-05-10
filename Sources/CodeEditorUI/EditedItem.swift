@@ -64,7 +64,7 @@ public class EditedItem: Identifiable, Hashable, Equatable {
     public var path: String
     
     /// Delegate
-    weak var editedItemDelegate: EditedItemDelegate?
+    var editedItemDelegate: EditedItemDelegate?
     
     public var content: String = ""
     
