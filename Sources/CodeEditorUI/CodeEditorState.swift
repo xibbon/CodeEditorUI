@@ -13,12 +13,12 @@ import SwiftUI
 ///
 /// Tracks the state for the editor, you can affect the editor by invoking methods in this API
 ///
-/// You can be notified of changes on a file in the editor by setting a callback in the `onHook`
-/// method
+/// You can load files using the `openFile` method, or render local HTML content using the `openHtml` method.
+/// 
 @Observable
 public class CodeEditorState {
     public var hostServices: HostServices
-    var openFiles: [EditedItem]
+    var openFiles: [HostedItem]
     var currentEditor: Int? = nil
     var completionRequest: CompletionRequest? = nil
     var saveError: Bool = false
@@ -42,10 +42,19 @@ public class CodeEditorState {
         currentEditor = openFiles.count > 0 ? 0 : nil
     }
     
+    /// Requests that a file with the given path be opened by the code editor
+    /// - Parameters:
+    ///  - path: The filename to load, this is loaded via the `hostServices` API
+    ///  - delegate: the delegate to fulfill services for this edited item
+    ///  - fileHint: hint, if available about the kind of file we are editing
+    ///  - breakpoints: List of breakpoints to show at startup as shown.
+    /// - Returns: an EditedItem if it was alread opened, or if it was freshly opened on success, or an error indicating the problem otherwise
     public func openFile (path: String, delegate: EditedItemDelegate?, fileHint: EditedItem.FileHint, breakpoints: [Int] = []) -> Result<EditedItem,HostServiceIOError> {
-        if let existingIdx = openFiles.firstIndex(where: { $0.path == path }) {
-            currentEditor = existingIdx
-            return .success(openFiles [existingIdx])
+        if let existingIdx = openFiles.firstIndex(where: { $0 is EditedItem && $0.path == path }) {
+            if let result = openFiles [existingIdx] as? EditedItem {
+                currentEditor = existingIdx
+                return .success(result)
+            }
         }
         switch hostServices.loadFile(path: path) {
         case .success(let content):
@@ -56,6 +65,24 @@ public class CodeEditorState {
         case .failure(let code):
             return .failure(code)
         }
+    }
+    
+    /// Opens an HTML tab with the specified HTML content
+    /// - Parameters:
+    ///  - title: Title to display on the tab bar
+    ///  - path: used for matching open tabs, it should represent the content that rendered this
+    ///  - content: the HTML content to display.
+    /// - Returns: the HtmlItem for this path.
+    public func openHtml (title: String, path: String, content: String) -> HtmlItem {
+        if let existingIdx = openFiles.firstIndex(where: { $0 is HtmlItem && $0.path == path }) {
+            if let result = openFiles [existingIdx] as? HtmlItem {
+                currentEditor = existingIdx
+                return result
+            }
+        }
+        let html = HtmlItem(title: title, path: path, content: content)
+        openFiles.append (html)
+        return html
     }
     
     public func attemptSave (_ idx: Int) -> Bool {
@@ -127,18 +154,18 @@ public class CodeEditorState {
         guard let currentEditor else { return }
         let item = openFiles[currentEditor]
         if showReplace {
-            item.commands.requestFindAndReplace()
+            item.requestFindAndReplace()
         } else {
-            item.commands.requestFind()
+            item.requestFind()
         }
         //item.findRequest = showReplace ? .findAndReplace : .find
     }
     
     public func goTo (line: Int) {
         guard let currentEditor else { return }
-        let item = openFiles[currentEditor]
-        item.commands.requestGoto(line: line)
-        //item.gotoLineRequest = line
+        if let item = openFiles[currentEditor] as? EditedItem {
+            item.commands.requestGoto(line: line)
+        }
     }
     
     public func nextTab () {

@@ -16,7 +16,7 @@ import SwiftUI
 /// Represents an edited item in the code editor, it uses a path to reference it, and expect that it
 /// can be loaded and saved via the HostServices variable.
 @Observable
-public class EditedItem: Identifiable, Hashable, Equatable {
+public class EditedItem: HostedItem {
     public enum FileHint {
         case detect
         case gdscript
@@ -45,10 +45,9 @@ public class EditedItem: Identifiable, Hashable, Equatable {
         case .markdown:
             language = TreeSitterLanguage.markdown
         }
-        self.path = path
-        self.content = content
         self.editedItemDelegate = editedItemDelegate
         self.breakpoints = breakpoints
+        super.init (path: path, content: content)
     }
     
     /// Returns the filename that is suitable to be displayed to the user
@@ -58,15 +57,14 @@ public class EditedItem: Identifiable, Hashable, Equatable {
         }
         return path
     }
-    public var id: String { path }
     
-    /// The path of the file that we are editing
-    public var path: String
+    /// Returns a title suitable to be shown on the titlebar
+    public override var title: String {
+        filename
+    }
     
     /// Delegate
     var editedItemDelegate: EditedItemDelegate?
-    
-    public var content: String = ""
     
     public var language: TreeSitterLanguage? = nil
     
@@ -84,10 +82,6 @@ public class EditedItem: Identifiable, Hashable, Equatable {
 
     public static func == (lhs: EditedItem, rhs: EditedItem) -> Bool {
         lhs === rhs
-    }
-    
-    public func hash(into hasher: inout Hasher) {
-        path.hash(into: &hasher)
     }
     
     var completionRequest: CompletionRequest? = nil
@@ -121,6 +115,14 @@ public class EditedItem: Identifiable, Hashable, Equatable {
         self.functions = functions
         self.errors = errors
         self.warnings = warnings
+    }
+    
+    public override func requestFindAndReplace() {
+        commands.requestFindAndReplace()
+    }
+    
+    public override func requestFind () {
+        commands.requestFind()
     }
     
     @MainActor

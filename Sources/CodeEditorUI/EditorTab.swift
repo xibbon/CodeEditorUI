@@ -10,7 +10,7 @@ import SwiftUI
 
 
 struct EditorTab: View {
-    @Binding var item: EditedItem
+    @Binding var item: HostedItem
     @ScaledMetric var internalPadding = 4
     let selected: Bool
     let close: () -> ()
@@ -23,7 +23,7 @@ struct EditorTab: View {
                     .foregroundStyle(selected ? Color.accentColor : Color.secondary)
                     .font(.footnote)
             }
-            Text (item.filename)
+            Text (item.title)
                 .foregroundStyle(selected ? Color.accentColor : Color.primary)
                 .onTapGesture {
                         self.select ()
@@ -43,7 +43,7 @@ struct EditorTab: View {
 
 struct EditorTabs: View {
     @Binding var selected: Int?
-    @Binding var items: [EditedItem]
+    @Binding var items: [HostedItem]
     let closeRequest: (Int) -> ()
     @ScaledMetric var dividerSize = 12
     
@@ -69,7 +69,7 @@ struct EditorTabs: View {
 
 struct DemoEditorTabs: View {
     @State var selected: Int? = 2
-    @State var items: [EditedItem] = [
+    @State var items: [HostedItem] = [
         EditedItem (path: "some/file/foo.txt", content: "Demo", editedItemDelegate: nil),
         EditedItem (path: "res://another.txt", content: "Demo", editedItemDelegate: nil),
         EditedItem (path: "res://third.txt", content: "Demo", editedItemDelegate: nil),
