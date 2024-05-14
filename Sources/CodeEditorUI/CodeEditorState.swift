@@ -82,6 +82,7 @@ public class CodeEditorState {
         }
         let html = HtmlItem(title: title, path: path, content: content)
         openFiles.append (html)
+        currentEditor = openFiles.count - 1
         return html
     }
     
