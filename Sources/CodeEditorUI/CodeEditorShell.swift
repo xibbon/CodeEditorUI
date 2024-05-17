@@ -12,6 +12,11 @@ public struct CodeEditorShell<EmptyContent:View>: View {
     let emptyContent: () -> EmptyContent
     let urlLoader: (URL) -> String?
     
+    /// Creates the CodeEditorShell
+    /// - Parameters:
+    ///   - state: The state used to control this CodeEditorShell
+    ///   - urlLoader: This should load a URL, and upon successful completion, it can return an anchor to scroll to, or nil otherwise
+    ///   - emptyView: A view to show if there are no tabs open
     public init (state: Binding<CodeEditorState>, urlLoader: @escaping (URL) -> String?, @ViewBuilder emptyView: @escaping ()->EmptyContent) {
         self._state = state
         self.emptyContent = emptyView
@@ -92,6 +97,8 @@ public struct CodeEditorShell<EmptyContent:View>: View {
                     }
                 } else if let htmlItem = current as? HtmlItem {
                     WebView(text: Binding<String>(get: { htmlItem.content }, set: { newV in htmlItem.content = newV }),
+                            anchor: Binding<String?>(get: { htmlItem.anchor }, set: { newV in htmlItem.anchor = newV }),
+                            obj: htmlItem,
                             load: urlLoader)
                     Spacer()
                 }

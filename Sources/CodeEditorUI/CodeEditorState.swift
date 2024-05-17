@@ -73,14 +73,17 @@ public class CodeEditorState {
     ///  - path: used for matching open tabs, it should represent the content that rendered this
     ///  - content: the HTML content to display.
     /// - Returns: the HtmlItem for this path.
-    public func openHtml (title: String, path: String, content: String) -> HtmlItem {
+    public func openHtml (title: String, path: String, content: String, anchor: String? = nil) -> HtmlItem {
         if let existingIdx = openFiles.firstIndex(where: { $0 is HtmlItem && $0.path == path }) {
             if let result = openFiles [existingIdx] as? HtmlItem {
                 currentEditor = existingIdx
+                if result.anchor != anchor {
+                    result.anchor = anchor
+                }
                 return result
             }
         }
-        let html = HtmlItem(title: title, path: path, content: content)
+        let html = HtmlItem(title: title, path: path, content: content, anchor: anchor)
         openFiles.append (html)
         currentEditor = openFiles.count - 1
         return html
