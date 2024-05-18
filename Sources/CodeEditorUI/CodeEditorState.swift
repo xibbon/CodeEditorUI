@@ -89,6 +89,17 @@ public class CodeEditorState {
         return html
     }
     
+    /// If the given path is already open, it returns it, and switches to it
+    public func findExistingHtmlItem (path: String) -> HtmlItem? {
+        if let existingIdx = openFiles.firstIndex(where: { $0 is HtmlItem && $0.path == path }) {
+            if let result = openFiles [existingIdx] as? HtmlItem {
+                currentEditor = existingIdx
+                return result
+            }
+        }
+        return nil
+    }
+    
     public func attemptSave (_ idx: Int) -> Bool {
         saveIdx = idx
         if let error = hostServices.saveContents(contents: openFiles[idx].content, path: openFiles[idx].path) {
