@@ -23,12 +23,16 @@ public class EditedItem: HostedItem {
         case json
         case markdown
     }
+    /// Lines where breakpoint indicators are shown
     public var breakpoints: Set<Int>
+    
+    /// If set, a line to highlight, it means "This is current the debugger is stopped"
+    public var currentLine: Int?
     
     /// - Parameters:
     ///  - path: the path that will be passed to the HostServices API to load and save the file
     ///  - data: this is data that can be attached to this object and extracted a later point by the user
-    public init (path: String, content: String, editedItemDelegate: EditedItemDelegate?, fileHint: FileHint = .detect, breakpoints: Set<Int> = Set<Int>()) {
+    public init (path: String, content: String, editedItemDelegate: EditedItemDelegate?, fileHint: FileHint = .detect, breakpoints: Set<Int> = Set<Int>(), currentLine: Int? = nil) {
         switch fileHint {
         case .detect:
             if path.hasSuffix(".gd") {
@@ -47,6 +51,7 @@ public class EditedItem: HostedItem {
         }
         self.editedItemDelegate = editedItemDelegate
         self.breakpoints = breakpoints
+        self.currentLine = currentLine
         super.init (path: path, content: content)
     }
     

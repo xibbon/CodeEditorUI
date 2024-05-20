@@ -171,6 +171,7 @@ public struct CodeEditorView: View, DropDelegate {
             .showLineNumbers(state.showLines)
             .showSpaces(state.showSpaces)
             .characterPairs(codingPairs)
+            .highlightLine(item.currentLine)
             if let req = item.completionRequest {
                 CompletionsDisplayView(
                     prefix: req.prefix,
