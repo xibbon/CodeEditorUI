@@ -26,7 +26,6 @@ public struct CodeEditorShell<EmptyContent:View>: View {
     public var body: some View {
         VStack (spacing: 0) {
             EditorTabs(selected: $state.currentEditor, items: $state.openFiles, closeRequest: { idx in
-                
                 state.attemptClose (idx)
             })
             .alert("Error", isPresented: Binding<Bool>(get: { state.saveError}, set: { newV in state.saveError = newV })) {

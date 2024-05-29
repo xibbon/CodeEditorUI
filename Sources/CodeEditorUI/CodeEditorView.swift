@@ -173,13 +173,20 @@ public struct CodeEditorView: View, DropDelegate {
             .characterPairs(codingPairs)
             .highlightLine(item.currentLine)
             if let req = item.completionRequest {
+                let maxHeight = 34 * 6.0
+                let yBelow = req.at.maxY+8
+                let yAbove = req.at.minY-10
+                let yBelowFinal = yBelow + maxHeight
+                let actualY = yBelowFinal > (item.commands.keyboardOffset) ? yAbove-maxHeight : yBelow
                 CompletionsDisplayView(
                     prefix: req.prefix,
                     completions: req.completions,
                     selected: Binding<Int> (get: { item.selected}, set: { newV in  item.selected = newV }),
                     onComplete: insertCompletion)
                 .background { Color (uiColor: .systemBackground) }
-                .offset(x: req.at.minX, y: req.at.maxY+8)
+                .offset(x: req.at.minX, y: actualY)
+                .frame(minWidth: 200, maxWidth: 350, maxHeight: maxHeight)
+
             }
         }
     }

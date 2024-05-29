@@ -104,7 +104,7 @@ public class EditedItem: HostedItem {
             self.monitorLocation(on: textView, location: location)
         }
     }
-                                      
+                             
     public func requestCompletion (at location: CGRect, on textView: TextView, prefix: String, completions: [CompletionEntry]) {
         completionRequest = CompletionRequest(at: location, on: textView, prefix: prefix, completions: completions)
         monitorLocation(on: textView, location: textView.selectedRange)

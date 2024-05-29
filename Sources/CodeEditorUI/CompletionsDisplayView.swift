@@ -151,7 +151,6 @@ public struct CompletionsDisplayView: View {
                     }
             }
         }
-        .frame(minWidth: 200, maxWidth: 350, maxHeight: 34*6)
         .padding(4)
         .fontDesign(.monospaced)
         .font(.footnote)
