@@ -20,6 +20,8 @@ public struct CodeEditorView: View, DropDelegate {
     @Environment(HostServices.self) var hostServices: HostServices
     @Binding var contents: String
     @State var status: CodeEditorStatus
+    @State var keyboardOffset: CGFloat = 0
+    
     var item: EditedItem
     let state: CodeEditorState
     
@@ -125,6 +127,7 @@ public struct CodeEditorView: View, DropDelegate {
             let b = Bindable(item)
             TextViewUI (text: $contents,
                         commands: item.commands,
+                        keyboardOffset: $keyboardOffset,
                         breakpoints: b.breakpoints,
                         onLoaded: onLoaded,
                         onChange: onChange,
@@ -177,7 +180,7 @@ public struct CodeEditorView: View, DropDelegate {
                 let yBelow = req.at.maxY+8
                 let yAbove = req.at.minY-10
                 let yBelowFinal = yBelow + maxHeight
-                let actualY = yBelowFinal > (item.commands.keyboardOffset) ? yAbove-maxHeight : yBelow
+                let actualY = yBelowFinal > keyboardOffset ? yAbove-maxHeight : yBelow
                 CompletionsDisplayView(
                     prefix: req.prefix,
                     completions: req.completions,
