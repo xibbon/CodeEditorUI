@@ -101,6 +101,9 @@ public class CodeEditorState {
     }
     
     public func attemptSave (_ idx: Int) -> Bool {
+        guard let edited = openFiles[idx] as? EditedItem else {
+            return true
+        }
         saveIdx = idx
         if let error = hostServices.saveContents(contents: openFiles[idx].content, path: openFiles[idx].path) {
             saveErrorMessage = error.localizedDescription
@@ -111,7 +114,11 @@ public class CodeEditorState {
     }
     
     func attemptClose (_ idx: Int) {
-        if attemptSave (idx) {
+        if let edited = openFiles[idx] as? EditedItem {
+            if attemptSave (idx) {
+                closeFile (idx)
+            }
+        } else {
             closeFile (idx)
         }
     }
