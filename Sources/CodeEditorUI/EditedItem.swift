@@ -29,6 +29,9 @@ public class EditedItem: HostedItem {
     /// If set, a line to highlight, it means "This is current the debugger is stopped"
     public var currentLine: Int?
     
+    /// Controls whether this language supports looking symbosl up
+    public var supportsLookup: Bool
+    
     /// - Parameters:
     ///  - path: the path that will be passed to the HostServices API to load and save the file
     ///  - data: this is data that can be attached to this object and extracted a later point by the user
@@ -37,17 +40,23 @@ public class EditedItem: HostedItem {
         case .detect:
             if path.hasSuffix(".gd") {
                 language = TreeSitterLanguage.gdscript
+                supportsLookup = true
             } else if path.hasSuffix (".md") {
                 language = TreeSitterLanguage.markdown
+                supportsLookup = false
             } else {
                 language = nil
+                supportsLookup = false
             }
         case .gdscript:
             language = TreeSitterLanguage.gdscript
+            supportsLookup = true
         case .json:
             language = TreeSitterLanguage.json
+            supportsLookup = false
         case .markdown:
             language = TreeSitterLanguage.markdown
+            supportsLookup = false
         }
         self.editedItemDelegate = editedItemDelegate
         self.breakpoints = breakpoints
@@ -151,6 +160,7 @@ public protocol EditedItemDelegate: AnyObject {
     func started (editedItem: EditedItem, textView: TextView)
     func editedTextChanged (_ editedItem: EditedItem, _ textView: TextView)
     func gutterTapped (_ editedItem: EditedItem, _ textView: TextView, _ line: Int)
+    func lookup (_ editedItem: EditedItem, on: TextView, at: UITextPosition, word: String)
 }
 
 public struct Issue {

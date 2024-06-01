@@ -16,11 +16,12 @@ enum CodeEditorStatus {
     case notFound
 }
 
-public struct CodeEditorView: View, DropDelegate {
+public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
     @Environment(HostServices.self) var hostServices: HostServices
     @Binding var contents: String
     @State var status: CodeEditorStatus
     @State var keyboardOffset: CGFloat = 0
+    @State var lookupWord: String = ""
     
     var item: EditedItem
     let state: CodeEditorState
@@ -32,18 +33,22 @@ public struct CodeEditorView: View, DropDelegate {
         self._contents = contents
     }
     
-    func onChange (_ textView: TextView) {
+    public func uitextViewChanged(_ textView: Runestone.TextView) {
         item.editedTextChanged(on: textView)
     }
-
-    func onLoaded (_ textView: TextView) {
+    
+    public func uitextViewLoaded(_ textView: Runestone.TextView) {
         item.started(on: textView)
     }
     
-    func gutterTapped (_ textView: TextView, _ line: Int) {
+    public func uitextViewGutterTapped(_ textView: Runestone.TextView, line: Int) {
         item.gutterTapped(on: textView, line: line)
     }
-
+    
+    public func uitextViewRequestWordLookup(_ textView: Runestone.TextView, at position: UITextPosition, word: String) {
+        item.editedItemDelegate?.lookup(item, on: textView, at: position, word: word)
+    }
+    
     func insertCompletion () {
         guard let req = item.completionRequest else { return }
         let insertFull = req.completions[item.selected].insert
@@ -129,9 +134,7 @@ public struct CodeEditorView: View, DropDelegate {
                         commands: item.commands,
                         keyboardOffset: $keyboardOffset,
                         breakpoints: b.breakpoints,
-                        onLoaded: onLoaded,
-                        onChange: onChange,
-                        gutterTap: gutterTapped
+                        delegate: self
             )
             .onAppear {
                 switch hostServices.loadFile (path: item.path){
@@ -142,6 +145,7 @@ public struct CodeEditorView: View, DropDelegate {
                     status = .notFound
                 }
             }
+            .includeLookupSymbol(item.supportsLookup)
             .onKeyPress(.downArrow) {
                 if let req = item.completionRequest {
                     if item.selected < req.completions.count {

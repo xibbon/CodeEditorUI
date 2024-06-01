@@ -54,7 +54,11 @@ public struct CodeEditorShell<EmptyContent:View>: View {
                         .environment(state)
                         .padding ([.horizontal], 4)
                     Divider()
-                    CodeEditorView(state: state, item: editedItem, contents: Binding<String>(get: { editedItem.content }, set: { newV in editedItem.content = newV }))
+                    CodeEditorView(
+                        state: state,
+                        item: editedItem,
+                        contents: Binding<String>(get: { editedItem.content }, set: { newV in editedItem.content = newV })
+                    )
                         .id(current)
                     Divider()
                     HStack {
