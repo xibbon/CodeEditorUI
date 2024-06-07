@@ -136,6 +136,8 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
                         breakpoints: b.breakpoints,
                         delegate: self
             )
+            .spellChecking(.no)
+            .autoCorrection(.no)
             .onAppear {
                 switch hostServices.loadFile (path: item.path){
                 case .success(let contents):
