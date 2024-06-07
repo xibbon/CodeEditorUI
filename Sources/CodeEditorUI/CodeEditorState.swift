@@ -114,6 +114,7 @@ public class CodeEditorState {
     }
     
     func attemptClose (_ idx: Int) {
+        guard idx < openFiles.count else { return }
         if let edited = openFiles[idx] as? EditedItem {
             if attemptSave (idx) {
                 closeFile (idx)
@@ -124,6 +125,7 @@ public class CodeEditorState {
     }
     
     func closeFile (_ idx: Int) {
+        guard idx < openFiles.count else { return }
         openFiles.remove(at: idx)
         if idx == currentEditor {
             if openFiles.count == 0 {
