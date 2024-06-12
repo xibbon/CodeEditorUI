@@ -101,21 +101,22 @@ public class CodeEditorState {
     }
     
     public func attemptSave (_ idx: Int) -> Bool {
-        guard let edited = openFiles[idx] as? EditedItem else {
+        guard let edited = openFiles[idx] as? EditedItem, edited.dirty else {
             return true
         }
         saveIdx = idx
-        if let error = hostServices.saveContents(contents: openFiles[idx].content, path: openFiles[idx].path) {
+        if let error = hostServices.saveContents(contents: edited.content, path: edited.path) {
             saveErrorMessage = error.localizedDescription
             saveError = true
             return false
         }
+        edited.dirty = false
         return true
     }
     
     func attemptClose (_ idx: Int) {
         guard idx < openFiles.count else { return }
-        if let edited = openFiles[idx] as? EditedItem {
+        if let edited = openFiles[idx] as? EditedItem, edited.dirty {
             if attemptSave (idx) {
                 closeFile (idx)
             }
@@ -138,12 +139,15 @@ public class CodeEditorState {
         }
     }
     
+    /// Saves the current file if it is dirty
     public func saveCurrentFile() {
         guard let idx = currentEditor else { return }
-        if let error = hostServices.saveContents(contents: openFiles[idx].content, path: openFiles[idx].path) {
+        guard let edited = openFiles[idx] as? EditedItem, edited.dirty else { return }
+        if let error = hostServices.saveContents(contents: edited.content, path: edited.path) {
             saveErrorMessage = error.localizedDescription
             saveError = true
         }
+        edited.dirty = false
     }
     
     //
