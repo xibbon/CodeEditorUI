@@ -117,7 +117,7 @@ struct PathBrowser: View {
                 }
             }
         }
-        .font (.subheadline)
+        //.font (.subheadline)
         .padding([.vertical], 4)
     }
 }

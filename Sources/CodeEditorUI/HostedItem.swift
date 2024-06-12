@@ -31,7 +31,7 @@ public class HostedItem: Identifiable, Hashable, Equatable {
     public func hash(into hasher: inout Hasher) {
         path.hash(into: &hasher)
     }
-    
+
     public func requestFindAndReplace() {}
     public func requestFind () {}
     

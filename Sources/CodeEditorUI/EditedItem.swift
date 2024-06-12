@@ -91,6 +91,9 @@ public class EditedItem: HostedItem {
     /// Detected warnings
     public var warnings: [Issue]? = nil
 
+    /// Whether the buffer has local changes
+    public var dirty: Bool = false
+    
     /// Mechanism to trigger actions on the TextViewUI
     public var commands = TextViewCommands()
 
@@ -141,6 +144,7 @@ public class EditedItem: HostedItem {
     
     @MainActor
     public func editedTextChanged (on textView: TextView) {
+        dirty = true
         editedItemDelegate?.editedTextChanged(self, textView)
     }
 

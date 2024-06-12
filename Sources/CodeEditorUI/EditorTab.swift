@@ -18,7 +18,7 @@ struct EditorTab: View {
     var body: some View {
         HStack (spacing: 4) {
             Button (action: { close () }) {
-                Image (systemName: "xmark")
+                Image (systemName: (item as? EditedItem)?.dirty ?? false ? "circle.fill" : "xmark")
                     .fontWeight(.light)
                     .foregroundStyle(selected ? Color.accentColor : Color.secondary)
                     .font(.footnote)
@@ -28,7 +28,6 @@ struct EditorTab: View {
                 .onTapGesture {
                         self.select ()
                 }
-                .font(.subheadline)
 
         }
         .padding(internalPadding)
@@ -63,6 +62,7 @@ struct EditorTabs: View {
                 }
             }
         }
+        .scrollIndicators(.hidden)
     }
 }
 
@@ -70,6 +70,18 @@ struct EditorTabs: View {
 struct DemoEditorTabs: View {
     @State var selected: Int? = 2
     @State var items: [HostedItem] = [
+        EditedItem (path: "some/file/foo.txt", content: "Demo", editedItemDelegate: nil),
+        EditedItem (path: "res://another.txt", content: "Demo", editedItemDelegate: nil),
+        EditedItem (path: "res://third.txt", content: "Demo", editedItemDelegate: nil),
+        EditedItem (path: "some/file/foo.txt", content: "Demo", editedItemDelegate: nil),
+        EditedItem (path: "res://another.txt", content: "Demo", editedItemDelegate: nil),
+        EditedItem (path: "res://third.txt", content: "Demo", editedItemDelegate: nil),
+        EditedItem (path: "some/file/foo.txt", content: "Demo", editedItemDelegate: nil),
+        EditedItem (path: "res://another.txt", content: "Demo", editedItemDelegate: nil),
+        EditedItem (path: "res://third.txt", content: "Demo", editedItemDelegate: nil),
+        EditedItem (path: "some/file/foo.txt", content: "Demo", editedItemDelegate: nil),
+        EditedItem (path: "res://another.txt", content: "Demo", editedItemDelegate: nil),
+        EditedItem (path: "res://third.txt", content: "Demo", editedItemDelegate: nil),
         EditedItem (path: "some/file/foo.txt", content: "Demo", editedItemDelegate: nil),
         EditedItem (path: "res://another.txt", content: "Demo", editedItemDelegate: nil),
         EditedItem (path: "res://third.txt", content: "Demo", editedItemDelegate: nil),
