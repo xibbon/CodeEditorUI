@@ -37,6 +37,10 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
         item.editedTextChanged(on: textView)
     }
     
+    public func uitextViewDidChangeSelection(_ textView: TextView) {
+        item.editedTextSelectionChanged(on: textView)
+    }
+    
     public func uitextViewLoaded(_ textView: Runestone.TextView) {
         item.started(on: textView)
     }
@@ -136,6 +140,10 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
                         breakpoints: b.breakpoints,
                         delegate: self
             )
+            .onDisappear {
+                // When we go away, clear the completion request
+                item.completionRequest = nil
+            }
             .spellChecking(.no)
             .autoCorrection(.no)
             .includeLookupSymbol(item.supportsLookup)
@@ -157,9 +165,24 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
                 }
                 return .ignored
             }
+            .onKeyPress(.leftArrow) {
+                item.completionRequest = nil
+                return .ignored
+            }
+            .onKeyPress(.rightArrow) {
+                item.completionRequest = nil
+                return .ignored
+            }
             .onKeyPress(.return) {
                 if item.completionRequest != nil {
                     insertCompletion ()
+                    return .handled
+                }
+                return .ignored
+            }
+            .onKeyPress(.escape) {
+                if item.completionRequest != nil {
+                    item.completionRequest = nil
                     return .handled
                 }
                 return .ignored

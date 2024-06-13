@@ -104,22 +104,8 @@ public class EditedItem: HostedItem {
     var completionRequest: CompletionRequest? = nil
     var selected = 0
     
-    // This is because we do not have a way of reliably knowing if the user moved away the cursor
-    func monitorLocation (on textView: TextView, location: NSRange) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds (300)) {
-            if self.completionRequest == nil {
-                return
-            }
-            if textView.selectedRange != location {
-                self.cancelCompletion()
-            }
-            self.monitorLocation(on: textView, location: location)
-        }
-    }
-                             
     public func requestCompletion (at location: CGRect, on textView: TextView, prefix: String, completions: [CompletionEntry]) {
-        completionRequest = CompletionRequest(at: location, on: textView, prefix: prefix, completions: completions)
-        monitorLocation(on: textView, location: textView.selectedRange)
+        completionRequest = CompletionRequest(at: location, on: textView, prefix: prefix, completions: completions, textViewCursor: textView.selectedRange.location)
         selected = 0
     }
     
@@ -156,6 +142,14 @@ public class EditedItem: HostedItem {
     @MainActor
     public func gutterTapped (on textView: TextView, line: Int) {
         editedItemDelegate?.gutterTapped (self, textView, line)
+    }
+    
+    @MainActor
+    public func editedTextSelectionChanged (on textView: TextView) {
+        guard let completionRequest else { return }
+        if textView.selectedRange.location != completionRequest.textViewCursor {
+            self.cancelCompletion()
+        }
     }
 }
 

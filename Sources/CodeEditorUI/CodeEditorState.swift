@@ -232,4 +232,5 @@ struct CompletionRequest {
     let on: TextView
     let prefix: String
     let completions: [CompletionEntry]
+    let textViewCursor: Int
 }
