@@ -57,7 +57,11 @@ public struct CodeEditorShell<EmptyContent:View>: View {
                     CodeEditorView(
                         state: state,
                         item: editedItem,
-                        contents: Binding<String>(get: { editedItem.content }, set: { newV in editedItem.content = newV })
+                        contents: Binding<String>(get: {
+                            editedItem.content
+                        }, set: { newV in
+                            editedItem.content = newV
+                        })
                     )
                         .id(current)
                     Divider()

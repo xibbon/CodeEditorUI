@@ -138,15 +138,6 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
             )
             .spellChecking(.no)
             .autoCorrection(.no)
-            .onAppear {
-                switch hostServices.loadFile (path: item.path){
-                case .success(let contents):
-                    self.contents = contents
-                    status = .ok
-                case .failure:
-                    status = .notFound
-                }
-            }
             .includeLookupSymbol(item.supportsLookup)
             .onKeyPress(.downArrow) {
                 if let req = item.completionRequest {
