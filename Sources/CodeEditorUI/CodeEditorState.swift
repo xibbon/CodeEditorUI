@@ -100,6 +100,7 @@ public class CodeEditorState {
         return nil
     }
     
+    @MainActor
     public func attemptSave (_ idx: Int) -> Bool {
         guard let edited = openFiles[idx] as? EditedItem, edited.dirty else {
             return true
@@ -114,6 +115,7 @@ public class CodeEditorState {
         return true
     }
     
+    @MainActor
     func attemptClose (_ idx: Int) {
         guard idx < openFiles.count else { return }
         if let edited = openFiles[idx] as? EditedItem, edited.dirty {
@@ -125,8 +127,12 @@ public class CodeEditorState {
         }
     }
     
+    @MainActor
     func closeFile (_ idx: Int) {
         guard idx < openFiles.count else { return }
+        if let edited = openFiles[idx] as? EditedItem {
+            edited.editedItemDelegate?.closing(edited)
+        }
         openFiles.remove(at: idx)
         if idx == currentEditor {
             if openFiles.count == 0 {

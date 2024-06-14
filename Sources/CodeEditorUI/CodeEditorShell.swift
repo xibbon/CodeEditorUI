@@ -28,7 +28,7 @@ public struct CodeEditorShell<EmptyContent:View>: View {
             EditorTabs(selected: $state.currentEditor, items: $state.openFiles, closeRequest: { idx in
                 state.attemptClose (idx)
             })
-            .alert("Error", isPresented: Binding<Bool>(get: { state.saveError}, set: { newV in state.saveError = newV })) {
+            .alert("Error", isPresented: Binding<Bool>(get: { state.saveError }, set: { newV in state.saveError = newV })) {
                 Button ("Retry") {
                     state.saveError = false
                     DispatchQueue.main.async {

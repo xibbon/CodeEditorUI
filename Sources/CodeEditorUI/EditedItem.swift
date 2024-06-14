@@ -153,12 +153,19 @@ public class EditedItem: HostedItem {
     }
 }
 
+/// Protocol describing the callbacks for the EditedItem
 @MainActor
 public protocol EditedItemDelegate: AnyObject {
+    /// Editing has started for the given item, this is raised when the TextView has loaded
     func started (editedItem: EditedItem, textView: TextView)
+    /// Invoked when the text in the textView has changed, a chance to extract the data
     func editedTextChanged (_ editedItem: EditedItem, _ textView: TextView)
+    /// Invoked when the gutter is tapped, and it contains the line number that was tapped
     func gutterTapped (_ editedItem: EditedItem, _ textView: TextView, _ line: Int)
+    /// Invoked when the user has requested the "Lookup Definition" from the context menu in the editor, it contains the position where this took place and the word that should be looked up
     func lookup (_ editedItem: EditedItem, on: TextView, at: UITextPosition, word: String)
+    /// Invoked when a closing is imminent on the UI
+    func closing (_ editedItem: EditedItem)
 }
 
 public struct Issue {
