@@ -49,7 +49,7 @@ public class CodeEditorState {
     ///  - fileHint: hint, if available about the kind of file we are editing
     ///  - breakpoints: List of breakpoints to show at startup as shown.
     /// - Returns: an EditedItem if it was alread opened, or if it was freshly opened on success, or an error indicating the problem otherwise
-    public func openFile (path: String, delegate: EditedItemDelegate?, fileHint: EditedItem.FileHint, breakpoints: [Int] = []) -> Result<EditedItem,HostServiceIOError> {
+    public func openFile (path: String, delegate: EditedItemDelegate?, fileHint: EditedItem.FileHint, breakpoints: Set<Int> = Set<Int>()) -> Result<EditedItem,HostServiceIOError> {
         if let existingIdx = openFiles.firstIndex(where: { $0 is EditedItem && $0.path == path }) {
             if let result = openFiles [existingIdx] as? EditedItem {
                 currentEditor = existingIdx
@@ -58,7 +58,7 @@ public class CodeEditorState {
         }
         switch hostServices.loadFile(path: path) {
         case .success(let content):
-            let item = EditedItem(path: path, content: content, editedItemDelegate: delegate, fileHint: .detect, breakpoints: Set<Int>(breakpoints))
+            let item = EditedItem(path: path, content: content, editedItemDelegate: delegate, fileHint: .detect, breakpoints: breakpoints)
             openFiles.append(item)
             currentEditor = openFiles.count - 1
             return .success(item)
