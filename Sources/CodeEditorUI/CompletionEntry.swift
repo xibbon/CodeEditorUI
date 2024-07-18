@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by Miguel de Icaza on 4/3/24.
 //
@@ -29,7 +29,7 @@ public struct CompletionEntry {
     public var display: String
     /// The text to insert when the user picks that option
     public var insert: String
-    
+
     public init (kind: CompletionKind, display: String, insert: String) {
         self.kind = kind
         self.display = display

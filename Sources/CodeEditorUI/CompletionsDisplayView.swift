@@ -1,6 +1,6 @@
 //
 //  SwiftUIView.swift
-//  
+//
 //
 //  Created by Miguel de Icaza on 4/3/24.
 //
@@ -13,7 +13,7 @@ public struct CompletionsDisplayView: View {
     var completions: [CompletionEntry]
     @Binding var selected: Int
     var onComplete: () -> ()
-    
+
     func getDefaultAcceptButton (_ color: Color) -> some View {
         Image (systemName: "return")
             .padding(5)
@@ -21,7 +21,7 @@ public struct CompletionsDisplayView: View {
             .foregroundStyle(Color.secondary)
             .clipShape(RoundedRectangle(cornerRadius: 4))
     }
-    
+
     let palette: [Color] = [
         Color (#colorLiteral(red: 1, green: 0.5204778927, blue: 0.2, alpha: 1)),
         Color (#colorLiteral(red: 1, green: 0.7472373315, blue: 0.2049082724, alpha: 1)),
@@ -38,7 +38,7 @@ public struct CompletionsDisplayView: View {
     func kindToImage (kind: CompletionEntry.CompletionKind) -> some View {
         let image: String
         let color: Color
-        
+
         switch kind {
         case .class:
             image = "c.square.fill"
@@ -80,7 +80,7 @@ public struct CompletionsDisplayView: View {
             .frame(height: 20)
             //.frame(width: 20, height: 40)
     }
-    
+
     /// Makes bold text for the text that we were matching against
     func boldify (_ source: String, _ hayStack: String) -> Text {
         var ra = AttributedString()
@@ -90,7 +90,7 @@ public struct CompletionsDisplayView: View {
         let bolded = UIColor.label.withAlphaComponent(0.6)
         for hs in hayStack {
             let match = hs.lowercased().first ?? hs
-            
+
             var ch = AttributedString ("\(hs)")
             if scan.count > 0, let p = scan.firstIndex(of: match) {
                 ch.foregroundColor = plain
@@ -102,7 +102,7 @@ public struct CompletionsDisplayView: View {
         }
         return Text (ra)
     }
-    
+
     func item (prefix: String, _ v: CompletionEntry) -> some View {
         HStack (spacing: 0){
             boldify (prefix, v.display)
@@ -170,7 +170,7 @@ public struct CompletionsDisplayView: View {
 struct DemoCompletionsDisplayView: View {
     @State var completions: [CompletionEntry] = DemoCompletionsDisplayView.makeTestData ()
     @State var selected = 0
-    
+
     static func makeTestData () -> [CompletionEntry] {
         return [
             CompletionEntry(kind: .class, display: "print", insert: "print("),

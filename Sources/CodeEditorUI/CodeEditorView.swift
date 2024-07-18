@@ -22,37 +22,37 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
     @State var status: CodeEditorStatus
     @State var keyboardOffset: CGFloat = 0
     @State var lookupWord: String = ""
-    
+
     var item: EditedItem
     let state: CodeEditorState
-    
+
     public init (state: CodeEditorState, item: EditedItem, contents: Binding<String>) {
         self.state = state
         self.item = item
         self._status = State(initialValue: .ok)
         self._contents = contents
     }
-    
+
     public func uitextViewChanged(_ textView: Runestone.TextView) {
         item.editedTextChanged(on: textView)
     }
-    
+
     public func uitextViewDidChangeSelection(_ textView: TextView) {
         item.editedTextSelectionChanged(on: textView)
     }
-    
+
     public func uitextViewLoaded(_ textView: Runestone.TextView) {
         item.started(on: textView)
     }
-    
+
     public func uitextViewGutterTapped(_ textView: Runestone.TextView, line: Int) {
         item.gutterTapped(on: textView, line: line)
     }
-    
+
     public func uitextViewRequestWordLookup(_ textView: Runestone.TextView, at position: UITextPosition, word: String) {
         item.editedItemDelegate?.lookup(item, on: textView, at: position, word: word)
     }
-    
+
     func insertCompletion () {
         guard let req = item.completionRequest else { return }
         let insertFull = req.completions[item.selected].insert
@@ -64,16 +64,16 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
         }
         item.cancelCompletion()
     }
-   
+
     // Implementation of the DropDelegate method
     public func performDrop(info: DropInfo) -> Bool {
         let cmd = item.commands
         guard let pos = cmd.closestPosition(to: info.location) else { return false }
         guard let range = cmd.textRange (from: pos, to: pos) else { return false }
-        
+
         let result = Accumulator (range: range, cmd: cmd)
         var pending = 0
-        
+
         for provider in info.itemProviders(for: [.text, .fileURL]) {
             if provider.hasItemConformingToTypeIdentifier(UTType.url.identifier) {
                 pending += 1
@@ -96,7 +96,7 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
                     }
                 }
             }
-            
+
             if provider.hasItemConformingToTypeIdentifier(UTType.text.identifier) {
                 pending += 1
                 provider.loadItem(forTypeIdentifier: UTType.text.identifier) { data, error in
@@ -115,22 +115,22 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
         }
         return true
     }
-    
+
     // Needed so we can show the cursor moving
     public func dropEntered(info: DropInfo) {
         item.commands.textView?.becomeFirstResponder()
     }
-    
+
     // Update the cursor position near the drop site.
     public func dropUpdated(info: DropInfo) -> DropProposal? {
         let cmd = item.commands
         guard let pos = cmd.closestPosition(to: info.location) else { return nil }
-        
+
         cmd.selectedTextRange = cmd.textRange(from: pos, to: pos)
-        
+
         return nil
     }
-    
+
     public var body: some View {
         ZStack (alignment: .topLeading){
             let b = Bindable(item)
@@ -228,20 +228,19 @@ struct BasicCharacterPair: CharacterPair {
     let trailing: String
 }
 
-
 /// We use this accumultator because we can receive multiple drop files, and each one of those is resolved
 /// in the background - when all of those are collected, we can insert the results.
 actor Accumulator {
     let range: UITextRange
     let cmd: TextViewCommands
-    
+
     init (range: UITextRange, cmd: TextViewCommands) {
         result = ""
         count = 0
         self.range = range
         self.cmd = cmd
     }
-    
+
     func push (_ item: String) {
         if result != "" {
             result += ", "
@@ -249,25 +248,25 @@ actor Accumulator {
         result += item
         bump()
     }
-    
+
     func error () {
         bump()
     }
-    
+
     func bump () {
         count += 1
         if count == waitingFor {
             flush ()
         }
     }
-    
+
     func waitFor(_ count: Int) {
         waitingFor = count
         if count == waitingFor {
             flush()
         }
     }
-    
+
     // When we are done, invoke the command
     func flush () {
         let value = result
@@ -275,7 +274,7 @@ actor Accumulator {
             self.cmd.replace(self.range, withText: value)
         }
     }
-    
+
     var result: String
     var count: Int
     var waitingFor = Int.max
@@ -283,7 +282,7 @@ actor Accumulator {
 
 struct DemoCodeEditorView: View {
     @State var text: String = "This is just a sample"
-    
+
     var body: some View {
         CodeEditorView(state: CodeEditorState(),
                        item: EditedItem(
@@ -293,7 +292,7 @@ struct DemoCodeEditorView: View {
                        contents: $text)
             .environment(HostServices.makeTestHostServices())
     }
-    
+
     func changed(_ editedItem: EditedItem, _ textView: TextView) {
         //
     }

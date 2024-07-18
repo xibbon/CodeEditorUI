@@ -13,7 +13,7 @@ import WebKit
 /// An HTML page that can be embedeed into the CodeEditorShell in a tab
 public class HtmlItem: HostedItem {
     let _title: String
-    public var anchor: String? { 
+    public var anchor: String? {
         didSet {
             if let view, let anchor {
                 view.scrollTo(anchor)
@@ -22,7 +22,7 @@ public class HtmlItem: HostedItem {
     }
     public override var title: String { _title }
     weak var view: WKWebView? = nil
-    
+
     /// Creates an HTML Item that can be shown in the CodeEditorUI
     /// - Parameters:
     ///   - title: Title to show on the tab
@@ -40,16 +40,16 @@ struct WebView: UIViewRepresentable {
     @Binding var text: String
     @Binding var anchor: String?
     let obj: HtmlItem
-    
+
     let loadUrl: (URL) -> String?
-    
+
     init(text: Binding<String>, anchor: Binding<String?>, obj: HtmlItem, load: @escaping (URL) -> String?) {
         _text = text
         _anchor = anchor
         self.obj = obj
         self.loadUrl = load
     }
-    
+
     func makeUIView(context: Context) -> WKWebView {
         let view = WKWebView(frame: CGRect.zero, configuration: context.coordinator.configuration)
         view.isInspectable = true
@@ -57,21 +57,21 @@ struct WebView: UIViewRepresentable {
         obj.view = view
         return view
     }
-    
+
     func makeCoordinator() -> WebViewCoordinator {
         return WebViewCoordinator (loadUrl: loadUrl)
     }
-    
+
     class WebViewCoordinator: NSObject, WKNavigationDelegate, WKURLSchemeHandler {
         let configuration: WKWebViewConfiguration
         let loadUrl: (URL) -> String?
-        
+
         func webView(_ webView: WKWebView, start urlSchemeTask: any WKURLSchemeTask) {
             guard let request = urlSchemeTask.request as? URLRequest else {
                 urlSchemeTask.didFailWithError(NSError(domain: "Godot", code: -1, userInfo: nil))
                 return
             }
-            
+
             // Extract information from the request
             guard let url = urlSchemeTask.request.url else { return }
             if url.scheme == "open-external" {
@@ -89,7 +89,7 @@ struct WebView: UIViewRepresentable {
         func webView(_ webView: WKWebView, stop urlSchemeTask: any WKURLSchemeTask) {
             //print ("End: \(urlSchemeTask)")
         }
-        
+
         init (loadUrl: @escaping (URL)->String?) {
             configuration = WKWebViewConfiguration()
             self.loadUrl = loadUrl
@@ -98,7 +98,7 @@ struct WebView: UIViewRepresentable {
             configuration.setURLSchemeHandler(self, forURLScheme: "open-external")
         }
     }
-    
+
     func updateUIView(_ webView: WKWebView, context: Context) {
         webView.loadHTMLString(text, baseURL: nil)
         if let anchor {

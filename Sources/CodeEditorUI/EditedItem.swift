@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by Miguel de Icaza on 4/5/24.
 //
@@ -25,13 +25,13 @@ public class EditedItem: HostedItem {
     }
     /// Lines where breakpoint indicators are shown
     public var breakpoints: Set<Int>
-    
+
     /// If set, a line to highlight, it means "This is current the debugger is stopped"
     public var currentLine: Int?
-    
+
     /// Controls whether this language supports looking symbosl up
     public var supportsLookup: Bool
-    
+
     /// - Parameters:
     ///  - path: the path that will be passed to the HostServices API to load and save the file
     ///  - data: this is data that can be attached to this object and extracted a later point by the user
@@ -63,7 +63,7 @@ public class EditedItem: HostedItem {
         self.currentLine = currentLine
         super.init (path: path, content: content)
     }
-    
+
     /// Returns the filename that is suitable to be displayed to the user
     public var filename: String {
         if let s = path.lastIndex(of: "/"){
@@ -71,63 +71,63 @@ public class EditedItem: HostedItem {
         }
         return path
     }
-    
+
     /// Returns a title suitable to be shown on the titlebar
     public override var title: String {
         filename
     }
-    
+
     /// Delegate
-    var editedItemDelegate: EditedItemDelegate?
-    
+    weak var editedItemDelegate: EditedItemDelegate?
+
     public var language: TreeSitterLanguage? = nil
-    
+
     /// List of detected functions, contains the name of the function and the line location
     public var functions: [(String,Int)] = []
-    
+
     /// Detected errors
     public var errors: [Issue]? = nil
-    
+
     /// Detected warnings
     public var warnings: [Issue]? = nil
 
     /// Whether the buffer has local changes
     public var dirty: Bool = false
-    
+
     /// Mechanism to trigger actions on the TextViewUI
     public var commands = TextViewCommands()
 
     public static func == (lhs: EditedItem, rhs: EditedItem) -> Bool {
         lhs === rhs
     }
-    
+
     var completionRequest: CompletionRequest? = nil
     var selected = 0
-    
+
     public func requestCompletion (at location: CGRect, on textView: TextView, prefix: String, completions: [CompletionEntry]) {
         completionRequest = CompletionRequest(at: location, on: textView, prefix: prefix, completions: completions, textViewCursor: textView.selectedRange.location)
         selected = 0
     }
-    
+
     public func cancelCompletion () {
         completionRequest = nil
     }
-    
+
     /// This is used to set the validation result
     public func validationResult (functions: [(String,Int)], errors: [Issue]?, warnings: [Issue]?) {
         self.functions = functions
         self.errors = errors
         self.warnings = warnings
     }
-    
+
     public override func requestFindAndReplace() {
         commands.requestFindAndReplace()
     }
-    
+
     public override func requestFind () {
         commands.requestFind()
     }
-    
+
     @MainActor
     public func editedTextChanged (on textView: TextView) {
         dirty = true
@@ -138,12 +138,12 @@ public class EditedItem: HostedItem {
     public func started (on textView: TextView) {
         editedItemDelegate?.editedTextChanged(self, textView)
     }
-    
+
     @MainActor
     public func gutterTapped (on textView: TextView, line: Int) {
         editedItemDelegate?.gutterTapped (self, textView, line)
     }
-    
+
     @MainActor
     public func editedTextSelectionChanged (on textView: TextView) {
         guard let completionRequest else { return }
@@ -176,7 +176,7 @@ public struct Issue {
     var kind: Kind
     var col, line: Int
     var message: String
-    
+
     public init (kind: Kind, col: Int, line: Int, message: String) {
         self.kind = kind
         self.col = col

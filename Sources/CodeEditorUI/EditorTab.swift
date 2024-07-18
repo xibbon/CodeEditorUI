@@ -1,13 +1,12 @@
 //
 //  EditorTab.swift: Displays some editor tabs on top of the buffers
-//  
+//
 //
 //  Created by Miguel de Icaza on 4/1/24.
 //
 
 import Foundation
 import SwiftUI
-
 
 struct EditorTab: View {
     @Binding var item: HostedItem
@@ -45,7 +44,7 @@ struct EditorTabs: View {
     @Binding var items: [HostedItem]
     let closeRequest: (Int) -> ()
     @ScaledMetric var dividerSize = 12
-    
+
     var body: some View {
         ScrollView (.horizontal){
             HStack (spacing: 0){
@@ -65,7 +64,6 @@ struct EditorTabs: View {
         .scrollIndicators(.hidden)
     }
 }
-
 
 struct DemoEditorTabs: View {
     @State var selected: Int? = 2
@@ -89,7 +87,7 @@ struct DemoEditorTabs: View {
         EditedItem (path: "res://another.txt", content: "Demo", editedItemDelegate: nil),
         EditedItem (path: "res://third.txt", content: "Demo", editedItemDelegate: nil),
     ]
-    
+
     var body: some View {
         EditorTabs(selected: $selected, items: $items) { closeIdx in
             items.remove(at: closeIdx)
@@ -103,7 +101,7 @@ struct DemoEditorTabs: View {
 #Preview {
     ZStack {
         Color (uiColor: .systemBackground)
-        
+
         DemoEditorTabs()
     }
 }

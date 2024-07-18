@@ -10,7 +10,7 @@ import Foundation
 struct PathBrowser: View {
     @Environment (HostServices.self) var hostServices
     @Environment (CodeEditorState.self) var editorState
-    
+
     struct IdentifiableInt: Identifiable {
         var id: Int
     }
@@ -18,15 +18,15 @@ struct PathBrowser: View {
     var item: EditedItem
     var components: [Substring]
     @State var showContents: IdentifiableInt? = nil
-    
+
     init (item: EditedItem) {
         let path = item.path
         self.item = item
         self.prefix = path.hasPrefix("res://") ? "res://" : "/"
-        
+
         components = path.dropFirst (path.hasPrefix ("res://") ? 6 : 0).split (separator: "/")
     }
-    
+
     static func makePath (prefix: String, _ components: [Substring], _ idx: Int) -> String {
         let r = components [0..<idx+1].joined(separator: "/")
         if r == "" {
@@ -34,7 +34,7 @@ struct PathBrowser: View {
         }
         return "\(prefix)/\(r)"
     }
-    
+
     static func iconFor (_ txt: String) -> String {
         if txt.hasSuffix(".gd") {
             return "scroll"
@@ -47,14 +47,14 @@ struct PathBrowser: View {
         }
         return "doc"
     }
-    
+
     struct DirectoryView: View {
         @Environment (HostServices.self) var hostServices
         @Environment (CodeEditorState.self) var editorState
         let prefix: String
         let basePath: String
         let element: String
-        
+
         var body: some View {
             Menu (element) {
                 ForEach (Array (hostServices.fileListing(at: basePath).enumerated()), id: \.offset) { _, v in
@@ -71,7 +71,7 @@ struct PathBrowser: View {
             }
         }
     }
-    
+
     struct FunctionView: View {
         let functions: [(String,Int)]
         let gotoMethod: (Int) -> ()
@@ -88,7 +88,7 @@ struct PathBrowser: View {
             }
         }
     }
-    
+
     var body: some View {
         ScrollView (.horizontal) {
             HStack (spacing: 2){
@@ -108,7 +108,7 @@ struct PathBrowser: View {
                         .foregroundColor(.secondary)
                 }
                 if item.functions.count > 0 {
-                    FunctionView (functions: item.functions) { line in 
+                    FunctionView (functions: item.functions) { line in
                         item.commands.requestGoto(line: line)
                     }
                 } else {

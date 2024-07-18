@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by Miguel de Icaza on 4/1/24.
 //
@@ -14,7 +14,7 @@ import SwiftUI
 /// Tracks the state for the editor, you can affect the editor by invoking methods in this API
 ///
 /// You can load files using the `openFile` method, or render local HTML content using the `openHtml` method.
-/// 
+///
 @Observable
 public class CodeEditorState {
     public var hostServices: HostServices
@@ -25,23 +25,23 @@ public class CodeEditorState {
     var saveErrorMessage = ""
     var saveIdx = 0
     public var lineHeightMultiplier: CGFloat = 1.2
-    
+
     /// Configures whether the editors show line numbers
     public var showLines: Bool = true
-    
+
     /// Configures whether the editors show tabs
     public var showTabs: Bool = false
-    
+
     /// Configures whether the editors show various space indicators
     public var showSpaces: Bool = false
-    
+
     /// Initializes the code editor state that you can use to control what is shown
     public init (hostServices: HostServices? = nil, openFiles: [EditedItem] = []) {
         self.hostServices = hostServices ?? HostServices.makeTestHostServices()
         self.openFiles = openFiles
         currentEditor = openFiles.count > 0 ? 0 : nil
     }
-    
+
     /// Requests that a file with the given path be opened by the code editor
     /// - Parameters:
     ///  - path: The filename to load, this is loaded via the `hostServices` API
@@ -66,7 +66,7 @@ public class CodeEditorState {
             return .failure(code)
         }
     }
-    
+
     /// Opens an HTML tab with the specified HTML content
     /// - Parameters:
     ///  - title: Title to display on the tab bar
@@ -88,7 +88,7 @@ public class CodeEditorState {
         currentEditor = openFiles.count - 1
         return html
     }
-    
+
     /// If the given path is already open, it returns it, and switches to it
     public func findExistingHtmlItem (path: String) -> HtmlItem? {
         if let existingIdx = openFiles.firstIndex(where: { $0 is HtmlItem && $0.path == path }) {
@@ -99,7 +99,7 @@ public class CodeEditorState {
         }
         return nil
     }
-    
+
     @MainActor
     public func attemptSave (_ idx: Int) -> Bool {
         guard let edited = openFiles[idx] as? EditedItem, edited.dirty else {
@@ -114,7 +114,7 @@ public class CodeEditorState {
         edited.dirty = false
         return true
     }
-    
+
     @MainActor
     func attemptClose (_ idx: Int) {
         guard idx < openFiles.count else { return }
@@ -126,7 +126,7 @@ public class CodeEditorState {
             closeFile (idx)
         }
     }
-    
+
     @MainActor
     func closeFile (_ idx: Int) {
         guard idx < openFiles.count else { return }
@@ -144,7 +144,7 @@ public class CodeEditorState {
             }
         }
     }
-    
+
     /// Saves the current file if it is dirty
     public func saveCurrentFile() {
         guard let idx = currentEditor else { return }
@@ -155,7 +155,7 @@ public class CodeEditorState {
         }
         edited.dirty = false
     }
-    
+
     //
     // Triggers the workflow to save the current file with a new path
     public func saveFileAs() {
@@ -167,7 +167,7 @@ public class CodeEditorState {
             self.saveCurrentFile()
         }
     }
-    
+
     public func saveAllFiles() {
         for idx in 0..<openFiles.count {
             saveIdx = idx
@@ -177,13 +177,13 @@ public class CodeEditorState {
             }
         }
     }
-    
+
     public func selectFile(path: String) {
         if let idx = openFiles.firstIndex(where: { $0.path == path }) {
             currentEditor = idx
         }
     }
-    
+
     public func search (showReplace: Bool) {
         guard let currentEditor else { return }
         let item = openFiles[currentEditor]
@@ -194,14 +194,14 @@ public class CodeEditorState {
         }
         //item.findRequest = showReplace ? .findAndReplace : .find
     }
-    
+
     public func goTo (line: Int) {
         guard let currentEditor else { return }
         if let item = openFiles[currentEditor] as? EditedItem {
             item.commands.requestGoto(line: line)
         }
     }
-    
+
     public func nextTab () {
         guard let currentEditor else {
             return
@@ -210,7 +210,7 @@ public class CodeEditorState {
             self.currentEditor = currentEditor + 1
         }
     }
-    
+
     public func previousTab () {
         guard let currentEditor else {
             return
@@ -219,11 +219,11 @@ public class CodeEditorState {
             self.currentEditor = currentEditor - 1
         }
     }
-    
+
     /// This callback receives both an instance to the state so it can direct the process, and a handle to the TextView that triggered the change
     /// and can be used to extract information about the change.
 //    public var onChange: ((CodeEditorState, EditedItem, TextView)->())? = nil
-//    
+//
 //    func change (_ editedItem: EditedItem, _ textView: TextView) {
 //        guard let onChange else {
 //            return

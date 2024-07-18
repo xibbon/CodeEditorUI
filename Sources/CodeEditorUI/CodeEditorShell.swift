@@ -5,13 +5,13 @@ import RunestoneUI
 import TreeSitterGDScriptRunestone
 
 /// This is the host for all of the coding needs that we have
-public struct CodeEditorShell<EmptyContent:View>: View {
+public struct CodeEditorShell<EmptyContent: View>: View {
     @Environment(HostServices.self) var hostServices
     @Binding var state: CodeEditorState
     @State var showDiagnosticDetails = false
     let emptyContent: () -> EmptyContent
     let urlLoader: (URL) -> String?
-    
+
     /// Creates the CodeEditorShell
     /// - Parameters:
     ///   - state: The state used to control this CodeEditorShell
@@ -46,7 +46,7 @@ public struct CodeEditorShell<EmptyContent:View>: View {
                 Text (state.saveErrorMessage)
             }
             Divider()
-            
+
             if let currentIdx = state.currentEditor, currentIdx >= 0, currentIdx < state.openFiles.count  {
                 let current = state.openFiles [currentIdx]
                 if let editedItem = current as? EditedItem {
@@ -113,7 +113,7 @@ public struct CodeEditorShell<EmptyContent:View>: View {
                 emptyContent()
             }
         }
-        
+
         .background { Color (uiColor: .systemBackground) }
     }
 }
@@ -121,17 +121,22 @@ public struct CodeEditorShell<EmptyContent:View>: View {
 struct DemoCodeEditorShell: View {
     @State var state: CodeEditorState = CodeEditorState(hostServices: HostServices.makeTestHostServices())
     @State var hostServices = HostServices.makeTestHostServices()
-    
+
     var body: some View {
-        CodeEditorShell (state: $state) { request in
-            print ("Loading \(request)")
-            return nil
-        } emptyView: {
-            Text ("No Files Open")
-        }
+        VStack {
+
+            Text ("\(Bundle.main.resourceURL) xx Path=\(Bundle.main.paths(forResourcesOfType: ".gd", inDirectory: "/tmp"))")
+            CodeEditorShell (state: $state) { request in
+                print ("Loading \(request)")
+                return nil
+            } emptyView: {
+                Text ("No Files Open")
+            }
             .environment(hostServices)
             .onAppear {
-                switch state.openFile(path: "/Users/miguel/cvs/godot-master/modules/gdscript/tests/scripts/utils.notest.gd", delegate: nil, fileHint: .detect) {
+                switch state.openFile(path:
+
+                                        "/Users/miguel/cvs/godot-master/modules/gdscript/tests/scripts/utils.notest.gd", delegate: nil, fileHint: .detect) {
                 case .success(let item):
                     item.validationResult (
                         functions: [],
@@ -142,6 +147,7 @@ struct DemoCodeEditorShell: View {
                     break
                 }
             }
+        }
     }
 }
 #Preview {

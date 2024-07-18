@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by Miguel de Icaza on 4/9/24.
 //
@@ -26,7 +26,7 @@ struct DiagnosticDetailsView: View {
 
     struct DiagnosticView: View {
         let src: [Issue]
-        
+
         var body: some View {
             ForEach (Array (src.enumerated()), id: \.offset) { idx, v in
                 ShowIssue (issue: v)
@@ -44,7 +44,7 @@ struct DiagnosticDetailsView: View {
             }
         }
         .listStyle(.plain)
-        
+
     }
 }
 

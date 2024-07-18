@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by Miguel de Icaza on 3/29/24.
 //
@@ -11,11 +11,11 @@ import SwiftUI
 /// List of possible errors raised by the IO operations
 public enum HostServiceIOError: Error, CustomStringConvertible {
     case fileNotFound(String)
-    
+
     /// Until swift gets typed errors for IO operations, this contains the localizedDescription error that is raised
     /// by the native operations.
     case generic(String)
-    
+
     public var description: String {
         switch self {
         case .fileNotFound(let f):
@@ -31,7 +31,7 @@ public struct DirectoryElement {
         self.name = name
         self.isDir = isDir
     }
-    
+
     public var name: String
     public var isDir: Bool
 }
@@ -62,26 +62,26 @@ open class HostServices {
         cbRequestFileSaveAs = requestFileSaveAs
         cbRequestOpen = requestOpen
     }
-    
+
     var cbLoadFile: (String)->Result<String,HostServiceIOError>
     var cbSaveContents: (String, String) -> HostServiceIOError?
     var cbRequestOpen: (String) -> ()
     public var cbFileList: (String) -> [DirectoryElement]
     public var cbRequestFileSaveAs: (_ title: String, _ path: String, _ complete: @escaping ([String])->()) -> ()
-    
+
     /// Requests that the host process opens the specified path in an appropriate way
     ///
     /// When hosted in Godot, this calls the Godot code that determines if this is a scene, a resource, a text file or script that needs to be opened
     open func requestOpen (path: String) {
         cbRequestOpen(path)
     }
-    
+
     /// Loads a file
     /// - Returns: the string with the contents of the file or the error detailing the problem
     open func loadFile (path: String) -> Result<String,HostServiceIOError> {
         return cbLoadFile (path)
     }
-    
+
     /// Triggers a request in the UI for picking a file to be saved as, currently this
     /// will default to filters for all files and "gd" extension
     ///
@@ -93,20 +93,20 @@ open class HostServices {
     open func requestFileSaveAs (title: String, path: String, complete: @escaping ([String]) -> ()) {
         cbRequestFileSaveAs(title, path, complete)
     }
-    
+
     /// Saves the string contained in contents to the specified path
     /// - Returns: nil on success, or an error code otherwise
     open func saveContents (contents: String, path: String) -> HostServiceIOError? {
         return cbSaveContents (contents, path)
     }
-    
+
     open func fileListing (at: String) -> [DirectoryElement] {
         return cbFileList (at)
     }
-    
+
     public static func makeTestHostServices () -> HostServices {
         HostServices { path in
-            
+
             do {
                 return .success (try String(contentsOf: URL (filePath: path)))
             } catch (let err) {
