@@ -90,13 +90,18 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                                 }.foregroundStyle(Color.red)
                             }
                         }
-                        if showDiagnosticDetails {
-                            Button (action: { showDiagnosticDetails = false }) {
-                                Image (systemName: "xmark.circle")
+                        if editedItem.warnings != nil || editedItem.errors != nil {
+                            Button (action: { withAnimation { showDiagnosticDetails.toggle() } }) {
+                                HStack (spacing: 4) {
+                                    Image (systemName: "chevron.right")
+                                        .rotationEffect(showDiagnosticDetails ? Angle (degrees: 90) : Angle(degrees: 0))
+                                }
                             }
+                            .foregroundStyle(.secondary)
+                            .padding (.horizontal, 8)
                         }
                     }
-                    .padding ([.trailing])
+                    .padding (6)
                     .font(.footnote)
                     if showDiagnosticDetails, editedItem.errors != nil || editedItem.warnings != nil {
                         DiagnosticDetailsView(errors: editedItem.errors, warnings: editedItem.warnings)
