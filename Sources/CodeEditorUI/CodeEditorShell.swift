@@ -104,7 +104,7 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                     .padding (6)
                     .font(.footnote)
                     if showDiagnosticDetails, editedItem.errors != nil || editedItem.warnings != nil {
-                        DiagnosticDetailsView(errors: editedItem.errors, warnings: editedItem.warnings)
+                        DiagnosticDetailsView(errors: editedItem.errors, warnings: editedItem.warnings, item: editedItem)
                             .frame(maxHeight: 120)
                     }
                 } else if let htmlItem = current as? HtmlItem {
