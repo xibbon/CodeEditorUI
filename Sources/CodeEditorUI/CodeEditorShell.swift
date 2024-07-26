@@ -79,7 +79,7 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                                 HStack (spacing: 4){
                                     Image (systemName: "exclamationmark.triangle.fill")
                                     Text ("\(warnings.count)")
-                                }.foregroundStyle(Color.yellow)
+                                }.foregroundStyle(Color.orange)
                             }
                         }
                         if let errors = editedItem.errors {

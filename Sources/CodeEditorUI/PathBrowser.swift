@@ -8,8 +8,8 @@ import SwiftUI
 import Foundation
 
 struct PathBrowser: View {
-    @Environment (HostServices.self) var hostServices
-    @Environment (CodeEditorState.self) var editorState
+    @Environment(HostServices.self) var hostServices
+    @Environment(CodeEditorState.self) var editorState
 
     struct IdentifiableInt: Identifiable {
         var id: Int
@@ -35,7 +35,7 @@ struct PathBrowser: View {
         return "\(prefix)/\(r)"
     }
 
-    static func iconFor (_ txt: String) -> String {
+    static func iconFor(_ txt: String) -> String {
         if txt.hasSuffix(".gd") {
             return "scroll"
         }
@@ -49,8 +49,8 @@ struct PathBrowser: View {
     }
 
     struct DirectoryView: View {
-        @Environment (HostServices.self) var hostServices
-        @Environment (CodeEditorState.self) var editorState
+        @Environment(HostServices.self) var hostServices
+        @Environment(CodeEditorState.self) var editorState
         let prefix: String
         let basePath: String
         let element: String
@@ -103,19 +103,24 @@ struct PathBrowser: View {
                     } else {
                         // List the elements of this directory.
                         DirectoryView (prefix: prefix, basePath: PathBrowser.makePath (prefix: prefix, components, idx), element: String(v))
+                            .foregroundStyle(.primary)
+                        Image (systemName: "chevron.compact.right")
+                            .foregroundColor(.secondary)
                     }
-                    Image (systemName: "chevron.compact.right")
-                        .foregroundColor(.secondary)
                 }
-                if item.functions.count > 0 {
-                    FunctionView (functions: item.functions) { line in
-                        item.commands.requestGoto(line: line)
+
+//                if item.functions.count > 0 {
+                    Spacer ()
+                    Menu {
+                        FunctionView (functions: item.functions) { line in
+                            item.commands.requestGoto(line: line)
+                        }
+                    } label: {
+                        Image (systemName: "arrow.down.to.line")
                     }
-                } else {
-                    Text ("No function")
-                        .foregroundStyle(.secondary)
-                }
-            }
+                    .foregroundStyle(.secondary)
+// }
+              }
         }
         //.font (.subheadline)
         .padding([.vertical], 4)
@@ -127,5 +132,6 @@ struct PathBrowser: View {
         PathBrowser(item: EditedItem(path: "res://addons/files/text.gd", content: "demo", editedItemDelegate: nil))
             .environment(HostServices.makeTestHostServices())
             .environment(CodeEditorState())
+
     }
 }

@@ -14,12 +14,12 @@ struct ShowIssue: View {
     var body: some View {
         HStack (alignment: .firstTextBaseline){
             Image (systemName: issue.kind == .error ? "xmark.circle.fill" : "exclamationmark.triangle.fill")
-                .foregroundStyle(issue.kind == .error ? Color.red : Color.yellow)
-            Text ("\(issue.line),\(issue.col) ")
-                .foregroundStyle(.secondary) +
-            Text ("\(issue.message)")
+                .foregroundStyle(issue.kind == .error ? Color.red : Color.orange)
+            Text ("\(issue.line):\(issue.col) ")
+                .foregroundStyle(.secondary)
+                .fontDesign(.monospaced)
+            + Text ("\(issue.message)")
         }
-        .fontDesign(.monospaced)
         .font(.footnote)
     }
 }
@@ -42,6 +42,7 @@ struct DiagnosticDetailsView: View {
             }
         }
     }
+
     var body: some View {
         List {
             if let errors {
@@ -52,7 +53,6 @@ struct DiagnosticDetailsView: View {
             }
         }
         .listStyle(.plain)
-
     }
 }
 
