@@ -90,48 +90,54 @@ struct PathBrowser: View {
     }
 
     var body: some View {
-        ScrollView (.horizontal) {
-            HStack (spacing: 2){
-                ForEach (Array (components.enumerated()), id: \.offset) { idx, v in
-                    if idx == 0 {
-                        Text (prefix)
-                            .foregroundStyle(.secondary)
-                    }
-                    if idx == components.count-1 {
-                        // For the last element, we display the contents of all the peers, like Xcode
-                        DirectoryView (prefix: prefix, basePath: PathBrowser.makePath (prefix: prefix, components, idx-1), element: String(v))
-                    } else {
-                        // List the elements of this directory.
-                        DirectoryView (prefix: prefix, basePath: PathBrowser.makePath (prefix: prefix, components, idx), element: String(v))
-                            .foregroundStyle(.primary)
-                        Image (systemName: "chevron.compact.right")
-                            .foregroundColor(.secondary)
+        HStack(spacing: 2) {
+            ScrollView (.horizontal) {
+                HStack (spacing: 2){
+                    ForEach (Array (components.enumerated()), id: \.offset) { idx, v in
+                        if idx == 0 {
+                            Text (prefix)
+                                .foregroundStyle(.secondary)
+                        }
+                        if idx == components.count-1 {
+                            // For the last element, we display the contents of all the peers, like Xcode
+                            DirectoryView (prefix: prefix, basePath: PathBrowser.makePath (prefix: prefix, components, idx-1), element: String(v))
+                        } else {
+                            // List the elements of this directory.
+                            DirectoryView (prefix: prefix, basePath: PathBrowser.makePath (prefix: prefix, components, idx), element: String(v))
+                                .foregroundStyle(.primary)
+                            Image (systemName: "chevron.compact.right")
+                                .foregroundColor(.secondary)
+                        }
                     }
                 }
+                .font(.subheadline)
+            }
+            .scrollIndicators(.hidden)
 
-//                if item.functions.count > 0 {
-                    Spacer ()
-                    Menu {
-                        FunctionView (functions: item.functions) { line in
-                            item.commands.requestGoto(line: line)
-                        }
-                    } label: {
-                        Image (systemName: "arrow.down.to.line")
-                    }
-                    .foregroundStyle(.secondary)
-// }
-              }
+            Spacer ()
+            Menu {
+                FunctionView (functions: item.functions) { line in
+                    item.commands.requestGoto(line: line)
+                }
+            } label: {
+                Image (systemName: "arrow.down.to.line")
+            }
+            .foregroundStyle(.secondary)
         }
-        //.font (.subheadline)
         .padding([.vertical], 4)
     }
+
 }
 
 #Preview {
-    ZStack {
+    VStack (alignment: .leading){
+        Text ("Path:")
+
         PathBrowser(item: EditedItem(path: "res://addons/files/text.gd", content: "demo", editedItemDelegate: nil))
-            .environment(HostServices.makeTestHostServices())
-            .environment(CodeEditorState())
+        PathBrowser(item: EditedItem(path: "res://users/More/Longer/Very/Long/Path/NotSure/Where/ThisWouldEverEnd/With/ContainersAndOthers/addons/files/text.gd", content: "demo", editedItemDelegate: nil))
 
     }
+    .environment(HostServices.makeTestHostServices())
+    .environment(CodeEditorState())
+    .padding()
 }
