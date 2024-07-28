@@ -118,8 +118,14 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                 emptyContent()
             }
         }
-
-        .background { Color (uiColor: .systemBackground) }
+        //.background { Color (uiColor: .systemBackground) }
+        .padding(3)
+        .background {
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Color(uiColor: .systemBackground))
+                .stroke(Color(uiColor: .systemGray5))
+        }
+        .padding(8)
     }
 }
 
@@ -157,7 +163,7 @@ struct DemoCodeEditorShell: View {
 }
 #Preview {
     ZStack {
-        Color.red
+        Color(uiColor: .systemGray6)
         DemoCodeEditorShell ()
     }
 }
