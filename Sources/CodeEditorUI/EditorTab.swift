@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-struct EditorTab: View {
+struct EditorTab2: View {
     @Binding var item: HostedItem
     @ScaledMetric var internalPadding = 4
     let selected: Bool
@@ -39,6 +39,46 @@ struct EditorTab: View {
     }
 }
 
+struct EditorTab: View {
+    @Binding var item: HostedItem
+    @ScaledMetric var internalPadding = 6
+    @ScaledMetric var modifiedImageSize = 9
+    let selected: Bool
+    let close: () -> ()
+    let select: () -> ()
+    var body: some View {
+        HStack (spacing: 4) {
+            if selected {
+                Button (action: { close () }) {
+                    Image (systemName: "xmark.app.fill")
+                        .fontWeight(.regular)
+                        .foregroundStyle(selected ? Color.accentColor : Color.secondary).opacity(0.6)
+                        .font(.callout)
+                }
+            }
+            Text (item.title)
+                .foregroundStyle(selected ? Color.accentColor : Color.secondary)
+                .onTapGesture {
+                        self.select ()
+                }
+            if (item as? EditedItem)?.dirty ?? false {
+                Image (systemName: "circle.fill")
+                    .fontWeight(.light)
+                    .foregroundStyle(selected ? Color.accentColor : Color.secondary).opacity(0.6)
+                    .font(.system(size: modifiedImageSize))
+            }
+        }
+        .padding(internalPadding)
+        .padding(.horizontal, 3)
+        .padding(.trailing, 2)
+        .background {
+
+            selected ? Color.accentColor.opacity(0.2) : Color (uiColor: .systemGray5)
+        }
+        .clipShape(UnevenRoundedRectangle(topLeadingRadius: 10, bottomLeadingRadius: 10, bottomTrailingRadius: 10, topTrailingRadius: 10, style: .continuous))
+        .padding([.horizontal], 3)
+    }
+}
 struct EditorTabs: View {
     @Binding var selected: Int?
     @Binding var items: [HostedItem]
@@ -51,12 +91,7 @@ struct EditorTabs: View {
                 if let selected {
                     ForEach (Array (items.enumerated()), id: \.offset) { idx, item in
                         EditorTab(item: $items [idx], selected: idx == selected, close: { closeRequest (idx) }, select: { self.selected = idx } )
-                        if idx+1 < selected || idx > selected {
-                            if idx+1 < items.count {
-                                Divider()
-                                    .frame(maxHeight: dividerSize)
-                            }
-                        }
+
                     }
                 }
             }
@@ -94,13 +129,17 @@ struct DemoEditorTabs: View {
             if closeIdx == selected {
                 selected = max (0, (selected ?? 0)-1)
             }
+        }.onAppear {
+            if let it = items [1] as? EditedItem  {
+                it.dirty = true
+            }
         }
     }
 }
 
 #Preview {
     ZStack {
-        Color (uiColor: .systemBackground)
+        Color (uiColor: .secondarySystemBackground)
 
         DemoEditorTabs()
     }

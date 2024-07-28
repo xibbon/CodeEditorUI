@@ -23,33 +23,12 @@ public struct CodeEditorShell<EmptyContent: View>: View {
         self.urlLoader = urlLoader
     }
 
-    public var body: some View {
-        VStack (spacing: 0) {
-            EditorTabs(selected: $state.currentEditor, items: $state.openFiles, closeRequest: { idx in
-                state.attemptClose (idx)
-            })
-            .alert("Error", isPresented: Binding<Bool>(get: { state.saveError }, set: { newV in state.saveError = newV })) {
-                Button ("Retry") {
-                    state.saveError = false
-                    DispatchQueue.main.async {
-                        state.attemptClose(state.saveIdx)
-                    }
-                }
-                Button ("Cancel") {
-                    state.saveError = false
-                }
-                Button ("Ignore") {
-                    state.closeFile (state.saveIdx)
-                    state.saveError = false
-                }
-            } message: {
-                Text (state.saveErrorMessage)
-            }
-            Divider()
-
-            if let currentIdx = state.currentEditor, currentIdx >= 0, currentIdx < state.openFiles.count  {
-                let current = state.openFiles [currentIdx]
-                if let editedItem = current as? EditedItem {
+    @ViewBuilder
+    var editorContent: some View {
+        if let currentIdx = state.currentEditor, currentIdx >= 0, currentIdx < state.openFiles.count  {
+            let current = state.openFiles [currentIdx]
+            if let editedItem = current as? EditedItem {
+                VStack {
                     PathBrowser (item: editedItem)
                         .environment(state)
                         .padding ([.horizontal], 4)
@@ -63,8 +42,10 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                             editedItem.content = newV
                         })
                     )
-                        .id(current)
-                    Divider()
+                    .id(current)
+                    if showDiagnosticDetails || editedItem.errors != nil || editedItem.warnings != nil {
+                        Divider()
+                    }
                     HStack {
                         if !showDiagnosticDetails, let firstError = editedItem.errors?.first {
                             Button (action: { showDiagnosticDetails.toggle()}) {
@@ -107,24 +88,52 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                         DiagnosticDetailsView(errors: editedItem.errors, warnings: editedItem.warnings, item: editedItem)
                             .frame(maxHeight: 120)
                     }
-                } else if let htmlItem = current as? HtmlItem {
-                    WebView(text: Binding<String>(get: { htmlItem.content }, set: { newV in htmlItem.content = newV }),
-                            anchor: Binding<String?>(get: { htmlItem.anchor }, set: { newV in htmlItem.anchor = newV }),
-                            obj: htmlItem,
-                            load: urlLoader)
-                    Spacer()
                 }
-            } else {
-                emptyContent()
+            } else if let htmlItem = current as? HtmlItem {
+                WebView(text: Binding<String>(get: { htmlItem.content }, set: { newV in htmlItem.content = newV }),
+                        anchor: Binding<String?>(get: { htmlItem.anchor }, set: { newV in htmlItem.anchor = newV }),
+                        obj: htmlItem,
+                        load: urlLoader)
+                Spacer()
             }
+        } else {
+            emptyContent()
         }
+    }
+
+    public var body: some View {
+        VStack {
+            EditorTabs(selected: $state.currentEditor, items: $state.openFiles, closeRequest: { idx in
+                state.attemptClose (idx)
+            })
+            .alert("Error", isPresented: Binding<Bool>(get: { state.saveError }, set: { newV in state.saveError = newV })) {
+                Button ("Retry") {
+                    state.saveError = false
+                    DispatchQueue.main.async {
+                        state.attemptClose(state.saveIdx)
+                    }
+                }
+                Button ("Cancel") {
+                    state.saveError = false
+                }
+                Button ("Ignore") {
+                    state.closeFile (state.saveIdx)
+                    state.saveError = false
+                }
+            } message: {
+                Text (state.saveErrorMessage)
+            }
+            editorContent
+                .padding(3)
+                .background {
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color(uiColor: .systemBackground))
+                        .stroke(Color(uiColor: .systemGray5))
+                }
+        }
+        
         //.background { Color (uiColor: .systemBackground) }
-        .padding(3)
-        .background {
-            RoundedRectangle(cornerRadius: 4)
-                .fill(Color(uiColor: .systemBackground))
-                .stroke(Color(uiColor: .systemGray5))
-        }
+
         .padding(8)
     }
 }
