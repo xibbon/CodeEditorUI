@@ -20,7 +20,7 @@ struct EditorTab2: View {
                 Image (systemName: (item as? EditedItem)?.dirty ?? false ? "circle.fill" : "xmark")
                     .fontWeight(.light)
                     .foregroundStyle(selected ? Color.accentColor : Color.secondary)
-                    .font(.footnote)
+                    .font(.caption)
             }
             Text (item.title)
                 .foregroundStyle(selected ? Color.accentColor : Color.primary)
@@ -51,14 +51,13 @@ struct EditorTab: View {
             if selected {
                 Button (action: { close () }) {
                     Image (systemName: "xmark.app.fill")
-                        .fontWeight(.regular)
                         .foregroundStyle(selected ? Color.accentColor : Color.secondary.opacity(0.8))
-                        .font(.callout)
+                        .font(.caption)
                 }
             }
             Text (item.title)
                 .foregroundStyle(selected ? Color.accentColor : Color.secondary)
-                .font(.callout)
+                .font(.caption)
                 .fontWeight(selected ? .semibold : .regular)
                 .padding(.horizontal, 4)
                 .onTapGesture {
