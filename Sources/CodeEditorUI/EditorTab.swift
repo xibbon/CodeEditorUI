@@ -41,36 +41,38 @@ struct EditorTab2: View {
 
 struct EditorTab: View {
     @Binding var item: HostedItem
-    @ScaledMetric var internalPadding = 6
-    @ScaledMetric var modifiedImageSize = 9
+    @ScaledMetric var internalPadding = 10
+    @ScaledMetric var modifiedImageSize = 10
     let selected: Bool
     let close: () -> ()
     let select: () -> ()
     var body: some View {
-        HStack (spacing: 4) {
+        HStack (spacing: 2) {
             if selected {
                 Button (action: { close () }) {
                     Image (systemName: "xmark.app.fill")
                         .fontWeight(.regular)
-                        .foregroundStyle(selected ? Color.accentColor : Color.secondary).opacity(0.6)
+                        .foregroundStyle(selected ? Color.accentColor : Color.secondary.opacity(0.8))
                         .font(.callout)
                 }
             }
             Text (item.title)
                 .foregroundStyle(selected ? Color.accentColor : Color.secondary)
+                .font(.callout)
+                .fontWeight(selected ? .semibold : .regular)
+                .padding(.horizontal, 4)
                 .onTapGesture {
                         self.select ()
                 }
             if (item as? EditedItem)?.dirty ?? false {
                 Image (systemName: "circle.fill")
                     .fontWeight(.light)
-                    .foregroundStyle(selected ? Color.accentColor : Color.secondary).opacity(0.6)
+                    .foregroundStyle(selected ? Color.accentColor : Color.secondary.opacity(0.8))
                     .font(.system(size: modifiedImageSize))
             }
         }
         .padding(internalPadding)
-        .padding(.horizontal, 3)
-        .padding(.trailing, 2)
+        .padding(.horizontal, 1)
         .background {
 
             selected ? Color.accentColor.opacity(0.2) : Color (uiColor: .systemGray5)
