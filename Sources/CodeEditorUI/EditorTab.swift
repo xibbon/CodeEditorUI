@@ -77,7 +77,6 @@ struct EditorTab: View {
             selected ? Color.accentColor.opacity(0.2) : Color (uiColor: .systemGray5)
         }
         .clipShape(UnevenRoundedRectangle(topLeadingRadius: 10, bottomLeadingRadius: 10, bottomTrailingRadius: 10, topTrailingRadius: 10, style: .continuous))
-        .padding([.horizontal], 3)
     }
 }
 struct EditorTabs: View {
@@ -85,12 +84,16 @@ struct EditorTabs: View {
     @Binding var items: [HostedItem]
     let closeRequest: (Int) -> ()
     @ScaledMetric var dividerSize = 12
+    @ScaledMetric var tabSpacing: CGFloat = 10
 
     var body: some View {
-        ScrollView (.horizontal){
-            HStack (spacing: 0){
+        ScrollView(.horizontal) {
+            HStack(spacing: 0) {
                 if let selected {
-                    ForEach (Array (items.enumerated()), id: \.offset) { idx, item in
+                    ForEach(Array(items.enumerated()), id: \.offset) { idx, item in
+                        if idx > 0 {
+                            Spacer().frame(width: tabSpacing)
+                        }
                         EditorTab(item: $items [idx], selected: idx == selected, close: { closeRequest (idx) }, select: { self.selected = idx } )
 
                     }

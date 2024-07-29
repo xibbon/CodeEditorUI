@@ -92,12 +92,13 @@ struct PathBrowser: View {
     var body: some View {
         HStack(spacing: 2) {
             ScrollView (.horizontal) {
-                HStack (spacing: 2){
+                HStack (spacing: 4) {
                     ForEach (Array (components.enumerated()), id: \.offset) { idx, v in
                         if idx == 0 {
                             Text (prefix)
                                 .foregroundStyle(.secondary)
                         }
+                        
                         if idx == components.count-1 {
                             // For the last element, we display the contents of all the peers, like Xcode
                             DirectoryView (prefix: prefix, basePath: PathBrowser.makePath (prefix: prefix, components, idx-1), element: String(v))
@@ -110,7 +111,7 @@ struct PathBrowser: View {
                         }
                     }
                 }
-                .font(.subheadline)
+                .font(.caption)
             }
             .scrollIndicators(.hidden)
 
@@ -121,10 +122,12 @@ struct PathBrowser: View {
                 }
             } label: {
                 Image (systemName: "arrow.down.to.line")
+                    .font(.caption)
+                    .foregroundStyle(Color.primary)
             }
             .foregroundStyle(.secondary)
         }
-        .padding([.vertical], 4)
+        .padding([.vertical], 10)
     }
 
 }

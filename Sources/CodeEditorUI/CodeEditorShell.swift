@@ -28,10 +28,11 @@ public struct CodeEditorShell<EmptyContent: View>: View {
         if let currentIdx = state.currentEditor, currentIdx >= 0, currentIdx < state.openFiles.count  {
             let current = state.openFiles [currentIdx]
             if let editedItem = current as? EditedItem {
-                VStack {
+                VStack(spacing: 0) {
                     PathBrowser (item: editedItem)
                         .environment(state)
-                        .padding ([.horizontal], 4)
+                        .padding(.bottom, 0)
+                        .padding(.horizontal, 10)
                     Divider()
                     CodeEditorView(
                         state: state,
@@ -79,10 +80,12 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                                 }
                             }
                             .foregroundStyle(.secondary)
-                            .padding (.horizontal, 8)
+                            .padding (.horizontal, 2)
                         }
                     }
-                    .padding (6)
+                    .padding(.top, 8)
+                    .padding(.bottom, 10)
+                    .padding(.horizontal, 10)
                     .font(.footnote)
                     if showDiagnosticDetails, editedItem.errors != nil || editedItem.warnings != nil {
                         DiagnosticDetailsView(errors: editedItem.errors, warnings: editedItem.warnings, item: editedItem)
@@ -124,9 +127,8 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                 Text (state.saveErrorMessage)
             }
             editorContent
-                .padding(3)
                 .background {
-                    RoundedRectangle(cornerRadius: 4)
+                    RoundedRectangle(cornerRadius: 11)
                         .fill(Color(uiColor: .systemBackground))
                         .stroke(Color(uiColor: .systemGray5))
                 }
