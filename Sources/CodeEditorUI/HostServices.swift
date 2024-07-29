@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 /// List of possible errors raised by the IO operations
-public enum HostServiceIOError: Error, CustomStringConvertible {
+public enum HostServiceIOError: Error, CustomStringConvertible, LocalizedError {
     case fileNotFound(String)
 
     /// Until swift gets typed errors for IO operations, this contains the localizedDescription error that is raised
