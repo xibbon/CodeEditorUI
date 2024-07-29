@@ -73,7 +73,6 @@ struct EditorTab: View {
         .padding(internalPadding)
         .padding(.horizontal, 1)
         .background {
-
             selected ? Color.accentColor.opacity(0.2) : Color (uiColor: .systemGray5)
         }
         .clipShape(UnevenRoundedRectangle(topLeadingRadius: 10, bottomLeadingRadius: 10, bottomTrailingRadius: 10, topTrailingRadius: 10, style: .continuous))

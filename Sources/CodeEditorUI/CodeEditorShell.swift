@@ -24,6 +24,36 @@ public struct CodeEditorShell<EmptyContent: View>: View {
     }
 
     @ViewBuilder
+    func diagnosticBlurb (editedItem: EditedItem) -> some View {
+        if let warnings = editedItem.warnings {
+            Button (action: { showDiagnosticDetails.toggle () }) {
+                HStack (spacing: 4){
+                    Image (systemName: "exclamationmark.triangle.fill")
+                    Text ("\(warnings.count)")
+                }.foregroundStyle(Color.orange)
+            }
+        }
+        if let errors = editedItem.errors {
+            Button (action: { showDiagnosticDetails.toggle() }) {
+                HStack (spacing: 4) {
+                    Image (systemName: "xmark.circle.fill")
+                    Text ("\(errors.count)")
+                }.foregroundStyle(Color.red)
+            }
+        }
+        if editedItem.warnings != nil || editedItem.errors != nil {
+            Button (action: { withAnimation { showDiagnosticDetails.toggle() } }) {
+                HStack (spacing: 4) {
+                    Image (systemName: "chevron.right")
+                        .rotationEffect(showDiagnosticDetails ? Angle (degrees: 90) : Angle(degrees: 0))
+                }
+            }
+            .foregroundStyle(.secondary)
+            .padding (.horizontal, 8)
+        }
+    }
+
+    @ViewBuilder
     var editorContent: some View {
         if let currentIdx = state.currentEditor, currentIdx >= 0, currentIdx < state.openFiles.count  {
             let current = state.openFiles [currentIdx]
@@ -47,49 +77,39 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                     if showDiagnosticDetails || editedItem.errors != nil || editedItem.warnings != nil {
                         Divider()
                     }
-                    HStack {
-                        if !showDiagnosticDetails, let firstError = editedItem.errors?.first {
-                            Button (action: { showDiagnosticDetails.toggle()}) {
-                                ShowIssue (issue: firstError)
-                                    .fontDesign(.monospaced)
-                                    .lineLimit(1)
-                            }.buttonStyle(.plain)
-                        }
-                        Spacer ()
-                        if let warnings = editedItem.warnings {
-                            Button (action: { showDiagnosticDetails.toggle () }) {
-                                HStack (spacing: 4){
-                                    Image (systemName: "exclamationmark.triangle.fill")
-                                    Text ("\(warnings.count)")
-                                }.foregroundStyle(Color.orange)
-                            }
-                        }
-                        if let errors = editedItem.errors {
-                            Button (action: { showDiagnosticDetails.toggle() }) {
-                                HStack (spacing: 4) {
-                                    Image (systemName: "xmark.circle.fill")
-                                    Text ("\(errors.count)")
-                                }.foregroundStyle(Color.red)
-                            }
-                        }
-                        if editedItem.warnings != nil || editedItem.errors != nil {
-                            Button (action: { withAnimation { showDiagnosticDetails.toggle() } }) {
-                                HStack (spacing: 4) {
-                                    Image (systemName: "chevron.right")
-                                        .rotationEffect(showDiagnosticDetails ? Angle (degrees: 90) : Angle(degrees: 0))
+                    if showDiagnosticDetails {
+                        ZStack {
+                            DiagnosticDetailsView(errors: editedItem.errors, warnings: editedItem.warnings, item: editedItem)
+                            VStack (alignment: .leading, spacing: 0){
+                                HStack (alignment: .top, spacing: 0) {
+                                    Spacer ()
+                                    diagnosticBlurb (editedItem: editedItem)
+                                        .padding(.top, 8)
+                                        .padding(.bottom, 10)
+                                        .padding(.horizontal, 10)
+                                        .font(.footnote)
+                                        .background { Color(.systemBackground)}
                                 }
+                                Spacer()
                             }
-                            .foregroundStyle(.secondary)
-                            .padding (.horizontal, 2)
                         }
-                    }
-                    .padding(.top, 8)
-                    .padding(.bottom, 10)
-                    .padding(.horizontal, 10)
-                    .font(.footnote)
-                    if showDiagnosticDetails, editedItem.errors != nil || editedItem.warnings != nil {
-                        DiagnosticDetailsView(errors: editedItem.errors, warnings: editedItem.warnings, item: editedItem)
-                            .frame(maxHeight: 120)
+                        .frame(maxHeight: 120)
+                    } else {
+                        HStack {
+                            if let firstError = editedItem.errors?.first ?? editedItem.warnings?.first {
+                                Button (action: { showDiagnosticDetails.toggle()}) {
+                                    ShowIssue (issue: firstError)
+                                        .fontDesign(.monospaced)
+                                        .lineLimit(1)
+                                }.buttonStyle(.plain)
+                            }
+                            Spacer ()
+                            diagnosticBlurb (editedItem: editedItem)
+                        }
+                        .padding(.top, 8)
+                        .padding(.bottom, 10)
+                        .padding(.horizontal, 10)
+                        .font(.footnote)
                     }
                 }
             } else if let htmlItem = current as? HtmlItem {
