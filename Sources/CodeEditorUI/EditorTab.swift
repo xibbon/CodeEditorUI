@@ -87,12 +87,9 @@ struct EditorTabs: View {
 
     var body: some View {
         ScrollView(.horizontal) {
-            HStack(spacing: 0) {
+            HStack(spacing: tabSpacing) {
                 if let selected {
                     ForEach(Array(items.enumerated()), id: \.offset) { idx, item in
-                        if idx > 0 {
-                            Spacer().frame(width: tabSpacing)
-                        }
                         EditorTab(item: $items [idx], selected: idx == selected, close: { closeRequest (idx) }, select: { self.selected = idx } )
 
                     }
