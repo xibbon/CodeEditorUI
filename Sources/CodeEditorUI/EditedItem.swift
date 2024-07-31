@@ -78,7 +78,7 @@ public class EditedItem: HostedItem {
     }
 
     /// Delegate
-    weak var editedItemDelegate: EditedItemDelegate?
+    var editedItemDelegate: EditedItemDelegate?
 
     public var language: TreeSitterLanguage? = nil
 
