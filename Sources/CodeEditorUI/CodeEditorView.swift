@@ -22,6 +22,7 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
     @State var status: CodeEditorStatus
     @State var keyboardOffset: CGFloat = 0
     @State var lookupWord: String = ""
+    @State var completionInProgress: Bool = false
 
     var item: EditedItem
     let state: CodeEditorState
@@ -55,6 +56,7 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
 
     func insertCompletion () {
         guard let req = item.completionRequest else { return }
+        completionInProgress = true
         let insertFull = req.completions[item.selected].insert
         let count = req.prefix.count
         let startLoc = req.on.selectedRange.location-count
@@ -62,7 +64,12 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
             let r = NSRange (location: startLoc, length: count)
             req.on.replace(r, withText: insertFull)
         }
-        item.cancelCompletion()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            item.cancelCompletion()
+            self.completionInProgress = false
+        }
+        
     }
 
     // Implementation of the DropDelegate method
@@ -195,7 +202,7 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
             .showSpaces(state.showSpaces)
             .characterPairs(codingPairs)
             .highlightLine(item.currentLine)
-            if let req = item.completionRequest {
+            if let req = item.completionRequest, !completionInProgress {
                 let maxHeight = 34 * 6.0
                 let yBelow = req.at.maxY+8
                 let yAbove = req.at.minY-10
