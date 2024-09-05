@@ -144,8 +144,13 @@ public class EditedItem: HostedItem {
         editedItemDelegate?.gutterTapped (self, textView, line)
     }
 
+    public var textLocation = TextLocation(lineNumber: 0, column: 0)
+
     @MainActor
     public func editedTextSelectionChanged (on textView: TextView) {
+        if let newPos = textView.textLocation(at: textView.selectedRange.location) {
+            textLocation = newPos
+        }
         guard let completionRequest else { return }
         if textView.selectedRange.location != completionRequest.textViewCursor {
             self.cancelCompletion()

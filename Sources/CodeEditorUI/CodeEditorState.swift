@@ -178,6 +178,10 @@ public class CodeEditorState {
         }
     }
 
+    public func getHostedItems() -> [HostedItem] {
+        return openFiles
+    }
+
     public func selectFile(path: String) {
         if let idx = openFiles.firstIndex(where: { $0.path == path }) {
             currentEditor = idx
