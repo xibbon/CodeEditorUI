@@ -19,7 +19,7 @@ import SwiftUI
 public class CodeEditorState {
     public var hostServices: HostServices
     var openFiles: [HostedItem]
-    var currentEditor: Int? = nil
+    public var currentEditor: Int? = nil
     var completionRequest: CompletionRequest? = nil
     var saveError: Bool = false
     var saveErrorMessage = ""
