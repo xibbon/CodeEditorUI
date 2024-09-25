@@ -220,7 +220,8 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
                 .frame(minWidth: 200, maxWidth: 350, maxHeight: maxHeight)
                 .onAppear {
                     req.on.updateOffsetForCompletion(req.at,
-                                                    keyboardOffset: keyboardOffset)
+                                                     keyboardOffset: keyboardOffset,
+                                                     completionDialogHeight: maxHeight)
                     
                 }
             }
