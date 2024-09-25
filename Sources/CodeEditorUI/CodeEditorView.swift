@@ -23,6 +23,7 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
     @State var keyboardOffset: CGFloat = 0
     @State var lookupWord: String = ""
     @State var completionInProgress: Bool = false
+    @State var textOffset: CGFloat = 0
 
     var item: EditedItem
     let state: CodeEditorState
@@ -207,16 +208,21 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
                 let yBelow = req.at.maxY+8
                 let yAbove = req.at.minY-10
                 let yBelowFinal = yBelow + maxHeight
-                let actualY = yBelowFinal > keyboardOffset ? yAbove-maxHeight : yBelow
+                let actualY = yBelow//yBelowFinal > keyboardOffset ? yAbove-maxHeight : yBelow
+                let diff = keyboardOffset - (req.at.maxY+8  + 34 * 6.0)
                 CompletionsDisplayView(
                     prefix: req.prefix,
                     completions: req.completions,
                     selected: Binding<Int> (get: { item.selected}, set: { newV in  item.selected = newV }),
                     onComplete: insertCompletion)
                 .background { Color (uiColor: .systemBackground) }
-                .offset(x: req.at.minX, y: actualY)
+                .offset(x: req.at.minX, y: diff < 0 ? actualY + diff : actualY)
                 .frame(minWidth: 200, maxWidth: 350, maxHeight: maxHeight)
-
+                .onAppear {
+                    req.on.updateOffsetForCompletion(req.at,
+                                                    keyboardOffset: keyboardOffset)
+                    
+                }
             }
         }
     }

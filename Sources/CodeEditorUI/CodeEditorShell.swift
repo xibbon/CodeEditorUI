@@ -74,6 +74,7 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                         })
                     )
                     .id(current)
+                    .zIndex(1)
                     if showDiagnosticDetails || editedItem.errors != nil || editedItem.warnings != nil {
                         Divider()
                     }
