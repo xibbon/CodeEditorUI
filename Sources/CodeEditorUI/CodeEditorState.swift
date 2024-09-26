@@ -35,6 +35,8 @@ public class CodeEditorState {
     /// Configures whether the editors show various space indicators
     public var showSpaces: Bool = false
 
+    public var autoDeleteEmptyPairs: Bool = true
+
     /// Initializes the code editor state that you can use to control what is shown
     public init (hostServices: HostServices? = nil, openFiles: [EditedItem] = []) {
         self.hostServices = hostServices ?? HostServices.makeTestHostServices()

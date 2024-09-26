@@ -203,6 +203,8 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
             .showSpaces(state.showSpaces)
             .characterPairs(codingPairs)
             .highlightLine(item.currentLine)
+            .characterPairTrailingComponentDeletionMode(
+                state.autoDeleteEmptyPairs ? .immediatelyFollowingLeadingComponent : .disabled)
             if let req = item.completionRequest, !completionInProgress {
                 let maxHeight = 34 * 6.0
                 let yBelow = req.at.maxY+8
