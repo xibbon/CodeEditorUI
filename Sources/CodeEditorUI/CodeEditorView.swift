@@ -283,7 +283,7 @@ actor Accumulator {
 
     func waitFor(_ count: Int) {
         waitingFor = count
-        if count == waitingFor {
+        if self.count == waitingFor {
             flush()
         }
     }
