@@ -217,6 +217,11 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
                     completions: req.completions,
                     selected: Binding<Int> (get: { item.selected}, set: { newV in  item.selected = newV }),
                     onComplete: insertCompletion)
+                    .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification), perform: {  _ in
+                        if let req = item.completionRequest {
+                            self.item.completionRequest = nil
+                        }
+                    })
                 .background { Color (uiColor: .systemBackground) }
                 .offset(x: req.at.minX, y: diff < 0 ? actualY + diff : actualY)
                 .frame(minWidth: 200, maxWidth: 350, maxHeight: maxHeight)
