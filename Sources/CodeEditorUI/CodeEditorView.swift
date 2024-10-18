@@ -207,12 +207,13 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
             .characterPairTrailingComponentDeletionMode(
                 state.autoDeleteEmptyPairs ? .immediatelyFollowingLeadingComponent : .disabled)
             if let req = item.completionRequest, !completionInProgress {
-                let maxHeight = 34 * 6.0
+                let maxHeight = min(34 * 6.0, (keyboardOffset - 34))
                 let yBelow = req.at.maxY+8
                 let yAbove = req.at.minY-10
                 let yBelowFinal = yBelow + maxHeight
-                let actualY = yBelow//yBelowFinal > keyboardOffset ? yAbove-maxHeight : yBelow
-                let diff = keyboardOffset - (req.at.maxY+8  + 34 * 6.0)
+                let actualY = yBelow
+                let diff = keyboardOffset - (req.at.maxY+8  + maxHeight)
+
                 CompletionsDisplayView(
                     prefix: req.prefix,
                     completions: req.completions,
