@@ -35,13 +35,30 @@ public class CodeEditorState {
     /// Configures whether the editors show various space indicators
     public var showSpaces: Bool = false
 
+    /// Configures whether we auto-delete empty pairs (like quotes, parenthesis)
     public var autoDeleteEmptyPairs: Bool = true
+
+    /// Controls word wrapping in the text editor
+    public var lineWrapping: Bool = true
 
     /// Initializes the code editor state that you can use to control what is shown
     public init (hostServices: HostServices? = nil, openFiles: [EditedItem] = []) {
         self.hostServices = hostServices ?? HostServices.makeTestHostServices()
         self.openFiles = openFiles
         currentEditor = openFiles.count > 0 ? 0 : nil
+    }
+
+    /// If the path is currently being edited, it returns the EditedItem for it,
+    /// otherwise it returns nil
+    public func getEditedFile(path: String) -> EditedItem? {
+        if let existingIdx = openFiles.firstIndex(where: {
+            $0 is EditedItem && $0.path == path
+        }) {
+            if let result = openFiles [existingIdx] as? EditedItem {
+                return result
+            }
+        }
+        return nil
     }
 
     /// Requests that a file with the given path be opened by the code editor

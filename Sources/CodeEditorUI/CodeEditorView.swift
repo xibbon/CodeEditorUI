@@ -200,6 +200,7 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
             .lineHeightMultiplier(state.lineHeightMultiplier)
             .showTabs(state.showTabs)
             .showLineNumbers(state.showLines)
+            .lineWrappingEnabled(state.lineWrapping)
             .showSpaces(state.showSpaces)
             .characterPairs(codingPairs)
             .highlightLine(item.currentLine)
