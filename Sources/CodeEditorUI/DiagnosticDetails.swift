@@ -36,7 +36,7 @@ struct DiagnosticDetailsView: View {
             ForEach (Array (src.enumerated()), id: \.offset) { idx, v in
                 ShowIssue (issue: v)
                     .onTapGesture {
-                        item.commands.requestGoto(line: v.line+1)
+                        item.commands.requestGoto(line: v.line-1)
                     }
                 .listRowSeparator(.hidden)
             }

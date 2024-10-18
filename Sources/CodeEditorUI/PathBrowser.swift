@@ -117,16 +117,19 @@ struct PathBrowser: View {
             .scrollIndicators(.hidden)
 
             Spacer ()
-            Menu {
-                FunctionView (functions: item.functions) { line in
-                    item.commands.requestGoto(line: line)
+            if item.functions.count > 0 {
+                Menu {
+                    FunctionView (functions: item.functions) { line in
+                        // validated
+                        item.commands.requestGoto(line: line)
+                    }
+                } label: {
+                    Image (systemName: "arrow.down.to.line")
+                        .font(.caption)
+                        .foregroundStyle(Color.primary)
                 }
-            } label: {
-                Image (systemName: "arrow.down.to.line")
-                    .font(.caption)
-                    .foregroundStyle(Color.primary)
+                .foregroundStyle(.secondary)
             }
-            .foregroundStyle(.secondary)
         }
         .padding([.vertical], 10)
     }
