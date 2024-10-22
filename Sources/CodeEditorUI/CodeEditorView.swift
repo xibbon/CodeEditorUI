@@ -82,25 +82,16 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
         let result = Accumulator (range: range, cmd: cmd)
         var pending = 0
 
-        for provider in info.itemProviders(for: [.text, .fileURL]) {
-            if provider.hasItemConformingToTypeIdentifier(UTType.url.identifier) {
+        for provider in info.itemProviders(for: [.text, .data]) {
+            if provider.hasItemConformingToTypeIdentifier(UTType.data.identifier) {
                 pending += 1
-                _ = provider.loadObject(ofClass: URL.self) { url, _ in
+                _ = provider.loadItem(forTypeIdentifier: UTType.data.identifier) { data, _ in
                     Task {
-                        guard let url else {
+                        guard let data = data as? Data, let file = try? JSONDecoder().decode(FileNode.self, from: data) else {
                             await result.error()
                             return
                         }
-                        let path = url.path(percentEncoded: false)
-                        // This is one of our res:// paths that we encoded as a "/" + "res://" so taht
-                        // swift would let us create a fileURL (necessary because we can have spaces in the
-                        // "res://my fonts/font.ttf" and Swift does not like the host part ("my fonts") having
-                        // a space`
-                        if path.starts(with: "/res://") {
-                            await result.push ("\"\(path.dropFirst(1))\"")
-                        } else {
-                            await result.push ("\"\(url.absoluteString)\"")
-                        }
+                        await result.push("\"\(file.url)\"")
                     }
                 }
             }
@@ -195,7 +186,7 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
                 }
                 return .ignored
             }
-            .onDrop(of: [.text, .url], delegate: self)
+            .onDrop(of: [.text, .data], delegate: self)
             .language (item.language)
             .lineHeightMultiplier(state.lineHeightMultiplier)
             .showTabs(state.showTabs)
@@ -324,3 +315,12 @@ struct DemoCodeEditorView: View {
     DemoCodeEditorView()
 }
 
+public struct FileNode: Codable, Sendable {
+    public let url: String
+    public let localId: String
+    
+    public init(url: String, localId: String) {
+        self.url = url
+        self.localId = localId
+    }
+}
