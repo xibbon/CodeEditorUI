@@ -24,6 +24,14 @@ public enum HostServiceIOError: Error, CustomStringConvertible, LocalizedError {
             return msg
         }
     }
+
+    public var failureReason: String? {
+        return localizedDescription
+    }
+    public var errorDescription: String? {
+        return localizedDescription
+    }
+
 }
 
 public struct DirectoryElement {
