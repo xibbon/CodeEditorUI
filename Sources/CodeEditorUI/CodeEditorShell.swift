@@ -78,7 +78,8 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                     if showDiagnosticDetails || editedItem.errors != nil || editedItem.warnings != nil {
                         Divider()
                     }
-                    if showDiagnosticDetails {
+                    if showDiagnosticDetails,
+                       ((editedItem.errors?.count ?? 0) > 0 || (editedItem.warnings?.count ?? 0) > 0) {
                         ZStack {
                             DiagnosticDetailsView(errors: editedItem.errors, warnings: editedItem.warnings, item: editedItem)
                             VStack (alignment: .leading, spacing: 0){
@@ -95,15 +96,14 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                             }
                         }
                         .frame(maxHeight: 120)
-                    } else {
+                    } else if let firstError = editedItem.errors?.first ?? editedItem.warnings?.first {
                         HStack {
-                            if let firstError = editedItem.errors?.first ?? editedItem.warnings?.first {
-                                Button (action: { showDiagnosticDetails.toggle()}) {
-                                    ShowIssue (issue: firstError)
-                                        .fontDesign(.monospaced)
-                                        .lineLimit(1)
-                                }.buttonStyle(.plain)
-                            }
+                            
+                            Button (action: { showDiagnosticDetails.toggle()}) {
+                                ShowIssue (issue: firstError)
+                                    .fontDesign(.monospaced)
+                                    .lineLimit(1)
+                            }.buttonStyle(.plain)
                             Spacer ()
                             diagnosticBlurb (editedItem: editedItem)
                         }
