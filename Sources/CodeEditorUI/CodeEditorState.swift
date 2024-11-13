@@ -243,6 +243,17 @@ public class CodeEditorState {
         }
     }
 
+    /// Indicates whether we have an empty set of tabs or not
+    public var haveScriptOpen: Bool {
+        var haveEditor = false
+        for x in openFiles {
+            if x is EditedItem {
+                return true
+            }
+        }
+        return false
+    }
+
     /// This callback receives both an instance to the state so it can direct the process, and a handle to the TextView that triggered the change
     /// and can be used to extract information about the change.
 //    public var onChange: ((CodeEditorState, EditedItem, TextView)->())? = nil
