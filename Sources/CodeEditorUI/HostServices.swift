@@ -26,10 +26,10 @@ public enum HostServiceIOError: Error, CustomStringConvertible, LocalizedError {
     }
 
     public var failureReason: String? {
-        return localizedDescription
+        return description
     }
     public var errorDescription: String? {
-        return localizedDescription
+        return description
     }
 
 }
