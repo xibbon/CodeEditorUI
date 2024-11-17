@@ -13,6 +13,7 @@ public struct CompletionsDisplayView: View {
     var completions: [CompletionEntry]
     @Binding var selected: Int
     var onComplete: () -> ()
+    @State var tappedTime: Date? = nil
 
     func getDefaultAcceptButton (_ color: Color) -> some View {
         Image (systemName: "return")
@@ -137,10 +138,14 @@ public struct CompletionsDisplayView: View {
                             .onChange(of: selected) { oldV, newV in
                                 proxy.scrollTo(newV)
                             }
-                            .onTapGesture(count: 2) {
-                                onComplete()
+                            .onTapGesture {
+                                if idx == selected, tappedTime?.timeIntervalSinceNow ?? 0 < -0.25 {
+                                    onComplete()
+                                    return
+                                }
+                                selected = idx
+                                tappedTime = Date()
                             }
-                            .onTapGesture { selected = idx }
                             if idx == selected {
                                 getDefaultAcceptButton(highlight)
                                     .onTapGesture { onComplete () }
