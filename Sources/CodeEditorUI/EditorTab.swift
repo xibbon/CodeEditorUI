@@ -55,14 +55,23 @@ struct EditorTab: View {
                         .font(.caption)
                 }
             }
-            Text (item.title)
-                .foregroundStyle(selected ? Color.accentColor : Color.secondary)
-                .font(.caption)
-                .fontWeight(selected ? .semibold : .regular)
-                .padding(.horizontal, 4)
-                .onTapGesture {
-                        self.select ()
-                }
+            ZStack {
+                // The first versio is the wider, and is hidden using the same color
+                // as the background
+                Text (item.title)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.background)
+
+                // The one that we dispaly
+                Text (item.title)
+                    .fontWeight(selected ? .semibold : .regular)
+                    .foregroundStyle(selected ? Color.accentColor : Color.secondary)
+            }
+            .font(.caption)
+            .padding(.horizontal, 4)
+            .onTapGesture {
+                self.select ()
+            }
             if (item as? EditedItem)?.dirty ?? false {
                 Image (systemName: "circle.fill")
                     .fontWeight(.light)

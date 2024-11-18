@@ -227,19 +227,30 @@ public class CodeEditorState {
 
     public func nextTab () {
         guard let currentEditor else {
+            if openFiles.count > 0 {
+                self.currentEditor = 0
+            }
             return
         }
         if currentEditor+1 < openFiles.count {
             self.currentEditor = currentEditor + 1
+        } else {
+            self.currentEditor = 0
         }
     }
 
     public func previousTab () {
         guard let currentEditor else {
+            if openFiles.count > 0 {
+                self.currentEditor = openFiles.count - 1
+            }
+
             return
         }
         if currentEditor > 0 {
             self.currentEditor = currentEditor - 1
+        } else {
+            self.currentEditor = openFiles.count - 1
         }
     }
 
