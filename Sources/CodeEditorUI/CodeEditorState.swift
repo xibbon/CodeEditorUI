@@ -86,6 +86,26 @@ public class CodeEditorState {
         }
     }
 
+    /// Requests that a file with the given path be opened by the code editor
+    /// - Parameters:
+    ///  - path: The filename to load, this is loaded via the `hostServices` API
+    ///  - delegate: the delegate to fulfill services for this edited item
+    ///  - fileHint: hint, if available about the kind of file we are editing
+    ///  - breakpoints: List of breakpoints to show at startup as shown.
+    /// - Returns: an EditedItem if it was alread opened, or if it was freshly opened on success, or an error indicating the problem otherwise
+    public func editFile (path: String, contents: String, delegate: EditedItemDelegate?, fileHint: EditedItem.FileHint, breakpoints: Set<Int> = Set<Int>()) -> EditedItem {
+        if let existingIdx = openFiles.firstIndex(where: { $0 is EditedItem && $0.path == path }) {
+            if let result = openFiles [existingIdx] as? EditedItem {
+                currentEditor = existingIdx
+                return result
+            }
+        }
+        let item = EditedItem(path: path, content: contents, editedItemDelegate: delegate, fileHint: .detect, breakpoints: breakpoints)
+        openFiles.append(item)
+        currentEditor = openFiles.count - 1
+        return item
+    }
+
     /// Opens an HTML tab with the specified HTML content
     /// - Parameters:
     ///  - title: Title to display on the tab bar
@@ -125,7 +145,7 @@ public class CodeEditorState {
             return true
         }
         saveIdx = idx
-        if let error = hostServices.saveContents(contents: edited.content, path: edited.path) {
+        if let error = edited.editedItemDelegate?.save(editedItem: edited, contents: edited.content, newPath: nil) {
             saveErrorMessage = error.localizedDescription
             saveError = true
             return false
@@ -165,10 +185,11 @@ public class CodeEditorState {
     }
 
     /// Saves the current file if it is dirty
-    public func saveCurrentFile() {
+    @MainActor
+    public func saveCurrentFile(newPath: String? = nil) {
         guard let idx = currentEditor else { return }
         guard let edited = openFiles[idx] as? EditedItem, edited.dirty else { return }
-        if let error = hostServices.saveContents(contents: edited.content, path: edited.path) {
+        if let error = edited.editedItemDelegate?.save(editedItem: edited, contents: edited.content, newPath: newPath) {
             saveErrorMessage = error.localizedDescription
             saveError = true
         }
@@ -177,13 +198,14 @@ public class CodeEditorState {
 
     //
     // Triggers the workflow to save the current file with a new path
+    @MainActor
     public func saveFileAs() {
         guard let currentEditor else { return }
         let path = openFiles[currentEditor].path
         hostServices.requestFileSaveAs(title: "Save Script As", path: path) { ret in
             guard let newPath = ret.first else { return }
             self.openFiles [currentEditor].path = newPath
-            self.saveCurrentFile()
+            self.saveCurrentFile(newPath: newPath)
         }
     }
 

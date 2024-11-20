@@ -38,7 +38,7 @@ public class EditedItem: HostedItem {
     public init (path: String, content: String, editedItemDelegate: EditedItemDelegate?, fileHint: FileHint = .detect, breakpoints: Set<Int> = Set<Int>(), currentLine: Int? = nil) {
         switch fileHint {
         case .detect:
-            if path.hasSuffix(".gd") {
+            if path.hasSuffix(".gd") || path.contains ("::"){
                 language = TreeSitterLanguage.gdscript
                 supportsLookup = true
             } else if path.hasSuffix (".md") {
@@ -171,6 +171,8 @@ public protocol EditedItemDelegate: AnyObject {
     func lookup (_ editedItem: EditedItem, on: TextView, at: UITextPosition, word: String)
     /// Invoked when a closing is imminent on the UI
     func closing (_ editedItem: EditedItem)
+    /// Requests that the given item be saved, returns nil on success or details on error, if newPath is not-nil, save to a new filename
+    func save(editedItem: EditedItem, contents: String, newPath: String?) -> HostServiceIOError?
 }
 
 public struct Issue {

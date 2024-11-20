@@ -16,10 +16,15 @@ public enum HostServiceIOError: Error, CustomStringConvertible, LocalizedError {
     /// by the native operations.
     case generic(String)
 
+    /// Internal assertion, we should not really hit this
+    case assertion(String)
+
     public var description: String {
         switch self {
         case .fileNotFound(let f):
             return "File not found \(f)"
+        case .assertion(let msg):
+            return "Internal error, this should not happen: \(msg)"
         case .generic(let msg):
             return msg
         }
