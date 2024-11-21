@@ -143,6 +143,7 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
                 // When we go away, clear the completion request
                 item.completionRequest = nil
             }
+            .focusable()
             .spellChecking(.no)
             .autoCorrection(.no)
             .includeLookupSymbol(item.supportsLookup)

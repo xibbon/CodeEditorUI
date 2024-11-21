@@ -127,6 +127,7 @@ public struct CompletionsDisplayView: View {
                                 kindToImage(kind: entry.kind)
                                 item (prefix: prefix, entry)
                             }
+                            .frame(minHeight: 29)
                             .tag(idx)
                             .padding([.leading], 7)
                             .background {
