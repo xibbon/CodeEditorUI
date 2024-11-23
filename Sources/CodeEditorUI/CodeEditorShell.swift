@@ -172,6 +172,7 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                             .stroke(Color(uiColor: .systemGray5))
                     }
                 }
+                .clipShape(RoundedRectangle (cornerRadius: 11))
         }
         //.background { Color (uiColor: .systemBackground) }
 
@@ -207,6 +208,7 @@ struct DemoCodeEditorShell: View {
                     print ("Error: \(err)")
                     break
                 }
+                state.openHtml(title: "Help", path: "foo.html", content: "<html><body><title>Hello</title><p>hack</body>")
             }
         }
     }
