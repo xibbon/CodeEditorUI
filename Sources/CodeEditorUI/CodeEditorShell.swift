@@ -147,33 +147,32 @@ public struct CodeEditorShell<EmptyContent: View>: View {
             } message: {
                 Text (state.saveErrorMessage)
             }
-            ZStack {
-                Group {
-                    Button(action: {
-                        state.previousTab()
-                    }) {
-                        Text("Previous Tab").frame(maxWidth: 0, maxHeight: 0)
-                    }
-                    .keyboardShortcut("[", modifiers: [.command, .shift])
-                    Button(action: {
-                        state.nextTab()
-                    }) {
-                        Text("Next Tab").frame(maxWidth: 0, maxHeight: 0)
-                    }
-                    .keyboardShortcut("]", modifiers: [.command, .shift])
-                }
-                editorContent
-                    .background {
+            editorContent
+                .background {
+                    ZStack {
+                        VStack {
+                            Group {
+                                Button(action: {
+                                    state.previousTab()
+                                }) {
+                                    Text("Previous Tab").frame(maxWidth: 0, maxHeight: 0)
+                                }
+                                .keyboardShortcut("[", modifiers: [.command, .shift])
+                                Button(action: {
+                                    state.nextTab()
+                                }) {
+                                    Text("Next Tab").frame(maxWidth: 0, maxHeight: 0)
+                                }
+                                .keyboardShortcut("]", modifiers: [.command, .shift])
+                            }
+                        }
+
                         RoundedRectangle(cornerRadius: 11)
                             .fill(Color(uiColor: .systemBackground))
                             .stroke(Color(uiColor: .systemGray5))
-                            .onAppear {
-                                print ("go")
-                            }
                     }
-            }
-       }
-        
+                }
+        }
         //.background { Color (uiColor: .systemBackground) }
 
         .padding(8)

@@ -61,6 +61,7 @@ struct EditorTab: View {
                 Text (item.title)
                     .fontWeight(.semibold)
                     .foregroundStyle(.background)
+                    .opacity(0.001)
 
                 // The one that we dispaly
                 Text (item.title)
