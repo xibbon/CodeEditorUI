@@ -6,7 +6,6 @@ import TreeSitterGDScriptRunestone
 
 /// This is the host for all of the coding needs that we have
 public struct CodeEditorShell<EmptyContent: View>: View {
-    @Environment(HostServices.self) var hostServices
     @Binding var state: CodeEditorState
     @State var showDiagnosticDetails = false
     let emptyContent: () -> EmptyContent
