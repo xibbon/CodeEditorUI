@@ -212,9 +212,14 @@ public class CodeEditorState {
     public func saveAllFiles() {
         for idx in 0..<openFiles.count {
             saveIdx = idx
-            if let error = hostServices.saveContents(contents: openFiles[idx].content, path: openFiles[idx].path) {
+            guard let editedItem = openFiles[idx] as? EditedItem else {
+                continue
+            }
+            if let error = hostServices.saveContents(contents: editedItem.content, path: editedItem.path) {
                 saveErrorMessage = error.localizedDescription
                 saveError = true
+            } else {
+                editedItem.dirty = false
             }
         }
     }
