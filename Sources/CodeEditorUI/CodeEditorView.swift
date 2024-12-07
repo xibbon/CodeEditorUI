@@ -65,12 +65,12 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
             let r = NSRange (location: startLoc, length: count)
             req.on.replace(r, withText: insertFull)
         }
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
             item.cancelCompletion()
             self.completionInProgress = false
         }
-        
+
     }
 
     // Implementation of the DropDelegate method
@@ -223,7 +223,7 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
                     req.on.updateOffsetForCompletion(req.at,
                                                      keyboardOffset: keyboardOffset,
                                                      completionDialogHeight: maxHeight)
-                    
+
                 }
             }
         }
@@ -319,7 +319,7 @@ struct DemoCodeEditorView: View {
 public struct FileNode: Codable, Sendable {
     public let url: String
     public let localId: String
-    
+
     public init(url: String, localId: String) {
         self.url = url
         self.localId = localId

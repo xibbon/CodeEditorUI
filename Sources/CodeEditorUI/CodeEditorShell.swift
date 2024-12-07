@@ -97,7 +97,7 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                         .frame(maxHeight: 120)
                     } else if let firstError = editedItem.errors?.first ?? editedItem.warnings?.first {
                         HStack {
-                            
+
                             Button (action: { showDiagnosticDetails.toggle()}) {
                                 ShowIssue (issue: firstError)
                                     .fontDesign(.monospaced)

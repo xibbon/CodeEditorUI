@@ -98,7 +98,7 @@ struct PathBrowser: View {
                             Text (prefix)
                                 .foregroundStyle(.secondary)
                         }
-                        
+
                         if idx == components.count-1 {
                             // For the last element, we display the contents of all the peers, like Xcode
                             DirectoryView (prefix: prefix, basePath: PathBrowser.makePath (prefix: prefix, components, idx-1), element: String(v))
