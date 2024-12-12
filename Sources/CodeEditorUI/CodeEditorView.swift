@@ -54,6 +54,15 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
     public func uitextViewRequestWordLookup(_ textView: Runestone.TextView, at position: UITextPosition, word: String) {
         item.editedItemDelegate?.lookup(item, on: textView, at: position, word: word)
     }
+    
+    public func uitextViewTryCompletion() -> Bool {
+        if let completionRequest = item.completionRequest {
+            insertCompletion ()
+            return true
+        } else {
+            return false
+        }
+    }
 
     func insertCompletion () {
         guard let req = item.completionRequest else { return }
