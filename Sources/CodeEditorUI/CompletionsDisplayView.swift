@@ -140,7 +140,7 @@ public struct CompletionsDisplayView: View {
                                 proxy.scrollTo(newV)
                             }
                             .onTapGesture {
-                                if idx == selected, tappedTime?.timeIntervalSinceNow ?? 0 < -0.25 {
+                                if idx == selected, tappedTime?.timeIntervalSinceNow ?? 0 > -0.25 {
                                     onComplete()
                                     return
                                 }
