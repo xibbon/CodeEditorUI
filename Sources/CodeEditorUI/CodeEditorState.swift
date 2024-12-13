@@ -201,21 +201,28 @@ public class CodeEditorState {
     @MainActor
     public func saveFileAs() {
         guard let currentEditor else { return }
-        let path = openFiles[currentEditor].path
+        guard let edited = openFiles[currentEditor] as? EditedItem, edited.dirty else { return }
+        let path = edited.path
+
         hostServices.requestFileSaveAs(title: "Save Script As", path: path) { ret in
             guard let newPath = ret.first else { return }
-            self.openFiles [currentEditor].path = newPath
-            self.saveCurrentFile(newPath: newPath)
+            edited.path = newPath
+            if let error = edited.editedItemDelegate?.save(editedItem: edited, contents: edited.content, newPath: newPath) {
+                self.saveErrorMessage = error.localizedDescription
+                self.saveError = true
+            }
+            edited.dirty = false
         }
     }
 
+    @MainActor
     public func saveAllFiles() {
         for idx in 0..<openFiles.count {
             saveIdx = idx
-            guard let editedItem = openFiles[idx] as? EditedItem else {
+            guard let editedItem = openFiles[idx] as? EditedItem, editedItem.dirty else {
                 continue
             }
-            if let error = hostServices.saveContents(contents: editedItem.content, path: editedItem.path) {
+            if let error = editedItem.editedItemDelegate?.save(editedItem: editedItem, contents: editedItem.content, newPath: editedItem.path) {
                 saveErrorMessage = error.localizedDescription
                 saveError = true
             } else {
