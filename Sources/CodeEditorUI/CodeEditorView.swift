@@ -228,12 +228,6 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
                 .background { Color (uiColor: .systemBackground) }
                 .offset(x: req.at.minX, y: diff < 0 ? actualY + diff : actualY)
                 .frame(minWidth: 200, maxWidth: 350, maxHeight: maxHeight)
-                .onAppear {
-                    req.on.updateOffsetForCompletion(req.at,
-                                                     keyboardOffset: keyboardOffset,
-                                                     completionDialogHeight: maxHeight)
-
-                }
             }
         }
     }
