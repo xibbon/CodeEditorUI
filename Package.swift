@@ -28,7 +28,8 @@ let package = Package(
                 .product(name: "TreeSitterGDScriptRunestone", package: "MiniTreeSitterLanguages"),
                 .product(name: "TreeSitterJSON", package: "MiniTreeSitterLanguages"),
                 .product(name: "TreeSitterJSONRunestone", package: "MiniTreeSitterLanguages"),
-                .product(name: "TreeSitterMarkdownRunestone", package: "MiniTreeSitterLanguages")
+                .product(name: "TreeSitterMarkdownRunestone", package: "MiniTreeSitterLanguages"),
+                .product(name: "TreeSitterGLSLRunestone", package: "MiniTreeSitterLanguages"),
             ]),
         .testTarget(
             name: "CodeEditorUITests",

@@ -9,7 +9,6 @@ import Foundation
 import SwiftUI
 import WebKit
 
-///
 /// An HTML page that can be embedeed into the CodeEditorShell in a tab
 public class HtmlItem: HostedItem {
     let _title: String

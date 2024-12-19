@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class HostedItem: Identifiable, Hashable, Equatable {
+open class HostedItem: Identifiable, Hashable, Equatable {
     /// - Parameters:
     ///  - path: the path that will be passed to the HostServices API to load and save the file
     ///  - data: this is data that can be attached to this object and extracted a later point by the user
@@ -36,7 +36,7 @@ public class HostedItem: Identifiable, Hashable, Equatable {
     public func requestFind () {}
 
     /// Returns a title suitable to be shown on the titlebar
-    public var title: String {
+    open var title: String {
         fatalError()
     }
 }

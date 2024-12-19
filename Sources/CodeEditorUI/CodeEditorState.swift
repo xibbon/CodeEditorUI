@@ -24,6 +24,10 @@ public class CodeEditorState {
     var saveError: Bool = false
     var saveErrorMessage = ""
     var saveIdx = 0
+
+    /// Whether to show the path browser
+    public var showPathBrowser: Bool = true
+
     public var lineHeightMultiplier: CGFloat = 1.2
 
     /// Configures whether the editors show line numbers
@@ -100,7 +104,7 @@ public class CodeEditorState {
                 return result
             }
         }
-        let item = EditedItem(path: path, content: contents, editedItemDelegate: delegate, fileHint: .detect, breakpoints: breakpoints)
+        let item = EditedItem(path: path, content: contents, editedItemDelegate: delegate, fileHint: fileHint, breakpoints: breakpoints)
         openFiles.append(item)
         currentEditor = openFiles.count - 1
         return item
@@ -293,6 +297,16 @@ public class CodeEditorState {
         var haveEditor = false
         for x in openFiles {
             if x is EditedItem {
+                return true
+            }
+        }
+        return false
+    }
+
+    public func hasFirstResponder() -> Bool {
+        guard let currentEditor else { return false }
+        if let edited = openFiles[currentEditor] as? EditedItem {
+            if edited.commands.textView?.isFirstResponder ?? false {
                 return true
             }
         }

@@ -58,11 +58,13 @@ public struct CodeEditorShell<EmptyContent: View>: View {
             let current = state.openFiles [currentIdx]
             if let editedItem = current as? EditedItem {
                 VStack(spacing: 0) {
-                    PathBrowser (item: editedItem)
-                        .environment(state)
-                        .padding(.bottom, 0)
-                        .padding(.horizontal, 10)
-                    Divider()
+                    if state.showPathBrowser {
+                        PathBrowser (item: editedItem)
+                            .environment(state)
+                            .padding(.bottom, 0)
+                            .padding(.horizontal, 10)
+                        Divider()
+                    }
                     CodeEditorView(
                         state: state,
                         item: editedItem,
@@ -95,9 +97,22 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                             }
                         }
                         .frame(maxHeight: 120)
+                    } else if let hint = editedItem.hint {
+                        HStack {
+                            Button (action: { showDiagnosticDetails.toggle()}) {
+                                ShowHint(text: hint)
+                                    .fontDesign(.monospaced)
+                                    .lineLimit(1)
+                            }.buttonStyle(.plain)
+                            Spacer ()
+                            diagnosticBlurb (editedItem: editedItem)
+                        }
+                        .padding(.top, 8)
+                        .padding(.bottom, 10)
+                        .padding(.horizontal, 10)
+                        .font(.footnote)
                     } else if let firstError = editedItem.errors?.first ?? editedItem.warnings?.first {
                         HStack {
-
                             Button (action: { showDiagnosticDetails.toggle()}) {
                                 ShowIssue (issue: firstError)
                                     .fontDesign(.monospaced)
@@ -118,6 +133,8 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                         obj: htmlItem,
                         load: urlLoader)
                 Spacer()
+            } else if let swifuiItem = current as? SwiftUIHostedItem {
+                swifuiItem.view()
             }
         } else {
             emptyContent()
@@ -210,6 +227,34 @@ struct DemoCodeEditorShell: View {
                 state.openHtml(title: "Help", path: "foo.html", content: "<html><body><title>Hello</title><p>hack</body>")
             }
         }
+    }
+}
+
+/// This shows a single line from the hint string, we need to figure out a good way of showing all the lines
+struct ShowHint: View {
+    let str: AttributedString
+
+    init(text: String) {
+        var str = AttributedString()
+        let lines = text.split(separator: "\n")
+
+        let ranges = lines[0].ranges(of: "\u{ffff}")
+        if ranges.count == 2 {
+            var highlighted = AttributedString(text[ranges[0].upperBound..<ranges[1].lowerBound])
+            highlighted.foregroundColor = UIColor.systemBackground
+            highlighted.backgroundColor = Color.primary
+
+            str.append(AttributedString(text[text.startIndex..<ranges[0].lowerBound]))
+            str.append(highlighted)
+            str.append(AttributedString(text[ranges[1].upperBound...]))
+        } else {
+            str.append(AttributedString(lines[0]))
+        }
+        self.str = str
+    }
+
+    var body: some View {
+        Text(str)
     }
 }
 #Preview {
