@@ -17,6 +17,7 @@ enum CodeEditorStatus {
 }
 
 public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
+    @State var codeEditorSize: CGSize = .zero
     @Environment(HostServices.self) var hostServices: HostServices
     @Binding var contents: String
     @State var status: CodeEditorStatus
@@ -208,13 +209,7 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
             .characterPairTrailingComponentDeletionMode(
                 state.autoDeleteEmptyPairs ? .immediatelyFollowingLeadingComponent : .disabled)
             if let req = item.completionRequest, !completionInProgress {
-                let maxHeight = min(34 * 6.0, (keyboardOffset - 34))
-                let yBelow = req.at.maxY+8
-                let yAbove = req.at.minY-10
-                let yBelowFinal = yBelow + maxHeight
-                let actualY = yBelow
-                let diff = keyboardOffset - (req.at.maxY+8  + maxHeight)
-
+                let (xOffset, yOffset, maxHeight) = calculateOffsetAndHeight(req: req)
                 CompletionsDisplayView(
                     prefix: req.prefix,
                     completions: req.completions,
@@ -225,11 +220,31 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
                             self.item.completionRequest = nil
                         }
                     })
-                .background { Color (uiColor: .systemBackground) }
-                .offset(x: req.at.minX, y: diff < 0 ? actualY + diff : actualY)
-                .frame(minWidth: 200, maxWidth: 350, maxHeight: maxHeight)
+                    .background { Color (uiColor: .systemBackground) }
+                    .offset(x: xOffset, y: yOffset)
+                    .frame(minWidth: 200, maxWidth: 350, maxHeight: maxHeight)
             }
         }
+        .onGeometryChange(for: CGSize.self) { proxy in
+            proxy.size
+        } action: { newValue in
+            codeEditorSize = newValue
+        }
+    }
+    
+    func calculateOffsetAndHeight(req: CompletionRequest) -> (offsetX: CGFloat, offsetY: CGFloat, height: CGFloat) {
+        var maxHeight = max(min(34 * 6.0, (keyboardOffset - 34)), 100)
+        let yBelow = req.at.maxY+8
+        let yAbove = req.at.minY-10
+
+        let xOffset = min(codeEditorSize.width - 350, req.at.minX)
+        var yOffset = codeEditorSize.height - maxHeight < yBelow ? (yAbove - maxHeight) : yBelow
+        if yOffset < 0 {
+            maxHeight += yOffset
+            yOffset = 0
+        }
+        
+        return (xOffset, yOffset, maxHeight)
     }
 }
 
