@@ -101,7 +101,9 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
                             await result.error()
                             return
                         }
-                        await result.push("\"\(file.url)\"")
+                        for url in file.urls {
+                            await result.push("\"\(url)\"")
+                        }
                     }
                 }
             }
@@ -335,11 +337,11 @@ struct DemoCodeEditorView: View {
 }
 
 public struct FileNode: Codable, Sendable {
-    public let url: String
+    public let urls: [String]
     public let localId: String
 
-    public init(url: String, localId: String) {
-        self.url = url
+    public init(urls: [String], localId: String) {
+        self.urls = urls
         self.localId = localId
     }
 }
