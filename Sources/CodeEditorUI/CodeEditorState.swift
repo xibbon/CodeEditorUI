@@ -65,6 +65,16 @@ public class CodeEditorState {
         return nil
     }
 
+    public func getEditedItem(path: String) -> HostedItem? {
+        if let existingIdx = openFiles.firstIndex(where: {
+            $0.path == path
+        }) {
+            return openFiles[existingIdx]
+        }
+        return nil
+
+    }
+
     /// Requests that a file with the given path be opened by the code editor
     /// - Parameters:
     ///  - path: The filename to load, this is loaded via the `hostServices` API
@@ -108,6 +118,11 @@ public class CodeEditorState {
         openFiles.append(item)
         currentEditor = openFiles.count - 1
         return item
+    }
+
+    public func addSwiftUIItem(item: SwiftUIHostedItem) {
+        openFiles.append(item)
+        currentEditor = openFiles.count - 1
     }
 
     /// Opens an HTML tab with the specified HTML content
