@@ -28,7 +28,7 @@ public class CodeEditorState {
     /// Whether to show the path browser
     public var showPathBrowser: Bool = true
 
-    public var lineHeightMultiplier: CGFloat = 1.2
+    public var lineHeightMultiplier: CGFloat = 1.6
 
     /// Configures whether the editors show line numbers
     public var showLines: Bool = true
@@ -44,6 +44,9 @@ public class CodeEditorState {
 
     /// Controls word wrapping in the text editor
     public var lineWrapping: Bool = true
+    
+    /// Controls font size
+    public var fontSize: CGFloat = 16
 
     /// Initializes the code editor state that you can use to control what is shown
     public init (hostServices: HostServices? = nil, openFiles: [EditedItem] = []) {
