@@ -330,6 +330,15 @@ public class CodeEditorState {
         }
         return false
     }
+    
+    @MainActor
+    public func toggleInlineComment() {
+        guard let currentEditor else { return }
+        guard let edited = openFiles[currentEditor] as? EditedItem else {
+            return
+        }
+        edited.toggleInlineComment()
+    }
 
     /// This callback receives both an instance to the state so it can direct the process, and a handle to the TextView that triggered the change
     /// and can be used to extract information about the change.

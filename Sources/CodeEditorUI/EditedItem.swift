@@ -172,6 +172,23 @@ public class EditedItem: HostedItem {
             self.cancelCompletion()
         }
     }
+    
+    @MainActor
+    private func getDelimiter () -> String? {
+        if path.hasSuffix(".gd") || path.contains ("::"){
+            return "#"
+        } else if path.hasSuffix(".gdshader") || path.hasSuffix(".gdshaderinc") {
+            return "//"
+        }
+        return nil
+    }
+    
+    @MainActor
+    public func toggleInlineComment() {
+        if let delimiter = getDelimiter() {
+            commands.toggleInlineComment(delimiter)
+        }
+    }
 }
 
 /// Protocol describing the callbacks for the EditedItem

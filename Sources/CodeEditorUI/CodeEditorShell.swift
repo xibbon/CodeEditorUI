@@ -8,6 +8,7 @@ import TreeSitterGDScriptRunestone
 public struct CodeEditorShell<EmptyContent: View>: View {
     @Binding var state: CodeEditorState
     @State var showDiagnosticDetails = false
+    @FocusState var isFocused: Bool
     let emptyContent: () -> EmptyContent
     let urlLoader: (URL) -> String?
 
@@ -164,6 +165,7 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                 Text (state.saveErrorMessage)
             }
             editorContent
+                .focused($isFocused)
                 .background {
                     ZStack {
                         VStack {
@@ -180,8 +182,16 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                                     Text("Next Tab").frame(maxWidth: 0, maxHeight: 0)
                                 }
                                 .keyboardShortcut("]", modifiers: [.command, .shift])
+                                
+                                Button(action: {
+                                    state.toggleInlineComment()
+                                }) {
+                                    Text("Toggle Inline Comment").frame(maxWidth: 0, maxHeight: 0)
+                                }
+                                .keyboardShortcut("/", modifiers: [.command])
                             }
                         }
+                        .disabled(!isFocused)
 
                         RoundedRectangle(cornerRadius: 11)
                             .fill(Color(uiColor: .systemBackground))
