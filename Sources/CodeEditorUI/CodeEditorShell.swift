@@ -57,85 +57,92 @@ public struct CodeEditorShell<EmptyContent: View>: View {
     var editorContent: some View {
         if let currentIdx = state.currentEditor, currentIdx >= 0, currentIdx < state.openFiles.count  {
             let current = state.openFiles [currentIdx]
-            if let editedItem = current as? EditedItem {
-                VStack(spacing: 0) {
-                    if state.showPathBrowser {
-                        PathBrowser (item: editedItem)
-                            .environment(state)
-                            .padding(.bottom, 0)
-                            .padding(.horizontal, 10)
-                        Divider()
-                    }
-                    CodeEditorView(
-                        state: state,
-                        item: editedItem,
-                        contents: Binding<String>(get: {
-                            editedItem.content
-                        }, set: { newV in
-                            editedItem.content = newV
-                        })
-                    )
-                    .id(current)
-                    .zIndex(1)
-                    if showDiagnosticDetails || editedItem.errors != nil || editedItem.warnings != nil {
-                        Divider()
-                    }
-                    if showDiagnosticDetails,
-                       ((editedItem.errors?.count ?? 0) > 0 || (editedItem.warnings?.count ?? 0) > 0) {
-                        ZStack {
-                            DiagnosticDetailsView(errors: editedItem.errors, warnings: editedItem.warnings, item: editedItem)
-                            VStack (alignment: .leading, spacing: 0){
-                                HStack (alignment: .top, spacing: 0) {
-                                    Spacer ()
-                                    diagnosticBlurb (editedItem: editedItem)
-                                        .padding(.top, 8)
-                                        .padding(.bottom, 10)
+            ZStack {
+                ForEach (state.openFiles) { file in
+                    Group {
+                        if let editedItem = file as? EditedItem {
+                            VStack(spacing: 0) {
+                                if state.showPathBrowser {
+                                    PathBrowser (item: editedItem)
+                                        .environment(state)
+                                        .padding(.bottom, 0)
                                         .padding(.horizontal, 10)
-                                        .font(.footnote)
-                                        .background { Color(.systemBackground)}
+                                    Divider()
                                 }
-                                Spacer()
+                                CodeEditorView(
+                                    state: state,
+                                    item: editedItem,
+                                    contents: Binding<String>(get: {
+                                        editedItem.content
+                                    }, set: { newV in
+                                        editedItem.content = newV
+                                    })
+                                )
+                                .id(file)
+                                .zIndex(1)
+                                if showDiagnosticDetails || editedItem.errors != nil || editedItem.warnings != nil {
+                                    Divider()
+                                }
+                                if showDiagnosticDetails,
+                                   ((editedItem.errors?.count ?? 0) > 0 || (editedItem.warnings?.count ?? 0) > 0) {
+                                    ZStack {
+                                        DiagnosticDetailsView(errors: editedItem.errors, warnings: editedItem.warnings, item: editedItem)
+                                        VStack (alignment: .leading, spacing: 0){
+                                            HStack (alignment: .top, spacing: 0) {
+                                                Spacer ()
+                                                diagnosticBlurb (editedItem: editedItem)
+                                                    .padding(.top, 8)
+                                                    .padding(.bottom, 10)
+                                                    .padding(.horizontal, 10)
+                                                    .font(.footnote)
+                                                    .background { Color(.systemBackground)}
+                                            }
+                                            Spacer()
+                                        }
+                                    }
+                                    .frame(maxHeight: 120)
+                                } else if let hint = editedItem.hint {
+                                    HStack {
+                                        Button (action: { showDiagnosticDetails.toggle()}) {
+                                            ShowHint(text: hint)
+                                                .fontDesign(.monospaced)
+                                                .lineLimit(1)
+                                        }.buttonStyle(.plain)
+                                        Spacer ()
+                                        diagnosticBlurb (editedItem: editedItem)
+                                    }
+                                    .padding(.top, 8)
+                                    .padding(.bottom, 10)
+                                    .padding(.horizontal, 10)
+                                    .font(.footnote)
+                                } else if let firstError = editedItem.errors?.first ?? editedItem.warnings?.first {
+                                    HStack {
+                                        Button (action: { showDiagnosticDetails.toggle()}) {
+                                            ShowIssue (issue: firstError)
+                                                .fontDesign(.monospaced)
+                                                .lineLimit(1)
+                                        }.buttonStyle(.plain)
+                                        Spacer ()
+                                        diagnosticBlurb (editedItem: editedItem)
+                                    }
+                                    .padding(.top, 8)
+                                    .padding(.bottom, 10)
+                                    .padding(.horizontal, 10)
+                                    .font(.footnote)
+                                }
                             }
+                        } else if let htmlItem = file as? HtmlItem {
+                            WebView(text: Binding<String>(get: { htmlItem.content }, set: { newV in htmlItem.content = newV }),
+                                    anchor: Binding<String?>(get: { htmlItem.anchor }, set: { newV in htmlItem.anchor = newV }),
+                                    obj: htmlItem,
+                                    load: urlLoader)
+                            Spacer()
+                        } else if let swifuiItem = file as? SwiftUIHostedItem {
+                            swifuiItem.view()
                         }
-                        .frame(maxHeight: 120)
-                    } else if let hint = editedItem.hint {
-                        HStack {
-                            Button (action: { showDiagnosticDetails.toggle()}) {
-                                ShowHint(text: hint)
-                                    .fontDesign(.monospaced)
-                                    .lineLimit(1)
-                            }.buttonStyle(.plain)
-                            Spacer ()
-                            diagnosticBlurb (editedItem: editedItem)
-                        }
-                        .padding(.top, 8)
-                        .padding(.bottom, 10)
-                        .padding(.horizontal, 10)
-                        .font(.footnote)
-                    } else if let firstError = editedItem.errors?.first ?? editedItem.warnings?.first {
-                        HStack {
-                            Button (action: { showDiagnosticDetails.toggle()}) {
-                                ShowIssue (issue: firstError)
-                                    .fontDesign(.monospaced)
-                                    .lineLimit(1)
-                            }.buttonStyle(.plain)
-                            Spacer ()
-                            diagnosticBlurb (editedItem: editedItem)
-                        }
-                        .padding(.top, 8)
-                        .padding(.bottom, 10)
-                        .padding(.horizontal, 10)
-                        .font(.footnote)
                     }
+                    .opacity(current.id == file.id ? 1 : 0)
                 }
-            } else if let htmlItem = current as? HtmlItem {
-                WebView(text: Binding<String>(get: { htmlItem.content }, set: { newV in htmlItem.content = newV }),
-                        anchor: Binding<String?>(get: { htmlItem.anchor }, set: { newV in htmlItem.anchor = newV }),
-                        obj: htmlItem,
-                        load: urlLoader)
-                Spacer()
-            } else if let swifuiItem = current as? SwiftUIHostedItem {
-                swifuiItem.view()
             }
         } else {
             emptyContent()
