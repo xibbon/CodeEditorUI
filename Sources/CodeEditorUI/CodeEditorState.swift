@@ -18,7 +18,7 @@ import SwiftUI
 @Observable
 public class CodeEditorState {
     public var hostServices: HostServices
-    var openFiles: [HostedItem]
+    public var openFiles: [HostedItem]
     public var currentEditor: Int? = nil
     var completionRequest: CompletionRequest? = nil
     var saveError: Bool = false

@@ -97,13 +97,18 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
                 pending += 1
                 _ = provider.loadItem(forTypeIdentifier: UTType.data.identifier) { data, _ in
                     Task {
-                        guard let data = data as? Data, let file = try? JSONDecoder().decode(FileNode.self, from: data) else {
+                        if let data = data as? Data, let file = try? JSONDecoder().decode(FileNode.self, from: data) {
+                            
+                            for url in file.urls {
+                                await result.push("\"\(url)\"")
+                            }
+                        } else if let data = data as? Data, let scene = try? JSONDecoder().decode(SceneNode.self, from: data) {
+                            await result.push(("\"\(scene.path)\""))
+                        } else {
                             await result.error()
                             return
                         }
-                        for url in file.urls {
-                            await result.push("\"\(url)\"")
-                        }
+                        
                     }
                 }
             }
@@ -341,6 +346,16 @@ public struct FileNode: Codable, Sendable {
 
     public init(urls: [String], localId: String) {
         self.urls = urls
+        self.localId = localId
+    }
+}
+
+public struct SceneNode: Codable, Sendable {
+    public let path: String
+    public let localId: String
+
+    public init(path: String, localId: String) {
+        self.path = path
         self.localId = localId
     }
 }
