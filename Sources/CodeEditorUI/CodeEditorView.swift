@@ -103,7 +103,14 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
                                 await result.push("\"\(url)\"")
                             }
                         } else if let data = data as? Data, let scene = try? JSONDecoder().decode(SceneNode.self, from: data) {
-                            await result.push(("\"\(scene.path)\""))
+                            var path = scene.path
+                            if path.contains(".") {
+                                let prefix = String(path.removeFirst())
+                                path = "\"" + path + "\""
+                                result.push(prefix + path)
+                            } else {
+                                await result.push(scene.path)
+                            }
                         } else {
                             await result.error()
                             return
