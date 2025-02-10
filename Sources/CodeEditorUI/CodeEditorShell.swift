@@ -174,36 +174,9 @@ public struct CodeEditorShell<EmptyContent: View>: View {
             editorContent
                 .focused($isFocused)
                 .background {
-                    ZStack {
-                        VStack {
-                            Group {
-                                Button(action: {
-                                    state.previousTab()
-                                }) {
-                                    Text("Previous Tab").frame(maxWidth: 0, maxHeight: 0)
-                                }
-                                .keyboardShortcut("[", modifiers: [.command, .shift])
-                                Button(action: {
-                                    state.nextTab()
-                                }) {
-                                    Text("Next Tab").frame(maxWidth: 0, maxHeight: 0)
-                                }
-                                .keyboardShortcut("]", modifiers: [.command, .shift])
-                                
-                                Button(action: {
-                                    state.toggleInlineComment()
-                                }) {
-                                    Text("Toggle Inline Comment").frame(maxWidth: 0, maxHeight: 0)
-                                }
-                                .keyboardShortcut("/", modifiers: [.command])
-                            }
-                        }
-                        .disabled(!isFocused)
-
-                        RoundedRectangle(cornerRadius: 11)
-                            .fill(Color(uiColor: .systemBackground))
-                            .stroke(Color(uiColor: .systemGray5))
-                    }
+                    RoundedRectangle(cornerRadius: 11)
+                        .fill(Color(uiColor: .systemBackground))
+                        .stroke(Color(uiColor: .systemGray5))
                 }
                 .clipShape(RoundedRectangle (cornerRadius: 11))
         }

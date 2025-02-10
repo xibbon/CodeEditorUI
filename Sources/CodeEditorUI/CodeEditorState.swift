@@ -55,6 +55,15 @@ public class CodeEditorState {
         currentEditor = openFiles.count > 0 ? 0 : nil
     }
 
+    public func getCurrentEditedItem() -> EditedItem? {
+        guard let currentEditor, currentEditor < openFiles.count else { return nil }
+
+        guard let edited = openFiles[currentEditor] as? EditedItem else {
+            return nil
+        }
+        return edited
+    }
+
     /// If the path is currently being edited, it returns the EditedItem for it,
     /// otherwise it returns nil
     public func getEditedFile(path: String) -> EditedItem? {
