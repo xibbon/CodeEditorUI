@@ -66,7 +66,7 @@ open class HostServices {
         load: @escaping (_ path: String)->Result<String,HostServiceIOError>,
         save: @escaping (_ contents: String, _ path: String) -> HostServiceIOError?,
         fileList: @escaping (_ path: String) -> [DirectoryElement],
-        requestFileSaveAs: @escaping (_ title: String, _ path: String, _ complete: @escaping ([String])->()) -> (),
+        requestFileSaveAs: @escaping (_ title: LocalizedStringKey, _ path: String, _ complete: @escaping ([String])->()) -> (),
         requestOpen: @escaping (_ path: String) -> ()
     ) {
         cbLoadFile = load
@@ -80,7 +80,7 @@ open class HostServices {
     var cbSaveContents: (String, String) -> HostServiceIOError?
     var cbRequestOpen: (String) -> ()
     public var cbFileList: (String) -> [DirectoryElement]
-    public var cbRequestFileSaveAs: (_ title: String, _ path: String, _ complete: @escaping ([String])->()) -> ()
+    public var cbRequestFileSaveAs: (_ title: LocalizedStringKey, _ path: String, _ complete: @escaping ([String])->()) -> ()
 
     /// Requests that the host process opens the specified path in an appropriate way
     ///
@@ -103,7 +103,7 @@ open class HostServices {
     ///  - path: the current path for the file
     ///  - complete: callback to invoke when the operation is completed with the list of arguments
     ///  selected (for now, just one value)
-    open func requestFileSaveAs (title: String, path: String, complete: @escaping ([String]) -> ()) {
+    open func requestFileSaveAs (title: LocalizedStringKey, path: String, complete: @escaping ([String]) -> ()) {
         cbRequestFileSaveAs(title, path, complete)
     }
 
