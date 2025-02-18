@@ -163,6 +163,7 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
                         breakpoints: b.breakpoints,
                         delegate: self
             )
+            .highlightLine(item.currentLine)
             .onDisappear {
                 // When we go away, clear the completion request
                 item.completionRequest = nil
