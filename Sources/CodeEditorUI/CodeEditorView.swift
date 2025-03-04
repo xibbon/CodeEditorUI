@@ -68,7 +68,11 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
     func insertCompletion () {
         guard let req = item.completionRequest else { return }
         completionInProgress = true
-        let insertFull = req.completions[item.selected].insert
+        if item.selectedCompletion > req.completions.count {
+            print("item.selectedCompletion=\(item.selectedCompletion) > req.completions.count=\(req.completions.count)")
+            return
+        }
+        let insertFull = req.completions[item.selectedCompletion].insert
         let count = req.prefix.count
         let startLoc = req.on.selectedRange.location-count
         if startLoc >= 0 {
@@ -174,8 +178,8 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
             .includeLookupSymbol(item.supportsLookup)
             .onKeyPress(.downArrow) {
                 if let req = item.completionRequest {
-                    if item.selected < req.completions.count {
-                        item.selected += 1
+                    if item.selectedCompletion < req.completions.count {
+                        item.selectedCompletion += 1
                     }
                     return .handled
                 }
@@ -183,8 +187,8 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
             }
             .onKeyPress(.upArrow) {
                 if item.completionRequest != nil {
-                    if item.selected > 0 {
-                        item.selected -= 1
+                    if item.selectedCompletion > 0 {
+                        item.selectedCompletion -= 1
                     }
                     return .handled
                 }
@@ -229,7 +233,13 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
                 CompletionsDisplayView(
                     prefix: req.prefix,
                     completions: req.completions,
-                    selected: Binding<Int> (get: { item.selected}, set: { newV in  item.selected = newV }),
+                    selected: Binding<Int> (get: { item.selectedCompletion}, set: { newV in
+                        if newV >= req.completions.count {
+                            print("Attempting to put a value outside of the range")
+                            return
+                        }
+                        item.selectedCompletion = newV
+                    }),
                     onComplete: insertCompletion)
                     .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification), perform: {  _ in
                         if let req = item.completionRequest {

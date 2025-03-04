@@ -118,11 +118,11 @@ public class EditedItem: HostedItem {
     }
 
     var completionRequest: CompletionRequest? = nil
-    var selected = 0
+    var selectedCompletion = 0
 
     public func requestCompletion (at location: CGRect, on textView: TextView, prefix: String, completions: [CompletionEntry]) {
         completionRequest = CompletionRequest(at: location, on: textView, prefix: prefix, completions: completions, textViewCursor: textView.selectedRange.location)
-        selected = 0
+        selectedCompletion = 0
     }
 
     public func cancelCompletion () {
