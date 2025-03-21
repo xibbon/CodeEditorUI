@@ -228,6 +228,7 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
             .characterPairTrailingComponentDeletionMode(
                 state.autoDeleteEmptyPairs ? .immediatelyFollowingLeadingComponent : .disabled)
             .theme(CodeEditorDefaultTheme(fontSize: state.fontSize))
+            .indentStrategy(state.indentStrategy)
             if let req = item.completionRequest, !completionInProgress {
                 let (xOffset, yOffset, maxHeight) = calculateOffsetAndHeight(req: req)
                 CompletionsDisplayView(

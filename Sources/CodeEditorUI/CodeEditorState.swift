@@ -48,6 +48,9 @@ public class CodeEditorState {
     /// Controls font size
     public var fontSize: CGFloat = 16
 
+    /// Controls indentation strategy
+    public var indentStrategy: IndentStrategy = .tab(length: 4)
+
     /// Initializes the code editor state that you can use to control what is shown
     public init (hostServices: HostServices? = nil, openFiles: [EditedItem] = []) {
         self.hostServices = hostServices ?? HostServices.makeTestHostServices()
