@@ -24,6 +24,7 @@ public class CodeEditorState {
     var saveError: Bool = false
     var saveErrorMessage = ""
     var saveIdx = 0
+    var codeEditorDefaultTheme: CodeEditorDefaultTheme
 
     /// Whether to show the path browser
     public var showPathBrowser: Bool = true
@@ -46,7 +47,11 @@ public class CodeEditorState {
     public var lineWrapping: Bool = true
     
     /// Controls font size
-    public var fontSize: CGFloat = 16
+    public var fontSize: CGFloat = 16 {
+        didSet {
+            self.codeEditorDefaultTheme.setFontSize(fontSize)
+        }
+    }
 
     /// Controls indentation strategy
     public var indentStrategy: IndentStrategy = .tab(length: 4)
@@ -56,6 +61,7 @@ public class CodeEditorState {
         self.hostServices = hostServices ?? HostServices.makeTestHostServices()
         self.openFiles = openFiles
         currentEditor = openFiles.count > 0 ? 0 : nil
+        self.codeEditorDefaultTheme = CodeEditorDefaultTheme(fontSize: 16)
     }
 
     public func getCurrentEditedItem() -> EditedItem? {
