@@ -6,7 +6,7 @@ import TreeSitterGDScriptRunestone
 
 /// This is the host for all of the coding needs that we have
 public struct CodeEditorShell<EmptyContent: View>: View {
-    @Binding var state: CodeEditorState
+    @State var state: CodeEditorState
     @State var showDiagnosticDetails = false
     @FocusState var isFocused: Bool
     let emptyContent: () -> EmptyContent
@@ -17,8 +17,8 @@ public struct CodeEditorShell<EmptyContent: View>: View {
     ///   - state: The state used to control this CodeEditorShell
     ///   - urlLoader: This should load a URL, and upon successful completion, it can return an anchor to scroll to, or nil otherwise
     ///   - emptyView: A view to show if there are no tabs open
-    public init (state: Binding<CodeEditorState>, urlLoader: @escaping (URL) -> String?, @ViewBuilder emptyView: @escaping ()->EmptyContent) {
-        self._state = state
+    public init (state: CodeEditorState, urlLoader: @escaping (URL) -> String?, @ViewBuilder emptyView: @escaping ()->EmptyContent) {
+        self._state = State(initialValue: state)
         self.emptyContent = emptyView
         self.urlLoader = urlLoader
     }
@@ -148,12 +148,43 @@ public struct CodeEditorShell<EmptyContent: View>: View {
             emptyContent()
         }
     }
+    
+    var fileMenu: some View {
+        Menu {
+            Button(action: {
+                state.requestFileOpen(title: "Open Shader", path: "res://") { files in
+                    guard let file = files.first else { return }
+                    
+                    state.requestOpen(path: file)
+                }
+            }) {
+                Text("Open Shader")
+            }
+            Button(action: {
+                state.saveCurrentFile()
+            }) {
+                Text("Save Shader")
+            }
+            Button(action: {
+                state.saveFileAs()
+            }) {
+                Text("Save Shader As...")
+            }
+        } label: {
+            Text("File")
+        }
+    }
 
     public var body: some View {
         VStack {
-            EditorTabs(selected: $state.currentEditor, items: $state.openFiles, closeRequest: { idx in
-                state.attemptClose (idx)
-            })
+            HStack {
+                if state.showFileMenu, state.openFiles.count > 0  {
+                    fileMenu
+                }
+                EditorTabs(selected: $state.currentEditor, items: $state.openFiles, closeRequest: { idx in
+                    state.attemptClose (idx)
+                })
+            }
             .alert("Error", isPresented: Binding<Bool>(get: { state.saveError }, set: { newV in state.saveError = newV })) {
                 Button ("Retry") {
                     state.saveError = false
@@ -186,40 +217,6 @@ public struct CodeEditorShell<EmptyContent: View>: View {
     }
 }
 
-struct DemoCodeEditorShell: View {
-    @State var state: CodeEditorState = CodeEditorState(hostServices: HostServices.makeTestHostServices())
-    @State var hostServices = HostServices.makeTestHostServices()
-
-    var body: some View {
-        VStack {
-
-            Text ("\(Bundle.main.resourceURL) xx Path=\(Bundle.main.paths(forResourcesOfType: ".gd", inDirectory: "/tmp"))")
-            CodeEditorShell (state: $state) { request in
-                print ("Loading \(request)")
-                return nil
-            } emptyView: {
-                Text ("No Files Open")
-            }
-            .environment(hostServices)
-            .onAppear {
-                switch state.openFile(path:
-
-                                        "/Users/miguel/cvs/godot-master/modules/gdscript/tests/scripts/utils.notest.gd", delegate: nil, fileHint: .detect) {
-                case .success(let item):
-                    item.validationResult (
-                        functions: [],
-                        errors: [Issue(kind: .error, col: 1, line: 1, message: "Demo Error, with a very long descrption that makes it up for the very difficult task of actually having to wrap around")],
-                        warnings: [Issue(kind: .warning, col: 1, line: 1, message: "Demo Warning")])
-                case .failure(let err):
-                    print ("Error: \(err)")
-                    break
-                }
-                state.openHtml(title: "Help", path: "foo.html", content: "<html><body><title>Hello</title><p>hack</body>")
-            }
-        }
-    }
-}
-
 /// This shows a single line from the hint string, we need to figure out a good way of showing all the lines
 struct ShowHint: View {
     let str: AttributedString
@@ -247,9 +244,55 @@ struct ShowHint: View {
         Text(str)
     }
 }
+
+
+#if DEBUG
+class DemoCodeEditorState: CodeEditorState {
+    override func requestFileSaveAs(title: LocalizedStringKey, path: String, complete: @escaping ([String]) -> ()) {
+        complete (["picked.gd"])
+    }
+    
+    override func requestOpen(path: String) {
+        print ("File \(path) shoudl be opened")
+    }
+}
+
+struct DemoCodeEditorShell: View {
+    @State var state: CodeEditorState = DemoCodeEditorState()
+
+    var body: some View {
+        VStack {
+
+            Text ("\(Bundle.main.resourceURL) xx Path=\(Bundle.main.paths(forResourcesOfType: ".gd", inDirectory: "/tmp"))")
+            CodeEditorShell (state: state) { request in
+                print ("Loading \(request)")
+                return nil
+            } emptyView: {
+                Text ("No Files Open")
+            }
+            .onAppear {
+                switch state.openFile(path:
+
+                                        "/Users/miguel/cvs/godot-master/modules/gdscript/tests/scripts/utils.notest.gd", delegate: nil, fileHint: .detect) {
+                case .success(let item):
+                    item.validationResult (
+                        functions: [],
+                        errors: [Issue(kind: .error, col: 1, line: 1, message: "Demo Error, with a very long descrption that makes it up for the very difficult task of actually having to wrap around")],
+                        warnings: [Issue(kind: .warning, col: 1, line: 1, message: "Demo Warning")])
+                case .failure(let err):
+                    print ("Error: \(err)")
+                    break
+                }
+                state.openHtml(title: "Help", path: "foo.html", content: "<html><body><title>Hello</title><p>hack</body>")
+            }
+        }
+    }
+}
+
 #Preview {
     ZStack {
         Color(uiColor: .systemGray6)
         DemoCodeEditorShell ()
     }
 }
+#endif

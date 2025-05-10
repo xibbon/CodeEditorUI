@@ -18,7 +18,6 @@ enum CodeEditorStatus {
 
 public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
     @State var codeEditorSize: CGSize = .zero
-    @Environment(HostServices.self) var hostServices: HostServices
     @Binding var contents: String
     @State var status: CodeEditorStatus
     @State var keyboardOffset: CGFloat = 0
@@ -342,13 +341,12 @@ struct DemoCodeEditorView: View {
     @State var text: String = "This is just a sample"
 
     var body: some View {
-        CodeEditorView(state: CodeEditorState(),
+        CodeEditorView(state: DemoCodeEditorState(),
                        item: EditedItem(
                         path: "/Users/miguel/cvs/godot-master/modules/gdscript/tests/scripts/utils.notest.gd",
                         content: text,
                         editedItemDelegate: nil),
                        contents: $text)
-            .environment(HostServices.makeTestHostServices())
     }
 
     func changed(_ editedItem: EditedItem, _ textView: TextView) {

@@ -8,7 +8,6 @@ import SwiftUI
 import Foundation
 
 struct PathBrowser: View {
-    @Environment(HostServices.self) var hostServices
     @Environment(CodeEditorState.self) var editorState
 
     struct IdentifiableInt: Identifiable {
@@ -49,7 +48,6 @@ struct PathBrowser: View {
     }
 
     struct DirectoryView: View {
-        @Environment(HostServices.self) var hostServices
         @Environment(CodeEditorState.self) var editorState
         let prefix: String
         let basePath: String
@@ -57,12 +55,12 @@ struct PathBrowser: View {
 
         var body: some View {
             Menu (element) {
-                ForEach (Array (hostServices.fileListing(at: basePath).enumerated()), id: \.offset) { _, v in
+                ForEach (Array (editorState.fileList(at: basePath).enumerated()), id: \.offset) { _, v in
                     if v.isDir {
                         DirectoryView (prefix: prefix, basePath: "\(basePath)/\(v.name)", element: v.name)
                     } else {
                         Button (action: {
-                            _ = hostServices.requestOpen(path: "\(basePath)/\(v.name)")
+                            _ = editorState.requestOpen(path: "\(basePath)/\(v.name)")
                         }) {
                             Label(v.name, systemImage: v.isDir ? "folder.fill" : PathBrowser.iconFor(v.name))
                         }
@@ -136,6 +134,7 @@ struct PathBrowser: View {
 
 }
 
+#if DEBUG
 #Preview {
     VStack (alignment: .leading){
         Text ("Path:")
@@ -144,7 +143,7 @@ struct PathBrowser: View {
         PathBrowser(item: EditedItem(path: "res://users/More/Longer/Very/Long/Path/NotSure/Where/ThisWouldEverEnd/With/ContainersAndOthers/addons/files/text.gd", content: "demo", editedItemDelegate: nil))
 
     }
-    .environment(HostServices.makeTestHostServices())
-    .environment(CodeEditorState())
+    .environment(DemoCodeEditorState())
     .padding()
 }
+#endif

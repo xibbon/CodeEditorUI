@@ -15,9 +15,15 @@ import SwiftUI
 ///
 /// You can load files using the `openFile` method, or render local HTML content using the `openHtml` method.
 ///
+/// You must subclass this and implement the following methods:
+/// - `readFileContents`
+/// - `requestFileSaveAs`
+/// - `requestOpen`
+/// - `requestFile Open`
+/// - `fileList`
 @Observable
-public class CodeEditorState {
-    public var hostServices: HostServices
+@MainActor
+open class CodeEditorState {
     public var openFiles: [HostedItem]
     public var currentEditor: Int? = nil
     var completionRequest: CompletionRequest? = nil
@@ -46,6 +52,9 @@ public class CodeEditorState {
     /// Controls word wrapping in the text editor
     public var lineWrapping: Bool = true
     
+    /// If true, displays a file menu, otherwise it does not
+    public var showFileMenu: Bool = false
+    
     /// Controls font size
     public var fontSize: CGFloat = 16 {
         didSet {
@@ -57,8 +66,7 @@ public class CodeEditorState {
     public var indentStrategy: IndentStrategy = .tab(length: 4)
 
     /// Initializes the code editor state that you can use to control what is shown
-    public init (hostServices: HostServices? = nil, openFiles: [EditedItem] = []) {
-        self.hostServices = hostServices ?? HostServices.makeTestHostServices()
+    public init(openFiles: [EditedItem] = []) {
         self.openFiles = openFiles
         currentEditor = openFiles.count > 0 ? 0 : nil
         self.codeEditorDefaultTheme = CodeEditorDefaultTheme(fontSize: 16)
@@ -96,9 +104,21 @@ public class CodeEditorState {
 
     }
 
+    /// Must be implemented in subclasses, the default implementation uses the host API
+    open func readFileContents(path: String) -> Result<String, HostServiceIOError> {
+        do {
+            return .success (try String(contentsOf: URL (filePath: path)))
+        } catch (let err) {
+            if !FileManager.default.fileExists(atPath: path) {
+                return .failure(.fileNotFound(path))
+            }
+            return .failure(.generic(err.localizedDescription))
+        }
+    }
+    
     /// Requests that a file with the given path be opened by the code editor
     /// - Parameters:
-    ///  - path: The filename to load, this is loaded via the `hostServices` API
+    ///  - path: The filename to load, this is loaded via the  `readFileContents` API
     ///  - delegate: the delegate to fulfill services for this edited item
     ///  - fileHint: hint, if available about the kind of file we are editing
     ///  - breakpoints: List of breakpoints to show at startup as shown.
@@ -110,7 +130,7 @@ public class CodeEditorState {
                 return .success(result)
             }
         }
-        switch hostServices.loadFile(path: path) {
+        switch readFileContents(path: path) {
         case .success(let content):
             let item = EditedItem(path: path, content: content, editedItemDelegate: delegate, fileHint: .detect, breakpoints: breakpoints)
             openFiles.append(item)
@@ -123,7 +143,7 @@ public class CodeEditorState {
 
     /// Requests that a file with the given path be opened by the code editor
     /// - Parameters:
-    ///  - path: The filename to load, this is loaded via the `hostServices` API
+    ///  - path: The filename to load, this is loaded via the `attemptOpenFile` method
     ///  - delegate: the delegate to fulfill services for this edited item
     ///  - fileHint: hint, if available about the kind of file we are editing
     ///  - breakpoints: List of breakpoints to show at startup as shown.
@@ -236,15 +256,70 @@ public class CodeEditorState {
         edited.dirty = false
     }
 
+    /// Invokes to save a file, it gets a title, and an initial path to display, this should display
+    /// the UI to request a file to be opened, and when the user picks the target, the complete
+    /// callback should be invoked with an array that contains a single string with the destination path where
+    /// the file will be saved.
+    ///
+    /// - Parameters:
+    ///  - title: Desired title to show in the UI for the dialog to save
+    ///  - path: the initial path to display in the dialog
+    ///  - complete: the method to invoke on the user picking the file, it should contains a string with the destination path, only the first
+    ///  element is used is currently used.
+    open func requestFileSaveAs(title: LocalizedStringKey, path: String, complete: @escaping ([String]) -> ()) {
+        complete([])
+    }
+    
+    /// Invoked to request that the file open dialog is displayed
+    /// 
+    open func requestFileOpen(title: LocalizedStringKey, path: String, complete: @escaping ([String]) -> ()) {
+        print("Request file open for \(title) at \(path)")
+    }
+    
+    /// Used to request that the shell environment opens the specified path.
+    open func requestOpen(path: String) {
+    }
+    
+    /// Used to return the file contents at path, you can override this
+    open func fileList(at path: String) -> [DirectoryElement] {
+        var result: [DirectoryElement] = []
+        do {
+            for element in try FileManager.default.contentsOfDirectory(atPath: path) {
+                var isDir: ObjCBool = false
+                if FileManager.default.fileExists(atPath: "\(path)/\(element)", isDirectory: &isDir) {
+                    result.append (DirectoryElement(name: element, isDir: isDir.boolValue))
+                }
+            }
+        } catch {
+            return result
+        }
+        result.sort(by: {
+            if $0.isDir {
+                if $1.isDir {
+                    return $0.name < $1.name
+                } else {
+                    return false
+                }
+            } else {
+                if $1.isDir {
+                    return true
+                } else {
+                    return $0.name < $1.name
+                }
+            }
+        })
+        return result
+    }
+    
     //
     // Triggers the workflow to save the current file with a new path
     @MainActor
     public func saveFileAs() {
         guard let currentEditor else { return }
-        guard let edited = openFiles[currentEditor] as? EditedItem, edited.dirty else { return }
+        guard let edited = openFiles[currentEditor] as? EditedItem else { return }
         let path = edited.path
 
-        hostServices.requestFileSaveAs(title: "Save Script As", path: path) { ret in
+        requestFileSaveAs(title: "Save Script As", path: path) { ret in
             guard let newPath = ret.first else { return }
             edited.path = newPath
             if let error = edited.editedItemDelegate?.save(editedItem: edited, contents: edited.content, newPath: newPath) {
