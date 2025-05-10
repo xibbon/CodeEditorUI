@@ -337,26 +337,6 @@ actor Accumulator {
     var waitingFor = Int.max
 }
 
-struct DemoCodeEditorView: View {
-    @State var text: String = "This is just a sample"
-
-    var body: some View {
-        CodeEditorView(state: DemoCodeEditorState(),
-                       item: EditedItem(
-                        path: "/Users/miguel/cvs/godot-master/modules/gdscript/tests/scripts/utils.notest.gd",
-                        content: text,
-                        editedItemDelegate: nil),
-                       contents: $text)
-    }
-
-    func changed(_ editedItem: EditedItem, _ textView: TextView) {
-        //
-    }
-}
-#Preview {
-    DemoCodeEditorView()
-}
-
 public struct FileNode: Codable, Sendable {
     public let urls: [String]
     public let localId: String
@@ -376,3 +356,26 @@ public struct SceneNode: Codable, Sendable {
         self.localId = localId
     }
 }
+
+
+#if DEBUG
+struct DemoCodeEditorView: View {
+    @State var text: String = "This is just a sample"
+
+    var body: some View {
+        CodeEditorView(state: DemoCodeEditorState(),
+                       item: EditedItem(
+                        path: "/Users/miguel/cvs/godot-master/modules/gdscript/tests/scripts/utils.notest.gd",
+                        content: text,
+                        editedItemDelegate: nil),
+                       contents: $text)
+    }
+
+    func changed(_ editedItem: EditedItem, _ textView: TextView) {
+        //
+    }
+}
+#Preview {
+    DemoCodeEditorView()
+}
+#endif
