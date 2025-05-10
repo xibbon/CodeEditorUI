@@ -215,6 +215,17 @@ open class CodeEditorState {
     }
 
     @MainActor
+    public func save(editedItem: EditedItem) -> HostServiceIOError? {
+        guard editedItem.dirty else {
+            return nil
+        }
+        if let error = editedItem.editedItemDelegate?.save(editedItem: editedItem, contents: editedItem.content, newPath: nil) {
+            return error
+        }
+        editedItem.dirty = false
+        return nil
+    }
+    @MainActor
     func attemptClose (_ idx: Int) {
         guard idx < openFiles.count else { return }
         if let edited = openFiles[idx] as? EditedItem, edited.dirty {
