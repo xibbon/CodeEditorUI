@@ -58,7 +58,7 @@ open class CodeEditorState {
     /// Controls font size
     public var fontSize: CGFloat = 16 {
         didSet {
-            self.codeEditorDefaultTheme.setFontSize(fontSize)
+            self.codeEditorDefaultTheme = CodeEditorDefaultTheme(fontSize: fontSize)
         }
     }
 
