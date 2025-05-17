@@ -90,9 +90,10 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                                     .focused($isFocused, equals: true)
                                     if state.showGotoLine {
                                         GotoLineView(showing: $state.showGotoLine) { newLine in
-                                            editedItem.commands.requestGoto(line: newLine)
-                                            state.showGotoLine = false
-                                            focusEditor()
+                                            editedItem.commands.requestGoto(line: newLine-1)
+                                            DispatchQueue.main.asyncAfter(deadline: .now()+0.1) {
+                                                editedItem.commands.becomeFirstResponder()
+                                            }
                                         }
                                     }
                                 }

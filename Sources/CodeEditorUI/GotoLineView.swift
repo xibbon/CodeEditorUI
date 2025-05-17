@@ -59,7 +59,7 @@ struct GotoLineView: View {
         ).stroke(Color(uiColor: .systemGray4)))
         .shadow(color: colorScheme == .dark ? .clear : Color.gray, radius: 40, x: 10, y: 30)
         .onChange(of: line) { old, new in
-            if let line = Int(new) { // }, line < maxLines {
+            if let line = Int(new), line > 0 { // }, line < maxLines {
                 canGo = line
             } else {
                 canGo = nil
