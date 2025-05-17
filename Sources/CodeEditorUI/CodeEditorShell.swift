@@ -69,17 +69,26 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                                         .padding(.horizontal, 10)
                                     Divider()
                                 }
-                                CodeEditorView(
-                                    state: state,
-                                    item: editedItem,
-                                    contents: Binding<String>(get: {
-                                        editedItem.content
-                                    }, set: { newV in
-                                        editedItem.content = newV
-                                    })
-                                )
-                                .id(file)
+                                ZStack(alignment: .top) {
+                                    CodeEditorView(
+                                        state: state,
+                                        item: editedItem,
+                                        contents: Binding<String>(get: {
+                                            editedItem.content
+                                        }, set: { newV in
+                                            editedItem.content = newV
+                                        })
+                                    )
+                                    .id(file)
+                                    if state.showGotoLine {
+                                        GotoLineView(showing: $state.showGotoLine) { newLine in
+                                            editedItem.commands.requestGoto(line: newLine)
+                                            state.showGotoLine = false
+                                        }
+                                    }
+                                }
                                 .zIndex(1)
+                                    
                                 if showDiagnosticDetails || editedItem.errors != nil || editedItem.warnings != nil {
                                     Divider()
                                 }
@@ -202,6 +211,7 @@ public struct CodeEditorShell<EmptyContent: View>: View {
             } message: {
                 Text (state.saveErrorMessage)
             }
+
             editorContent
                 .focused($isFocused)
                 .background {
@@ -262,7 +272,10 @@ struct DemoCodeEditorShell: View {
 
     var body: some View {
         VStack {
-
+            Button("Show Go-To Line") {
+                state.showGotoLine = true
+            }
+            
             Text ("\(Bundle.main.resourceURL) xx Path=\(Bundle.main.paths(forResourcesOfType: ".gd", inDirectory: "/tmp"))")
             CodeEditorShell (state: state) { request in
                 print ("Loading \(request)")
@@ -271,9 +284,7 @@ struct DemoCodeEditorShell: View {
                 Text ("No Files Open")
             }
             .onAppear {
-                switch state.openFile(path:
-
-                                        "/Users/miguel/cvs/godot-master/modules/gdscript/tests/scripts/utils.notest.gd", delegate: nil, fileHint: .detect) {
+                switch state.openFile(path: "/etc/passwd", delegate: nil, fileHint: .detect) {
                 case .success(let item):
                     item.validationResult (
                         functions: [],

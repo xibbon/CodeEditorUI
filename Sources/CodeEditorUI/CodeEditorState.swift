@@ -54,6 +54,9 @@ open class CodeEditorState {
     
     /// If true, displays a file menu, otherwise it does not
     public var showFileMenu: Bool = false
+
+    /// Controls displaying the "Go To Line" dialog
+    public var showGotoLine: Bool = false
     
     /// Controls font size
     public var fontSize: CGFloat = 16 {
