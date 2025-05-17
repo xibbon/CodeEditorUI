@@ -10,7 +10,8 @@ import SwiftUI
 struct GotoLineView: View {
     @Binding var showing: Bool
     @Environment(\.colorScheme) var colorScheme
-    @State var line: String = "1"
+    @FocusState var inputFocused: Bool
+    @State var line: String = ""
     @State var canGo: Int? = 1
     //let maxLines: Int
     let callback: (Int) -> ()
@@ -27,6 +28,10 @@ struct GotoLineView: View {
                             callback(canGo)
                         }
                     }
+                    .onAppear {
+                        inputFocused = true
+                    }
+                    .focused($inputFocused, equals: true)
                 Button(action: {
                     line = ""
                 }) {

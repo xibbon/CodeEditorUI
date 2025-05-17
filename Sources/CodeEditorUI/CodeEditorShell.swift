@@ -53,6 +53,12 @@ public struct CodeEditorShell<EmptyContent: View>: View {
         }
     }
 
+    func focusEditor() {
+        DispatchQueue.main.asyncAfter(deadline: .now()+0.3) {
+            isFocused = true
+        }
+    }
+    
     @ViewBuilder
     var editorContent: some View {
         if let currentIdx = state.currentEditor, currentIdx >= 0, currentIdx < state.openFiles.count  {
@@ -79,11 +85,14 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                                             editedItem.content = newV
                                         })
                                     )
+                                    .focusable()
                                     .id(file)
+                                    .focused($isFocused, equals: true)
                                     if state.showGotoLine {
                                         GotoLineView(showing: $state.showGotoLine) { newLine in
                                             editedItem.commands.requestGoto(line: newLine)
                                             state.showGotoLine = false
+                                            focusEditor()
                                         }
                                     }
                                 }
@@ -213,7 +222,6 @@ public struct CodeEditorShell<EmptyContent: View>: View {
             }
 
             editorContent
-                .focused($isFocused)
                 .background {
                     RoundedRectangle(cornerRadius: 11)
                         .fill(Color(uiColor: .systemBackground))

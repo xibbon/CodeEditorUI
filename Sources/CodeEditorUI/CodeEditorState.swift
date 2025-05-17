@@ -25,7 +25,17 @@ import SwiftUI
 @MainActor
 open class CodeEditorState {
     public var openFiles: [HostedItem]
-    public var currentEditor: Int? = nil
+    
+    /// Index of the currentEditor
+    public var currentEditor: Int? = nil {
+        didSet {
+            updateCurrentTextEditor()
+        }
+    }
+    
+    /// If true, it means that the currently selected editor in `currentEditor` is a text editor
+    public var currentTabIsTextEditor: Bool = false
+    
     var completionRequest: CompletionRequest? = nil
     var saveError: Bool = false
     var saveErrorMessage = ""
@@ -73,8 +83,17 @@ open class CodeEditorState {
         self.openFiles = openFiles
         currentEditor = openFiles.count > 0 ? 0 : nil
         self.codeEditorDefaultTheme = CodeEditorDefaultTheme(fontSize: 16)
+        updateCurrentTextEditor()
     }
 
+    func updateCurrentTextEditor() {
+        if let currentEditor, currentEditor < openFiles.count, openFiles[currentEditor] is EditedItem {
+            currentTabIsTextEditor = true
+        } else {
+            currentTabIsTextEditor = false
+        }
+    }
+    
     public func getCurrentEditedItem() -> EditedItem? {
         guard let currentEditor, currentEditor < openFiles.count else { return nil }
 
