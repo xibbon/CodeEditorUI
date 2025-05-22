@@ -271,7 +271,15 @@ open class CodeEditorState {
                 currentEditor = nil
             } else {
                 if let ce = currentEditor {
-                    currentEditor = ce-1
+                    if ce == 0 {
+                        if openFiles.count > 0 {
+                            currentEditor = 0
+                        } else {
+                            currentEditor = nil
+                        }
+                    } else {
+                        currentEditor = ce - 1
+                    }
                 }
             }
         }
