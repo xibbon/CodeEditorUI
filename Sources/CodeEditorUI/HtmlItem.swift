@@ -52,6 +52,7 @@ struct WebView: UIViewRepresentable {
     func makeUIView(context: Context) -> WKWebView {
         let view = WKWebView(frame: CGRect.zero, configuration: context.coordinator.configuration)
         view.isInspectable = true
+        view.isFindInteractionEnabled = true
         view.navigationDelegate = context.coordinator
         obj.view = view
         return view
