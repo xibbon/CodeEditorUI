@@ -151,8 +151,8 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                                 }
                             }
                         } else if let htmlItem = file as? HtmlItem {
-                            WebView(text: Binding<String>(get: { htmlItem.content }, set: { newV in htmlItem.content = newV }),
-                                    anchor: Binding<String?>(get: { htmlItem.anchor }, set: { newV in htmlItem.anchor = newV }),
+                            WebView(text: htmlItem.content,
+                                    anchor: htmlItem.anchor,
                                     obj: htmlItem,
                                     load: urlLoader)
                             Spacer()

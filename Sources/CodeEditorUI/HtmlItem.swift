@@ -36,15 +36,15 @@ public class HtmlItem: HostedItem {
 }
 
 struct WebView: UIViewRepresentable {
-    @Binding var text: String
-    @Binding var anchor: String?
+    var text: String
+    var anchor: String?
     let obj: HtmlItem
 
     let loadUrl: (URL) -> String?
 
-    init(text: Binding<String>, anchor: Binding<String?>, obj: HtmlItem, load: @escaping (URL) -> String?) {
-        _text = text
-        _anchor = anchor
+    init(text: String, anchor: String?, obj: HtmlItem, load: @escaping (URL) -> String?) {
+        self.text = text
+        self.anchor = anchor
         self.obj = obj
         self.loadUrl = load
     }
