@@ -59,11 +59,12 @@ struct WebView: UIViewRepresentable {
     }
 
     func makeCoordinator() -> WebViewCoordinator {
-        return WebViewCoordinator (loadUrl: loadUrl)
+        return WebViewCoordinator (parent: self, loadUrl: loadUrl)
     }
 
     class WebViewCoordinator: NSObject, WKNavigationDelegate, WKURLSchemeHandler {
         let configuration: WKWebViewConfiguration
+        var parent: WebView?
         let loadUrl: (URL) -> String?
 
         func webView(_ webView: WKWebView, start urlSchemeTask: any WKURLSchemeTask) {
@@ -90,7 +91,15 @@ struct WebView: UIViewRepresentable {
             //print ("End: \(urlSchemeTask)")
         }
 
-        init (loadUrl: @escaping (URL)->String?) {
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            if let scrollY = parent?.savedScrollY {
+                let js = "window.scrollTo(0, \(scrollY));"
+                webView.evaluateJavaScript(js, completionHandler: nil)
+            }
+        }
+
+        init (parent: WebView, loadUrl: @escaping (URL)->String?) {
+            self.parent = parent
             configuration = WKWebViewConfiguration()
             self.loadUrl = loadUrl
             super.init ()
@@ -98,8 +107,17 @@ struct WebView: UIViewRepresentable {
             configuration.setURLSchemeHandler(self, forURLScheme: "open-external")
         }
     }
+    @State var savedScrollY: CGFloat?
 
     func updateUIView(_ webView: WKWebView, context: Context) {
+        webView.evaluateJavaScript("window.scrollY") { result, error in
+            if let scrollY = result as? CGFloat {
+                if scrollY != 0 {
+                    self.savedScrollY = scrollY
+                }
+            }
+        }
+
         webView.loadHTMLString(text, baseURL: nil)
         if let anchor {
             webView.scrollTo (anchor)
