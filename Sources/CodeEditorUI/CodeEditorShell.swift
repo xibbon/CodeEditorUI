@@ -25,31 +25,33 @@ public struct CodeEditorShell<EmptyContent: View>: View {
 
     @ViewBuilder
     func diagnosticBlurb (editedItem: EditedItem) -> some View {
-        if let warnings = editedItem.warnings {
-            Button (action: { showDiagnosticDetails.toggle () }) {
-                HStack (spacing: 4){
-                    Image (systemName: "exclamationmark.triangle.fill")
-                    Text ("\(warnings.count)")
-                }.foregroundStyle(Color.orange)
-            }
-        }
-        if let errors = editedItem.errors {
-            Button (action: { showDiagnosticDetails.toggle() }) {
-                HStack (spacing: 4) {
-                    Image (systemName: "xmark.circle.fill")
-                    Text ("\(errors.count)")
-                }.foregroundStyle(Color.red)
-            }
-        }
-        if editedItem.warnings != nil || editedItem.errors != nil {
-            Button (action: { withAnimation { showDiagnosticDetails.toggle() } }) {
-                HStack (spacing: 4) {
-                    Image (systemName: "chevron.right")
-                        .rotationEffect(showDiagnosticDetails ? Angle (degrees: 90) : Angle(degrees: 0))
+        HStack {
+            if let warnings = editedItem.warnings {
+                Button (action: { showDiagnosticDetails.toggle () }) {
+                    HStack (spacing: 4){
+                        Image (systemName: "exclamationmark.triangle.fill")
+                        Text ("\(warnings.count)")
+                    }.foregroundStyle(Color.orange)
                 }
             }
-            .foregroundStyle(.secondary)
-            .padding (.horizontal, 8)
+            if let errors = editedItem.errors {
+                Button (action: { showDiagnosticDetails.toggle() }) {
+                    HStack (spacing: 4) {
+                        Image (systemName: "xmark.circle.fill")
+                        Text ("\(errors.count)")
+                    }.foregroundStyle(Color.red)
+                }
+            }
+            if editedItem.warnings != nil || editedItem.errors != nil {
+                Button (action: { withAnimation { showDiagnosticDetails.toggle() } }) {
+                    HStack (spacing: 4) {
+                        Image (systemName: "chevron.right")
+                            .rotationEffect(showDiagnosticDetails ? Angle (degrees: 90) : Angle(degrees: 0))
+                    }
+                }
+                .foregroundStyle(.secondary)
+                .padding (.horizontal, 8)
+            }
         }
     }
 
@@ -58,6 +60,9 @@ public struct CodeEditorShell<EmptyContent: View>: View {
             isFocused = true
         }
     }
+    
+    @State var disclosureControlWidth: CGFloat = 0
+    @State var errorWindowWidth: CGFloat = 0
     
     @ViewBuilder
     var editorContent: some View {
@@ -104,20 +109,27 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                                 }
                                 if showDiagnosticDetails,
                                    ((editedItem.errors?.count ?? 0) > 0 || (editedItem.warnings?.count ?? 0) > 0) {
-                                    ZStack {
-                                        DiagnosticDetailsView(errors: editedItem.errors, warnings: editedItem.warnings, item: editedItem)
-                                        VStack (alignment: .leading, spacing: 0){
-                                            HStack (alignment: .top, spacing: 0) {
-                                                Spacer ()
-                                                diagnosticBlurb (editedItem: editedItem)
-                                                    .padding(.top, 8)
-                                                    .padding(.bottom, 10)
-                                                    .padding(.horizontal, 10)
-                                                    .font(.footnote)
-                                                    .background { Color(.systemBackground)}
-                                            }
+                                    ZStack(alignment: .topLeading) {
+                                        DiagnosticDetailsView(errors: editedItem.errors, warnings: editedItem.warnings, item: editedItem, maxFirstLine: errorWindowWidth-disclosureControlWidth)
+                                        HStack {
                                             Spacer()
+                                            diagnosticBlurb (editedItem: editedItem)
+                                                .padding(.top, 8)
+                                                .padding(.bottom, 10)
+                                                .padding(.horizontal, 10)
+                                                .font(.footnote)
+                                                .background(Color(.systemBackground))
+                                                .onGeometryChange(for: CGFloat.self) {
+                                                    $0.size.width
+                                                } action: {
+                                                    disclosureControlWidth = $0
+                                                }
                                         }
+                                    }
+                                    .onGeometryChange(for: CGFloat.self) {
+                                        $0.size.width
+                                    } action: {
+                                        errorWindowWidth = $0
                                     }
                                     .frame(maxHeight: 120)
                                 } else if let hint = editedItem.hint {
@@ -293,6 +305,7 @@ struct DemoCodeEditorShell: View {
                 Text ("No Files Open")
             }
             .onAppear {
+                _ = state.openHtml(title: "Help", path: "foo.html", content: "<html><body><title>Hello</title><p>hack</body>")
                 switch state.openFile(path: "/etc/passwd", delegate: nil, fileHint: .detect) {
                 case .success(let item):
                     item.validationResult (
@@ -303,7 +316,6 @@ struct DemoCodeEditorShell: View {
                     print ("Error: \(err)")
                     break
                 }
-                state.openHtml(title: "Help", path: "foo.html", content: "<html><body><title>Hello</title><p>hack</body>")
             }
         }
     }
