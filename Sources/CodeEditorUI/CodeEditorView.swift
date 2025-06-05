@@ -75,7 +75,15 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
         let count = req.prefix.count
         let startLoc = req.on.selectedRange.location-count
         if startLoc >= 0 {
-            let r = NSRange (location: startLoc, length: count)
+            var r = NSRange (location: startLoc, length: count)
+            if var currentText = req.on.text(in: r) {
+                if insertFull.first == "\"" && insertFull.last == "\"" && currentText.first == "\"" {
+                    if let suffix = req.on.text(in: NSRange(location: r.location + r.length, length: 1)), suffix == "\"" {
+                        r.length += 1
+                    }
+
+                }
+            }
             req.on.replace(r, withText: insertFull)
         }
 
