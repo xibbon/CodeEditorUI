@@ -474,6 +474,24 @@ open class CodeEditorState {
         edited.toggleInlineComment()
     }
 
+    @MainActor
+    public func indent() {
+        guard let currentEditor else { return }
+        guard let edited = openFiles[currentEditor] as? EditedItem else {
+            return
+        }
+        edited.indent()
+    }
+
+    @MainActor
+    public func unIndent() {
+        guard let currentEditor else { return }
+        guard let edited = openFiles[currentEditor] as? EditedItem else {
+            return
+        }
+        edited.unIndent()
+    }
+
     /// This callback receives both an instance to the state so it can direct the process, and a handle to the TextView that triggered the change
     /// and can be used to extract information about the change.
 //    public var onChange: ((CodeEditorState, EditedItem, TextView)->())? = nil

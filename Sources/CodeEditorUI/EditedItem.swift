@@ -189,6 +189,16 @@ public class EditedItem: HostedItem {
             commands.toggleInlineComment(delimiter)
         }
     }
+
+    @MainActor
+    public func indent() {
+        commands.indent()
+    }
+
+    @MainActor
+    public func unIndent() {
+        commands.unIdent()
+    }
 }
 
 /// Protocol describing the callbacks for the EditedItem
