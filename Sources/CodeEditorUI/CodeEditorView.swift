@@ -97,7 +97,9 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
     // Implementation of the DropDelegate method
     public func performDrop(info: DropInfo) -> Bool {
         let cmd = item.commands
-        guard let pos = cmd.closestPosition(to: info.location) else { return false }
+        let offset = cmd.textView?.contentOffset.y
+        // we need to include offset as well, otherwise it doesn't work
+        guard let pos = cmd.closestPosition(to: CGPoint(x: info.location.x, y: info.location.y + (offset ?? 0))) else { return false }
         guard let range = cmd.textRange (from: pos, to: pos) else { return false }
 
         let result = Accumulator (range: range, cmd: cmd)
@@ -158,8 +160,9 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
     // Update the cursor position near the drop site.
     public func dropUpdated(info: DropInfo) -> DropProposal? {
         let cmd = item.commands
-        guard let pos = cmd.closestPosition(to: info.location) else { return nil }
-
+        let offset = cmd.textView?.contentOffset.y
+        // we need to include offset as well, otherwise it doesn't work
+        guard let pos = cmd.closestPosition(to: CGPoint(x: info.location.x, y: info.location.y + (offset ?? 0))) else { return nil }
         cmd.selectedTextRange = cmd.textRange(from: pos, to: pos)
 
         return nil
