@@ -297,7 +297,7 @@ struct DemoCodeEditorShell: View {
                 state.showGotoLine = true
             }
             
-            Text ("\(Bundle.main.resourceURL) xx Path=\(Bundle.main.paths(forResourcesOfType: ".gd", inDirectory: "/tmp"))")
+            Text ("\(String(describing: Bundle.main.resourceURL)) Path=\(String(describing: Bundle.main.paths(forResourcesOfType: ".gd", inDirectory: "/tmp")))")
             CodeEditorShell (state: state) { request in
                 print ("Loading \(request)")
                 return nil

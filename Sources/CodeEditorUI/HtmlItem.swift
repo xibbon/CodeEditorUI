@@ -68,13 +68,10 @@ struct WebView: UIViewRepresentable {
         let loadUrl: (URL) -> String?
 
         func webView(_ webView: WKWebView, start urlSchemeTask: any WKURLSchemeTask) {
-            guard let request = urlSchemeTask.request as? URLRequest else {
-                urlSchemeTask.didFailWithError(NSError(domain: "Godot", code: -1, userInfo: nil))
-                return
-            }
+            let request = urlSchemeTask.request
 
             // Extract information from the request
-            guard let url = urlSchemeTask.request.url else { return }
+            guard let url = request.url else { return }
             if url.scheme == "open-external" {
                 guard let externalUrl = URL (string: String (url.description.dropFirst(14))) else {
                     return
@@ -130,8 +127,8 @@ extension WKWebView {
         DispatchQueue.main.asyncAfter(deadline: .now().advanced(by: .milliseconds(1000))) {
             let str = "document.getElementById ('\(anchor)').scrollIntoView()"
             self.evaluateJavaScript(str) { ret, error in
-                print ("ScrollRet: \(ret)")
-                print ("ScrollError: \(error)")
+                print ("ScrollRet: \(String(describing: ret))")
+                print ("ScrollError: \(String(describing: error))")
             }
         }
     }

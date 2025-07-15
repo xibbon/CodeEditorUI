@@ -56,7 +56,7 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
     }
     
     public func uitextViewTryCompletion() -> Bool {
-        if let completionRequest = item.completionRequest {
+        if item.completionRequest != nil {
             insertCompletion ()
             return true
         } else {
@@ -76,7 +76,7 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
         let startLoc = req.on.selectedRange.location-count
         if startLoc >= 0 {
             var r = NSRange (location: startLoc, length: count)
-            if var currentText = req.on.text(in: r) {
+            if let currentText = req.on.text(in: r) {
                 if insertFull.first == "\"" && insertFull.last == "\"" && currentText.first == "\"" {
                     if let suffix = req.on.text(in: NSRange(location: r.location + r.length, length: 1)), suffix == "\"" {
                         r.length += 1
@@ -108,7 +108,7 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
         for provider in info.itemProviders(for: [.text, .data]) {
             if provider.hasItemConformingToTypeIdentifier(UTType.data.identifier) {
                 pending += 1
-                _ = provider.loadItem(forTypeIdentifier: UTType.data.identifier) { data, _ in
+                provider.loadItem(forTypeIdentifier: UTType.data.identifier) { data, _ in
                     Task {
                         if let data = data as? Data, let file = try? JSONDecoder().decode(FileNode.self, from: data) {
                             
@@ -120,7 +120,7 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
                             if path.contains(".") {
                                 let prefix = String(path.removeFirst())
                                 path = "\"" + path + "\""
-                                result.push(prefix + path)
+                                await result.push(prefix + path)
                             } else {
                                 await result.push(scene.path)
                             }
@@ -253,7 +253,7 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
                     }),
                     onComplete: insertCompletion)
                     .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification), perform: {  _ in
-                        if let req = item.completionRequest {
+                        if item.completionRequest != nil {
                             self.item.completionRequest = nil
                         }
                     })
@@ -273,7 +273,7 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
         let yBelow = req.at.maxY+8
         let yAbove = req.at.minY-10
         // Calculate maximum available height either above or below
-        var maxHeight = min(34 * 6.0, max(yAbove, (keyboardOffset - (req.at.maxY + 8))))
+        let maxHeight = min(34 * 6.0, max(yAbove, (keyboardOffset - (req.at.maxY + 8))))
         // Calculate xOffset based on current position
         let xOffset = min(codeEditorSize.width - 350, req.at.minX)
         // Calculate yOffset and determine wheater to put completion above or below based on space

@@ -446,7 +446,6 @@ open class CodeEditorState {
 
     /// Indicates whether we have an empty set of tabs or not
     public var haveScriptOpen: Bool {
-        var haveEditor = false
         for x in openFiles {
             if x is EditedItem {
                 return true
