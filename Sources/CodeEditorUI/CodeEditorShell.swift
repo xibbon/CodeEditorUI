@@ -134,7 +134,11 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                                     .frame(maxHeight: 120)
                                 } else if let hint = editedItem.hint {
                                     HStack {
-                                        Button (action: { showDiagnosticDetails.toggle()}) {
+                                        Button (action: {
+                                            withAnimation {
+                                                showDiagnosticDetails.toggle()
+                                            }
+                                        }) {
                                             ShowHint(text: hint)
                                                 .fontDesign(.monospaced)
                                                 .lineLimit(1)
@@ -148,7 +152,11 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                                     .font(.footnote)
                                 } else if let firstError = editedItem.errors?.first ?? editedItem.warnings?.first {
                                     HStack {
-                                        Button (action: { showDiagnosticDetails.toggle()}) {
+                                        Button (action: {
+                                            withAnimation {
+                                                showDiagnosticDetails.toggle()
+                                            }
+                                        }) {
                                             ShowIssue (issue: firstError)
                                                 .fontDesign(.monospaced)
                                                 .lineLimit(1)
