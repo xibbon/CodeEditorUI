@@ -24,7 +24,7 @@ import SwiftUI
 @Observable
 @MainActor
 open class CodeEditorState {
-    public var openFiles: [HostedItem]
+    public var openFiles: [HostedItem] = []
     
     /// Index of the currentEditor
     public var currentEditor: Int? = nil {
@@ -40,7 +40,7 @@ open class CodeEditorState {
     var saveError: Bool = false
     var saveErrorMessage = ""
     var saveIdx = 0
-    var codeEditorDefaultTheme: CodeEditorDefaultTheme
+    var codeEditorDefaultTheme: CodeEditorTheme
 
     /// Whether to show the path browser
     public var showPathBrowser: Bool = true
@@ -68,21 +68,31 @@ open class CodeEditorState {
     /// Controls displaying the "Go To Line" dialog
     public var showGotoLine: Bool = false
     
+    /// The font family to use, the empty string or "System font" become the system font
+    public var fontFamily: String = "" {
+        didSet {
+            self.codeEditorDefaultTheme = CodeEditorTheme(fontFamily: fontFamily, fontSize: fontSize)
+        }
+    }
+    
     /// Controls font size
     public var fontSize: CGFloat = 16 {
         didSet {
-            self.codeEditorDefaultTheme = CodeEditorDefaultTheme(fontSize: fontSize)
+            self.codeEditorDefaultTheme = CodeEditorTheme(fontFamily: fontFamily, fontSize: fontSize)
         }
     }
 
+    public func setFont(family: String, size: CGFloat) {
+        self.fontFamily = family
+        self.fontSize = size
+    }
     /// Controls indentation strategy
     public var indentStrategy: IndentStrategy = .tab(length: 4)
 
     /// Initializes the code editor state that you can use to control what is shown
-    public init(openFiles: [EditedItem] = []) {
-        self.openFiles = openFiles
-        currentEditor = openFiles.count > 0 ? 0 : nil
-        self.codeEditorDefaultTheme = CodeEditorDefaultTheme(fontSize: 16)
+    public init() {
+        currentEditor = nil
+        self.codeEditorDefaultTheme = CodeEditorTheme()
         updateCurrentTextEditor()
     }
 
