@@ -64,6 +64,16 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
         }
     }
 
+    public func uitextViewDidInvalidateBreakpoints(_ textView: TextView, changeLineIndex: Int, diff: Int) {
+        var sortedBP = item.breakpoints.sorted()
+        for i in 0..<sortedBP.count  {
+            if sortedBP[i] >= changeLineIndex {
+                sortedBP[i] = sortedBP[i] + diff
+            }
+        }
+        self.item.breakpoints = Set(sortedBP)
+    }
+
     func insertCompletion () {
         guard let req = item.completionRequest else { return }
         completionInProgress = true
