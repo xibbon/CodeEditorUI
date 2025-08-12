@@ -501,6 +501,13 @@ open class CodeEditorState {
         edited.unIndent()
     }
 
+    public func clearHighlight() {
+        guard let currentEditor else { return }
+        if let item = openFiles[currentEditor] as? EditedItem {
+            item.currentLine = nil
+        }
+    }
+
     /// This callback receives both an instance to the state so it can direct the process, and a handle to the TextView that triggered the change
     /// and can be used to extract information about the change.
 //    public var onChange: ((CodeEditorState, EditedItem, TextView)->())? = nil
