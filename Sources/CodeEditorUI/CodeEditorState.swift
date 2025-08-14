@@ -79,6 +79,7 @@ open class CodeEditorState {
     public var fontSize: CGFloat = 16 {
         didSet {
             self.codeEditorDefaultTheme = CodeEditorTheme(fontFamily: fontFamily, fontSize: fontSize)
+            UserDefaults.standard.set(fontSize, forKey: "xogot/appearance/font_size")
         }
     }
 
@@ -499,6 +500,18 @@ open class CodeEditorState {
             return
         }
         edited.unIndent()
+    }
+
+    @MainActor
+    public func increaseFontSize() {
+        var newFontSize = self.fontSize + 2
+        self.fontSize = min(newFontSize, 18)
+    }
+
+    @MainActor
+    public func decreaseFontSize() {
+        var newFontSize = self.fontSize - 2
+        self.fontSize = max(newFontSize, 12)
     }
 
     public func clearHighlight() {
