@@ -209,20 +209,43 @@ public struct CodeEditorShell<EmptyContent: View>: View {
             }) {
                 Text("Save Shader As...")
             }
+            if let currentEditor = state.currentEditor {
+                Divider()
+                Button(action: { state.attemptClose(currentEditor) }) {
+                    Text("Close")
+                }
+            }
         } label: {
             Text("File")
         }
     }
 
+    // This function for now works with just edited items, as we only use it
+    // in the 'navigation' mode which is the iPhone, and only for shaders, not
+    // for the main editor - in that case, we would need to change this to
+    // also handle HostedItems
+    func getTitle() -> String {
+        if let current = state.getCurrentEditedItem() {
+            return current.filename
+        } else {
+            return "Shader Editor"
+        }
+    }
     public var body: some View {
         VStack {
             HStack {
-                if state.showFileMenu, state.openFiles.count > 0  {
-                    fileMenu
+                if state.useNavigation {
+                    Color.clear.frame(height: 0)
+                        .navigationTitle(getTitle())
+                        .navigationBarTitleDisplayMode(.inline)
+                } else {
+                    if state.showFileMenu, state.openFiles.count > 0 {
+                        fileMenu
+                    }
+                    EditorTabs(selected: $state.currentEditor, items: $state.openFiles, closeRequest: { idx in
+                        state.attemptClose (idx)
+                    })
                 }
-                EditorTabs(selected: $state.currentEditor, items: $state.openFiles, closeRequest: { idx in
-                    state.attemptClose (idx)
-                })
             }
             .alert("Error", isPresented: Binding<Bool>(get: { state.saveError }, set: { newV in state.saveError = newV })) {
                 Button ("Retry") {
@@ -249,6 +272,30 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                         .stroke(Color(uiColor: .systemGray5))
                 }
                 .clipShape(RoundedRectangle (cornerRadius: 11))
+            
+        }
+        .toolbar {
+            if state.useNavigation {
+                ToolbarTitleMenu {
+                    ForEach(Array(state.openFiles.enumerated()), id: \.offset) { offset, element in
+                        Button(action: {
+                            state.currentEditor = offset
+                        }) {
+                            Text(element.title)
+                        }
+                    }
+                }
+                if state.showFileMenu {
+                    ToolbarItem(placement: .topBarLeading) {
+                        fileMenu
+                    }
+                }
+                ToolbarItem {
+                    Button(action: { state.showGotoLine = true }) {
+                        Image(systemName: "number")
+                    }
+                }
+            }
         }
         //.background { Color (uiColor: .systemBackground) }
 
@@ -299,6 +346,11 @@ class DemoCodeEditorState: CodeEditorState {
 struct DemoCodeEditorShell: View {
     @State var state: CodeEditorState = DemoCodeEditorState()
 
+    init(phone: Bool) {
+        state.showFileMenu = phone
+        state.useNavigation = phone
+    }
+    
     var body: some View {
         VStack {
             Button("Show Go-To Line") {
@@ -330,9 +382,15 @@ struct DemoCodeEditorShell: View {
 }
 
 #Preview {
-    ZStack {
-        Color(uiColor: .systemGray6)
-        DemoCodeEditorShell ()
+    if UIDevice.current.userInterfaceIdiom == .pad {
+        ZStack {
+            Color(uiColor: .systemGray6)
+            DemoCodeEditorShell(phone: false)
+        }
+    } else {
+        NavigationView {
+            DemoCodeEditorShell(phone: true)
+        }
     }
 }
 #endif
