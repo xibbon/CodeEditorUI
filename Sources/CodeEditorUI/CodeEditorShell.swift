@@ -334,7 +334,7 @@ struct ShowHint: View {
 
 #if DEBUG
 class DemoCodeEditorState: CodeEditorState {
-    override func requestFileSaveAs(title: LocalizedStringKey, path: String, complete: @escaping ([String]) -> ()) {
+    override func requestFileSaveAs(title: String, path: String, complete: @escaping ([String]) -> ()) {
         complete (["picked.gd"])
     }
     

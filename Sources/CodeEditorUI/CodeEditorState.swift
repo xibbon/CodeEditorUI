@@ -322,13 +322,13 @@ open class CodeEditorState {
     ///  - path: the initial path to display in the dialog
     ///  - complete: the method to invoke on the user picking the file, it should contains a string with the destination path, only the first
     ///  element is used is currently used.
-    open func requestFileSaveAs(title: LocalizedStringKey, path: String, complete: @escaping ([String]) -> ()) {
+    open func requestFileSaveAs(title: String, path: String, complete: @escaping ([String]) -> ()) {
         complete([])
     }
     
     /// Invoked to request that the file open dialog is displayed
     /// 
-    open func requestFileOpen(title: LocalizedStringKey, path: String, complete: @escaping ([String]) -> ()) {
+    open func requestFileOpen(title: String, path: String, complete: @escaping ([String]) -> ()) {
         print("Request file open for \(title) at \(path)")
     }
     
