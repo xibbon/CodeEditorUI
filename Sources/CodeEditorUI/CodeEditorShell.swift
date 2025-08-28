@@ -388,7 +388,7 @@ struct DemoCodeEditorShell: View {
             DemoCodeEditorShell(phone: false)
         }
     } else {
-        NavigationView {
+        NavigationStack {
             DemoCodeEditorShell(phone: true)
         }
     }

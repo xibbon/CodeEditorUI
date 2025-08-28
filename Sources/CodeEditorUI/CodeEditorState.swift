@@ -26,7 +26,7 @@ import SwiftUI
 open class CodeEditorState {
     public var openFiles: [HostedItem] = []
     
-    /// If this is set to true, then we will place various items assuming we are hosted in a NavigationView
+    /// If this is set to true, then we will place various items assuming we are hosted in a NavigationStack
     /// used for iPhone form factors
     public var useNavigation: Bool = false
     
