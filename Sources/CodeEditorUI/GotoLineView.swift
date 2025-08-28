@@ -21,7 +21,7 @@ struct GotoLineView: View {
             HStack(alignment: .firstTextBaseline) {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(.secondary)
-                TextField(.lineNumber, text: $line)
+                TextField(String(localized: .lineNumber), text: $line)
                     .onSubmit {
                         showing = false
                         if let canGo {

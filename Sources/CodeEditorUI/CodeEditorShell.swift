@@ -184,7 +184,7 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                 }
             }
         } else {
-            Text(verbatim: "currentIdx =\(state.currentEditor), count=\(state.openFiles.count)")
+            emptyContent()
         }
     }
     
