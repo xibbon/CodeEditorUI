@@ -75,7 +75,7 @@ struct PathBrowser: View {
         let gotoMethod: (Int) -> ()
 
         var body: some View {
-            Menu ("Jump To") {
+            Menu (.jumpTo) {
                 ForEach (functions, id: \.0) { fp in
                     Button (action: {
                         gotoMethod (fp.1)

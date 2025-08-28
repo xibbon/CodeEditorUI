@@ -30,7 +30,7 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                 Button (action: { showDiagnosticDetails.toggle () }) {
                     HStack (spacing: 4){
                         Image (systemName: "exclamationmark.triangle.fill")
-                        Text ("\(warnings.count)")
+                        Text (verbatim: "\(warnings.count)")
                     }.foregroundStyle(Color.orange)
                 }
             }
@@ -38,7 +38,7 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                 Button (action: { showDiagnosticDetails.toggle() }) {
                     HStack (spacing: 4) {
                         Image (systemName: "xmark.circle.fill")
-                        Text ("\(errors.count)")
+                        Text (verbatim: "\(errors.count)")
                     }.foregroundStyle(Color.red)
                 }
             }
@@ -184,39 +184,39 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                 }
             }
         } else {
-            emptyContent()
+            Text(verbatim: "currentIdx =\(state.currentEditor), count=\(state.openFiles.count)")
         }
     }
     
     var fileMenu: some View {
         Menu {
             Button(action: {
-                state.requestFileOpen(title: "Open Shader", path: "res://") { files in
+                state.requestFileOpen(title: String(localized: .openShader), path: "res://") { files in
                     guard let file = files.first else { return }
                     
                     state.requestOpen(path: file)
                 }
             }) {
-                Text("Open Shader")
+                Text(.openShader)
             }
             Button(action: {
                 state.saveCurrentFile()
             }) {
-                Text("Save Shader")
+                Text(.saveShader)
             }
             Button(action: {
                 state.saveFileAs()
             }) {
-                Text("Save Shader As...")
+                Text(.saveShaderAs)
             }
             if let currentEditor = state.currentEditor {
                 Divider()
                 Button(action: { state.attemptClose(currentEditor) }) {
-                    Text("Close")
+                    Text(.close)
                 }
             }
         } label: {
-            Text("File")
+            Text(.file)
         }
     }
 
@@ -228,7 +228,7 @@ public struct CodeEditorShell<EmptyContent: View>: View {
         if let current = state.getCurrentEditedItem() {
             return current.filename
         } else {
-            return "Shader Editor"
+            return String(localized: .shaderEditor)
         }
     }
     public var body: some View {
@@ -247,17 +247,17 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                     })
                 }
             }
-            .alert("Error", isPresented: Binding<Bool>(get: { state.saveError }, set: { newV in state.saveError = newV })) {
-                Button ("Retry") {
+            .alert(String(localized: .error), isPresented: Binding<Bool>(get: { state.saveError }, set: { newV in state.saveError = newV })) {
+                Button (.retry) {
                     state.saveError = false
                     DispatchQueue.main.async {
                         state.attemptClose(state.saveIdx)
                     }
                 }
-                Button ("Cancel") {
+                Button (.cancel) {
                     state.saveError = false
                 }
-                Button ("Ignore") {
+                Button (.ignore) {
                     state.closeFile (state.saveIdx)
                     state.saveError = false
                 }
@@ -353,16 +353,18 @@ struct DemoCodeEditorShell: View {
     
     var body: some View {
         VStack {
-            Button("Show Go-To Line") {
+            Button(action: {
                 state.showGotoLine = true
+            }) {
+                Text(verbatim: "Go To Line")
             }
             
-            Text ("\(String(describing: Bundle.main.resourceURL)) Path=\(String(describing: Bundle.main.paths(forResourcesOfType: ".gd", inDirectory: "/tmp")))")
+            Text (verbatim: "\(String(describing: Bundle.main.resourceURL)) Path=\(String(describing: Bundle.main.paths(forResourcesOfType: ".gd", inDirectory: "/tmp")))")
             CodeEditorShell (state: state) { request in
                 print ("Loading \(request)")
                 return nil
             } emptyView: {
-                Text ("No Files Open")
+                Text (verbatim: "No Files Open")
             }
             .onAppear {
                 _ = state.openHtml(title: "Help", path: "foo.html", content: "<html><body><title>Hello</title><p>hack</body>")

@@ -5,6 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "CodeEditorUI",
+    defaultLocalization: "en",
     platforms: [.iOS(.v17)],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
@@ -30,7 +31,9 @@ let package = Package(
                 .product(name: "TreeSitterJSONRunestone", package: "MiniTreeSitterLanguages"),
                 .product(name: "TreeSitterMarkdownRunestone", package: "MiniTreeSitterLanguages"),
                 .product(name: "TreeSitterGLSLRunestone", package: "MiniTreeSitterLanguages"),
-            ]),
+            ],
+            resources: [.process("Resources")]
+        ),
         .testTarget(
             name: "CodeEditorUITests",
             dependencies: ["CodeEditorUI"]),

@@ -151,7 +151,7 @@ public struct CompletionsDisplayView: View {
                                 getDefaultAcceptButton(highlight)
                                     .onTapGesture { onComplete () }
                             } else {
-                                Text("")
+                                Text(verbatim: "")
                             }
                         }
                     }

@@ -22,9 +22,9 @@ public enum HostServiceIOError: Error, CustomStringConvertible, LocalizedError {
     public var description: String {
         switch self {
         case .fileNotFound(let f):
-            return "File not found \(f)"
+            return String(localized: .fileNotFound(f))
         case .assertion(let msg):
-            return "Internal error, this should not happen: \(msg)"
+            return String(localized: .internalErrorThisShouldNotHappen(msg))
         case .generic(let msg):
             return msg
         }

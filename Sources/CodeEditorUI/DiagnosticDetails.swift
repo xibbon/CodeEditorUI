@@ -15,10 +15,10 @@ struct ShowIssue: View {
         HStack (alignment: .firstTextBaseline){
             Image (systemName: issue.kind == .error ? "xmark.circle.fill" : "exclamationmark.triangle.fill")
                 .foregroundStyle(issue.kind == .error ? Color.red : Color.orange)
-            Text ("\(issue.line):\(issue.col) ")
+            Text (verbatim: "\(issue.line):\(issue.col) ")
                 .foregroundStyle(.secondary)
                 .fontDesign(.monospaced)
-            + Text ("\(issue.message)")
+            + Text (verbatim: "\(issue.message)")
         }
         .font(.footnote)
     }

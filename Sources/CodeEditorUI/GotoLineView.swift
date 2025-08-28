@@ -21,7 +21,7 @@ struct GotoLineView: View {
             HStack(alignment: .firstTextBaseline) {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(.secondary)
-                TextField("Line Number", text: $line)
+                TextField(.lineNumber, text: $line)
                     .onSubmit {
                         showing = false
                         if let canGo {
@@ -44,7 +44,7 @@ struct GotoLineView: View {
             .padding(.vertical, 3)
             .font(.title3)
             if let canGo {
-                Text("# Line Number: **\(canGo)**")
+                Text(.lineNumber(canGo))
                     .font(.subheadline)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(4)
@@ -72,7 +72,6 @@ struct GotoLineView: View {
         ZStack(alignment: .top) {
             Color.black.opacity(0.001)
                 .onTapGesture {
-                    print("Tapped")
                     showing = false
                 }
             textInputBox
@@ -85,6 +84,7 @@ struct GotoLineView: View {
     }
 }
 
+#if DEBUG
 struct ContentView: View {
     @Binding var show: Bool
     
@@ -94,7 +94,7 @@ struct ContentView: View {
                 Image(systemName: "globe")
                     .imageScale(.large)
                     .foregroundStyle(.tint)
-                Text("Hello, world!")
+                Text(verbatim: "Hello, world!")
             }
             .padding()
             if show {
@@ -110,3 +110,4 @@ struct ContentView: View {
     @Previewable @State var show = true
     ContentView(show: $show)
 }
+#endif

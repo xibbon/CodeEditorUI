@@ -104,8 +104,7 @@ open class CodeEditorState {
     func updateCurrentTextEditor() {
         if let currentEditor, currentEditor < openFiles.count, openFiles[currentEditor] is EditedItem {
             currentTabIsTextEditor = true
-        } else {
-            currentTabIsTextEditor = false
+        } else {            currentTabIsTextEditor = false
         }
     }
     
