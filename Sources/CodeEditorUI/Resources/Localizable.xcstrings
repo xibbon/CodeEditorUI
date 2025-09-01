@@ -4,6 +4,12 @@
     "# Line Number: **%lld**" : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "# رقم السطر: **%lld**"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -45,6 +51,12 @@
     "Cancel" : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إلغاء"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -86,6 +98,12 @@
     "Close" : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إغلاق"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -127,6 +145,12 @@
     "Error" : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "خطأ"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -168,6 +192,12 @@
     "File" : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ملف"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -209,6 +239,12 @@
     "File not found %@" : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الملف غير موجود %@"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -250,6 +286,12 @@
     "Ignore" : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تجاهل"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -291,6 +333,12 @@
     "Internal error, this should not happen: %@" : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "خطأ داخلي، لا ينبغي أن يحدث هذا: %@"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -332,6 +380,12 @@
     "Jump To" : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "انتقل إلى"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -373,6 +427,12 @@
     "Line Number" : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "رقم السطر"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -414,6 +474,12 @@
     "Open Shader" : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "فتح المظلل"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -455,6 +521,12 @@
     "Pick" : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اختار"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -496,6 +568,12 @@
     "Preview: %@" : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "معاينة: %@"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -537,6 +615,12 @@
     "Retry" : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إعادة المحاولة"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -578,6 +662,12 @@
     "Save Shader" : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حفظ الشادر"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -619,6 +709,12 @@
     "Save Shader As..." : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "احفظ الشادر باسم..."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -660,6 +756,12 @@
     "Select a Font" : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اختر خطًا"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -701,6 +803,12 @@
     "Shader Editor" : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "محرر الطيف"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -742,6 +850,12 @@
     "The quick brown fox jumps over the lazy dog" : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الثعلب البني السريع يقفز فوق الكلب الكسول"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
