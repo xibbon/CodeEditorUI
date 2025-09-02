@@ -52,6 +52,12 @@
             "value" : "# Номер строки: **%lld**"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "# Satır Numarası: **%lld**"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -109,6 +115,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Отмена"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İptal"
           }
         },
         "zh-Hans" : {
@@ -170,6 +182,12 @@
             "value" : "Закрыть"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kapat"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -227,6 +245,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ошибка"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hata"
           }
         },
         "zh-Hans" : {
@@ -288,6 +312,12 @@
             "value" : "Файл"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dosya"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -345,6 +375,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Файл не найден %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dosya bulunamadı %@"
           }
         },
         "zh-Hans" : {
@@ -406,6 +442,12 @@
             "value" : "Игнорировать"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yoksay"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -463,6 +505,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Внутренняя ошибка, этого не должно происходить: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dahili hata, bu olmamalı: %@"
           }
         },
         "zh-Hans" : {
@@ -524,6 +572,12 @@
             "value" : "Перейти к"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Git"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -581,6 +635,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Номер строки"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Satır Numarası"
           }
         },
         "zh-Hans" : {
@@ -642,6 +702,12 @@
             "value" : "Открыть шейдер"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gölgelendiriciyi Aç"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -699,6 +765,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Выбрать"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seç"
           }
         },
         "zh-Hans" : {
@@ -760,6 +832,12 @@
             "value" : "Предварительный просмотр: %@"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Önizleme: %@"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -817,6 +895,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Повторить"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tekrar Dene"
           }
         },
         "zh-Hans" : {
@@ -878,6 +962,12 @@
             "value" : "Сохранить шейдер"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gölgelendiriciyi Kaydet"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -935,6 +1025,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Сохранить шейдер как..."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gölgelendiriciyi Farklı Kaydet..."
           }
         },
         "zh-Hans" : {
@@ -996,6 +1092,12 @@
             "value" : "Выберите шрифт"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bir Yazı Tipi Seç"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1055,6 +1157,12 @@
             "value" : "Редактор шейдеров"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shader Düzenleyici"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1112,6 +1220,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Быстрая коричневая лиса перепрыгивает через ленивую собаку"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hızlı kahverengi tilki tembel köpeğin üzerinden atlar"
           }
         },
         "zh-Hans" : {
