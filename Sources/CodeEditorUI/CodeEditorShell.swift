@@ -6,6 +6,7 @@ import TreeSitterGDScriptRunestone
 
 /// This is the host for all of the coding needs that we have
 public struct CodeEditorShell<EmptyContent: View>: View {
+    @Environment(\.dismiss) var dismiss
     @State var state: CodeEditorState
     @State var showDiagnosticDetails = false
     @FocusState var isFocused: Bool
@@ -285,6 +286,17 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                         }
                     }
                 }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                    }
+                }
+                if #available(iOS 26.0, *) {
+                    ToolbarSpacer(.fixed, placement: .topBarLeading)
+                }
+
                 if state.showFileMenu {
                     ToolbarItem(placement: .topBarLeading) {
                         fileMenu
