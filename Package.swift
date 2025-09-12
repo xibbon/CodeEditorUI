@@ -32,7 +32,7 @@ let package = Package(
                 .product(name: "TreeSitterMarkdownRunestone", package: "MiniTreeSitterLanguages"),
                 .product(name: "TreeSitterGLSLRunestone", package: "MiniTreeSitterLanguages"),
             ],
-            resources: [.process("Resources")]
+            resources: [.process("Resources")],
         ),
         .testTarget(
             name: "CodeEditorUITests",

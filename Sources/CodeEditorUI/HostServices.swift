@@ -33,6 +33,7 @@ public enum HostServiceIOError: Error, CustomStringConvertible, LocalizedError {
     public var failureReason: String? {
         return description
     }
+
     public var errorDescription: String? {
         return description
     }

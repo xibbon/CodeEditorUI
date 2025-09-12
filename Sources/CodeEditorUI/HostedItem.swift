@@ -32,7 +32,9 @@ open class HostedItem: Identifiable, Hashable, Equatable {
         path.hash(into: &hasher)
     }
 
+    @MainActor
     public func requestFindAndReplace() {}
+    @MainActor
     public func requestFind () {}
 
     /// Returns a title suitable to be shown on the titlebar

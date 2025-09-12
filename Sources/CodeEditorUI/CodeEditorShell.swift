@@ -5,6 +5,7 @@ import RunestoneUI
 import TreeSitterGDScriptRunestone
 
 /// This is the host for all of the coding needs that we have
+@available(iOS 18.0, *)
 public struct CodeEditorShell<EmptyContent: View>: View {
     @Environment(\.dismiss) var dismiss
     @State var state: CodeEditorState
@@ -355,6 +356,7 @@ class DemoCodeEditorState: CodeEditorState {
     }
 }
 
+@available(iOS 18.0, *)
 struct DemoCodeEditorShell: View {
     @State var state: CodeEditorState = DemoCodeEditorState()
 
@@ -399,11 +401,19 @@ struct DemoCodeEditorShell: View {
     if UIDevice.current.userInterfaceIdiom == .pad {
         ZStack {
             Color(uiColor: .systemGray6)
-            DemoCodeEditorShell(phone: false)
+            if #available(iOS 18.0, *) {
+                DemoCodeEditorShell(phone: false)
+            } else {
+                // Fallback on earlier versions
+            }
         }
     } else {
         NavigationStack {
-            DemoCodeEditorShell(phone: true)
+            if #available(iOS 18.0, *) {
+                DemoCodeEditorShell(phone: true)
+            } else {
+                // Fallback on earlier versions
+            }
         }
     }
 }
