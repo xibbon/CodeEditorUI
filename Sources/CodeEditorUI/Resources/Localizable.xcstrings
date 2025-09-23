@@ -10,6 +10,12 @@
             "value" : "# رقم السطر: **%lld**"
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "# Číslo řádku: **%lld**"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34,10 +40,22 @@
             "value" : "# Numéro de ligne : **%lld**"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "# Numero di riga: **%lld**"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "# 行番号: **%lld**"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "# Regelnr.: **%lld**"
           }
         },
         "pt-BR" : {
@@ -75,6 +93,12 @@
             "value" : "إلغاء"
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zrušit"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -99,10 +123,22 @@
             "value" : "Annuler"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annulla"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "キャンセル"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annuleren"
           }
         },
         "pt-BR" : {
@@ -140,6 +176,12 @@
             "value" : "إغلاق"
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zavřít"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -164,10 +206,22 @@
             "value" : "Fermer"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chiudi"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "閉じる"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sluiten"
           }
         },
         "pt-BR" : {
@@ -205,6 +259,12 @@
             "value" : "خطأ"
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chyba"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -229,10 +289,22 @@
             "value" : "Erreur"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Errore"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "エラー"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fout"
           }
         },
         "pt-BR" : {
@@ -270,6 +342,12 @@
             "value" : "ملف"
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soubor"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -294,10 +372,22 @@
             "value" : "Fichier"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "ファイル"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bestand"
           }
         },
         "pt-BR" : {
@@ -335,6 +425,12 @@
             "value" : "الملف غير موجود %@"
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soubor nenalezen %@"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -359,10 +455,22 @@
             "value" : "Fichier non trouvé %@"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File non trovato %@"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "ファイルが見つかりません %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bestand niet gevonden %@"
           }
         },
         "pt-BR" : {
@@ -400,6 +508,12 @@
             "value" : "تجاهل"
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignorovat"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -424,10 +538,22 @@
             "value" : "Ignorer"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignora"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "無視"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Negeren"
           }
         },
         "pt-BR" : {
@@ -465,6 +591,12 @@
             "value" : "خطأ داخلي، لا ينبغي أن يحدث هذا: %@"
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vnitřní chyba, toto by se nemělo stát: %@"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -489,10 +621,22 @@
             "value" : "Erreur interne, cela ne devrait pas arriver : %@"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Errore interno, questo non dovrebbe accadere: %@"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "内部エラー、これは発生しないはずです: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Interne fout, dit zou niet mogen gebeuren: %@"
           }
         },
         "pt-BR" : {
@@ -530,6 +674,12 @@
             "value" : "انتقل إلى"
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přejít na"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -554,10 +704,22 @@
             "value" : "Aller à"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vai a"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "ジャンプ先"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ga naar"
           }
         },
         "pt-BR" : {
@@ -595,6 +757,12 @@
             "value" : "رقم السطر"
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Číslo řádku"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -619,10 +787,22 @@
             "value" : "Numéro de ligne"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Numero di riga"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "行番号"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Regelnummer"
           }
         },
         "pt-BR" : {
@@ -660,6 +840,12 @@
             "value" : "فتح المظلل"
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otevřít shader"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -684,10 +870,22 @@
             "value" : "Ouvrir le shader"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri shader"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "シェーダーを開く"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Shader"
           }
         },
         "pt-BR" : {
@@ -725,6 +923,12 @@
             "value" : "اختار"
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vybrat"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -749,10 +953,22 @@
             "value" : "Choisir"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "選択"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kiezen"
           }
         },
         "pt-BR" : {
@@ -790,6 +1006,12 @@
             "value" : "معاينة: %@"
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Náhled: %@"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -814,10 +1036,22 @@
             "value" : "Aperçu : %@"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anteprima: %@"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "プレビュー: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voorbeeld: %@"
           }
         },
         "pt-BR" : {
@@ -855,6 +1089,12 @@
             "value" : "إعادة المحاولة"
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zkusit znovu"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -879,10 +1119,22 @@
             "value" : "Réessayer"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riprova"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "再試行"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Probeer opnieuw"
           }
         },
         "pt-BR" : {
@@ -920,6 +1172,12 @@
             "value" : "حفظ الشادر"
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uložit shader"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -944,10 +1202,22 @@
             "value" : "Enregistrer le shader"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salva shader"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "シェーダーを保存"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shader Opslaan"
           }
         },
         "pt-BR" : {
@@ -985,6 +1255,12 @@
             "value" : "احفظ الشادر باسم..."
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uložit shader jako..."
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1009,10 +1285,22 @@
             "value" : "Enregistrer le shader sous..."
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salva Shader Come..."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "シェーダーを別名で保存..."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shader opslaan als..."
           }
         },
         "pt-BR" : {
@@ -1050,6 +1338,12 @@
             "value" : "اختر خطًا"
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vyberte písmo"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1074,10 +1368,22 @@
             "value" : "Sélectionner une police"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleziona un font"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "フォントを選択"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecteer een lettertype"
           }
         },
         "pt-BR" : {
@@ -1115,6 +1421,12 @@
             "value" : "محرر الطيف"
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editor shaderů"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1139,10 +1451,22 @@
             "value" : "Éditeur de shader"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editor di shader"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "シェーダーエディター"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shader-editor"
           }
         },
         "pt-BR" : {
@@ -1180,6 +1504,12 @@
             "value" : "الثعلب البني السريع يقفز فوق الكلب الكسول"
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rychlá hnědá liška přeskočí líného psa"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1204,10 +1534,22 @@
             "value" : "Le rapide renard brun saute par-dessus le chien paresseux"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La rapida volpe marrone salta sopra il cane pigro"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "素早い茶色の狐が怠け者の犬を飛び越える"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De snelle bruine vos springt over de luie hond"
           }
         },
         "pt-BR" : {
