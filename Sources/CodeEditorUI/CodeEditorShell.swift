@@ -6,23 +6,39 @@ import TreeSitterGDScriptRunestone
 
 /// This is the host for all of the coding needs that we have
 @available(iOS 18.0, *)
-public struct CodeEditorShell<EmptyContent: View>: View {
+public struct CodeEditorShell<EmptyContent: View, CodeEditorMenu: View>: View {
     @Environment(\.dismiss) var dismiss
     @State var state: CodeEditorState
     @State var showDiagnosticDetails = false
     @FocusState var isFocused: Bool
     let emptyContent: () -> EmptyContent
     let urlLoader: (URL) -> String?
+    var codeEditorMenu: (() -> CodeEditorMenu)?
 
     /// Creates the CodeEditorShell
     /// - Parameters:
     ///   - state: The state used to control this CodeEditorShell
     ///   - urlLoader: This should load a URL, and upon successful completion, it can return an anchor to scroll to, or nil otherwise
     ///   - emptyView: A view to show if there are no tabs open
-    public init (state: CodeEditorState, urlLoader: @escaping (URL) -> String?, @ViewBuilder emptyView: @escaping ()->EmptyContent) {
+    ///   - codeEditorMenu: A view to show injected menu
+    public init (state: CodeEditorState, urlLoader: @escaping (URL) -> String?, @ViewBuilder emptyView: @escaping ()->EmptyContent, @ViewBuilder codeEditorMenu: @escaping () -> CodeEditorMenu) {
         self._state = State(initialValue: state)
         self.emptyContent = emptyView
         self.urlLoader = urlLoader
+        self.codeEditorMenu = codeEditorMenu
+    }
+
+    /// Creates the CodeEditorShell
+    /// - Parameters:
+    ///   - state: The state used to control this CodeEditorShell
+    ///   - urlLoader: This should load a URL, and upon successful completion, it can return an anchor to scroll to, or nil otherwise
+    ///   - emptyView: A view to show if there are no tabs open
+    ///   - codeEditorMenu: A view to show injected menu
+    public init (state: CodeEditorState, urlLoader: @escaping (URL) -> String?, @ViewBuilder emptyView: @escaping ()->EmptyContent) where CodeEditorMenu == EmptyView {
+        self._state = State(initialValue: state)
+        self.emptyContent = emptyView
+        self.urlLoader = urlLoader
+        self.codeEditorMenu = nil
     }
 
     @ViewBuilder
@@ -189,38 +205,6 @@ public struct CodeEditorShell<EmptyContent: View>: View {
             emptyContent()
         }
     }
-    
-    var fileMenu: some View {
-        Menu {
-            Button(action: {
-                state.requestFileOpen(title: String(localized: .openShader), path: "res://") { files in
-                    guard let file = files.first else { return }
-                    
-                    state.requestOpen(path: file)
-                }
-            }) {
-                Text(.openShader)
-            }
-            Button(action: {
-                state.saveCurrentFile()
-            }) {
-                Text(.saveShader)
-            }
-            Button(action: {
-                state.saveFileAs()
-            }) {
-                Text(.saveShaderAs)
-            }
-            if let currentEditor = state.currentEditor {
-                Divider()
-                Button(action: { state.attemptClose(currentEditor) }) {
-                    Text(.close)
-                }
-            }
-        } label: {
-            Text(.file)
-        }
-    }
 
     // This function for now works with just edited items, as we only use it
     // in the 'navigation' mode which is the iPhone, and only for shaders, not
@@ -241,8 +225,8 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                         .navigationTitle(getTitle())
                         .navigationBarTitleDisplayMode(.inline)
                 } else {
-                    if state.showFileMenu, state.openFiles.count > 0 {
-                        fileMenu
+                    if let codeEditorMenu, state.openFiles.count > 0 {
+                        codeEditorMenu()
                     }
                     EditorTabs(selected: $state.currentEditor, items: $state.openFiles, closeRequest: { idx in
                         state.attemptClose (idx)
@@ -298,9 +282,9 @@ public struct CodeEditorShell<EmptyContent: View>: View {
                     ToolbarSpacer(.fixed, placement: .topBarLeading)
                 }
 
-                if state.showFileMenu {
+                if let codeEditorMenu {
                     ToolbarItem(placement: .topBarLeading) {
-                        fileMenu
+                        codeEditorMenu()
                     }
                 }
                 ToolbarItem {
@@ -361,7 +345,6 @@ struct DemoCodeEditorShell: View {
     @State var state: CodeEditorState = DemoCodeEditorState()
 
     init(phone: Bool) {
-        state.showFileMenu = phone
         state.useNavigation = phone
     }
     

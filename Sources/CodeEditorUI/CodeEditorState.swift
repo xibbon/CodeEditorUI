@@ -66,9 +66,6 @@ open class CodeEditorState {
     /// Controls word wrapping in the text editor
     public var lineWrapping: Bool = true
     
-    /// If true, displays a file menu, otherwise it does not
-    public var showFileMenu: Bool = false
-
     /// Controls displaying the "Go To Line" dialog
     public var showGotoLine: Bool = false
     
@@ -262,7 +259,7 @@ open class CodeEditorState {
         return nil
     }
     @MainActor
-    func attemptClose (_ idx: Int) {
+    public func attemptClose (_ idx: Int) {
         guard idx < openFiles.count else { return }
         if let edited = openFiles[idx] as? EditedItem, edited.dirty {
             if attemptSave (idx) {
