@@ -87,6 +87,7 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
         if startLoc >= 0 {
             var r = NSRange (location: startLoc, length: count)
             if let currentText = req.on.text(in: r) {
+                // Inserting a quote inserts an additional one #1450
                 if insertFull.first == "\"" && insertFull.last == "\"" && currentText.first == "\"" {
                     if let suffix = req.on.text(in: NSRange(location: r.location + r.length, length: 1)), suffix == "\"" {
                         r.length += 1
