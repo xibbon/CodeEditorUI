@@ -968,7 +968,7 @@
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kies"
+            "value" : "Kiezen"
           }
         },
         "pt-BR" : {
@@ -1134,7 +1134,7 @@
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Opnieuw proberen"
+            "value" : "Probeer opnieuw"
           }
         },
         "pt-BR" : {
@@ -1454,7 +1454,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Editor Shader"
+            "value" : "Editor di shader"
           }
         },
         "ja" : {
