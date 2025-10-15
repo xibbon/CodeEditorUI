@@ -118,6 +118,7 @@ public struct CodeEditorShell<EmptyContent: View, CodeEditorMenu: View>: View {
                                                 editedItem.commands.becomeFirstResponder()
                                             }
                                         }
+                                        .ignoresSafeArea(.all)
                                     }
                                 }
                                 .zIndex(1)
@@ -199,6 +200,16 @@ public struct CodeEditorShell<EmptyContent: View, CodeEditorMenu: View>: View {
                         }
                     }
                     .opacity(current.id == file.id ? 1 : 0)
+                }
+            }
+            .onChange(of: state.currentEditor) { _, new in
+                if let new,
+                    new >= 0, new < state.openFiles.count,
+                   let editedItem = state.openFiles[new] as? EditedItem
+                {
+                    editedItem.commands.becomeFirstResponder()
+                } else {
+                    isFocused = false
                 }
             }
         } else {
@@ -375,6 +386,16 @@ struct DemoCodeEditorShell: View {
                     print ("Error: \(err)")
                     break
                 }
+                switch state.openFile(path: "/etc/resolv.conf", delegate: nil, fileHint: .detect) {
+                case .success(let item):
+                    item.validationResult (
+                        functions: [],
+                        errors: [Issue(kind: .error, col: 1, line: 1, message: "Demo Error, with a very long descrption that makes it up for the very difficult task of actually having to wrap around")],
+                        warnings: [Issue(kind: .warning, col: 1, line: 1, message: "Demo Warning")])
+                case .failure(let err):
+                    print ("Error: \(err)")
+                    break
+                }
             }
         }
     }
@@ -385,7 +406,11 @@ struct DemoCodeEditorShell: View {
         ZStack {
             Color(uiColor: .systemGray6)
             if #available(iOS 18.0, *) {
-                DemoCodeEditorShell(phone: false)
+                NavigationSplitView {
+                    Text("Sidebar")
+                } detail: {
+                    DemoCodeEditorShell(phone: false)
+                }
             } else {
                 // Fallback on earlier versions
             }
