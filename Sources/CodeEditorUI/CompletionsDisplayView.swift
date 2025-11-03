@@ -87,8 +87,13 @@ public struct CompletionsDisplayView: View {
         var ra = AttributedString()
         let sourceLower = source.lowercased()
         var scan = sourceLower [sourceLower.startIndex...]
+#if os(macOS)
+        let plain = NSColor.labelColor
+        let bolded = NSColor.labelColor.withAlphaComponent(0.6)
+#else
         let plain = UIColor.label
         let bolded = UIColor.label.withAlphaComponent(0.6)
+#endif
         for hs in hayStack {
             let match = hs.lowercased().first ?? hs
 
@@ -160,6 +165,15 @@ public struct CompletionsDisplayView: View {
         .padding(4)
         .fontDesign(.monospaced)
         .font(.footnote)
+#if os(macOS)
+        .background { Color (.lightGray) }
+        .clipShape (RoundedRectangle(cornerRadius: 6, style: .circular))
+        .shadow(color: Color (.gray), radius: 3, x: 3, y: 3)
+        .overlay {
+            RoundedRectangle(cornerRadius: 6, style: .circular)
+                .stroke(Color (.darkGray), lineWidth: 1) // Add a border
+        }
+#else
         .background { Color (uiColor: .systemGray6) }
         .clipShape (RoundedRectangle(cornerRadius: 6, style: .circular))
         .shadow(color: Color (uiColor: .systemGray5), radius: 3, x: 3, y: 3)
@@ -168,7 +182,7 @@ public struct CompletionsDisplayView: View {
                 .stroke(Color (uiColor: .systemGray3), lineWidth: 1) // Add a border
 
         }
-
+#endif
     }
 }
 

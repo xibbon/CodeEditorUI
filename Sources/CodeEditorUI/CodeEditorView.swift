@@ -6,10 +6,16 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
+
+#if canImport(UIKit)
 import RunestoneUI
 import TreeSitterGDScriptRunestone
 import Runestone
-import UniformTypeIdentifiers
+public typealias RTextView = RTextView
+#else
+public typealias RTextView = TextView
+#endif
 
 enum CodeEditorStatus {
     case ok
@@ -35,7 +41,7 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
         self._contents = contents
     }
 
-    public func uitextViewChanged(_ textView: Runestone.TextView) {
+    public func uitextViewChanged(_ textView: RTextView) {
         item.editedTextChanged(on: textView)
     }
 
@@ -43,15 +49,15 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
         item.editedTextSelectionChanged(on: textView)
     }
 
-    public func uitextViewLoaded(_ textView: Runestone.TextView) {
+    public func uitextViewLoaded(_ textView: RTextView) {
         item.started(on: textView)
     }
 
-    public func uitextViewGutterTapped(_ textView: Runestone.TextView, line: Int) {
+    public func uitextViewGutterTapped(_ textView: RTextView, line: Int) {
         item.gutterTapped(on: textView, line: line)
     }
 
-    public func uitextViewRequestWordLookup(_ textView: Runestone.TextView, at position: UITextPosition, word: String) {
+    public func uitextViewRequestWordLookup(_ textView: RTextView, at position: UITextPosition, word: String) {
         item.editedItemDelegate?.lookup(item, on: textView, at: position, word: word)
     }
     
@@ -181,6 +187,9 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
 
     public var body: some View {
         ZStack (alignment: .topLeading){
+#if os(macOS)
+            Text("This is where the editor goes")
+#else
             let b = Bindable(item)
             TextViewUI (text: $contents,
                         commands: item.commands,
@@ -272,6 +281,7 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
                     .offset(x: xOffset, y: yOffset)
                     .frame(minWidth: 200, maxWidth: 350, maxHeight: maxHeight)
             }
+#endif
         }
         .onGeometryChange(for: CGSize.self) { proxy in
             proxy.size

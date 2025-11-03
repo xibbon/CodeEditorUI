@@ -1,8 +1,11 @@
 import SwiftUI
+
+#if canImport(UIKit)
 import Runestone
-import TreeSitter
 import RunestoneUI
 import TreeSitterGDScriptRunestone
+import TreeSitter
+#endif
 
 /// This is the host for all of the coding needs that we have
 @available(iOS 18.0, *)
@@ -81,7 +84,7 @@ public struct CodeEditorShell<EmptyContent: View, CodeEditorMenu: View>: View {
     
     @State var disclosureControlWidth: CGFloat = 0
     @State var errorWindowWidth: CGFloat = 0
-    
+
     @ViewBuilder
     var editorContent: some View {
         if let currentIdx = state.currentEditor, currentIdx >= 0, currentIdx < state.openFiles.count  {
@@ -137,7 +140,11 @@ public struct CodeEditorShell<EmptyContent: View, CodeEditorMenu: View>: View {
                                                 .padding(.bottom, 10)
                                                 .padding(.horizontal, 10)
                                                 .font(.footnote)
+#if os(macOS)
+                                                .background(Color(.windowBackgroundColor))
+#else
                                                 .background(Color(.systemBackground))
+#endif
                                                 .onGeometryChange(for: CGFloat.self) {
                                                     $0.size.width
                                                 } action: {
@@ -234,14 +241,18 @@ public struct CodeEditorShell<EmptyContent: View, CodeEditorMenu: View>: View {
                 if state.useNavigation {
                     Color.clear.frame(height: 0)
                         .navigationTitle(getTitle())
+#if !os(macOS)
                         .navigationBarTitleDisplayMode(.inline)
+#endif
                 } else {
                     if let codeEditorMenu, state.openFiles.count > 0 {
                         codeEditorMenu()
                     }
-                    EditorTabs(selected: $state.currentEditor, items: $state.openFiles, closeRequest: { idx in
-                        state.attemptClose (idx)
-                    })
+                    if #available(iOS 18.0, macOS 15.0, *) {
+                        EditorTabs(selected: $state.currentEditor, items: $state.openFiles, closeRequest: { idx in
+                            state.attemptClose (idx)
+                        })
+                    }
                 }
             }
             .alert(String(localized: .error), isPresented: Binding<Bool>(get: { state.saveError }, set: { newV in state.saveError = newV })) {
@@ -263,15 +274,24 @@ public struct CodeEditorShell<EmptyContent: View, CodeEditorMenu: View>: View {
             }
 
             editorContent
+#if os(macOS)
+                .background {
+                    RoundedRectangle(cornerRadius: 11)
+                        .fill(Color(.windowBackgroundColor))
+                        .stroke(Color(nsColor: .lightGray))
+                }
+#else
                 .background {
                     RoundedRectangle(cornerRadius: 11)
                         .fill(Color(uiColor: .systemBackground))
                         .stroke(Color(uiColor: .systemGray5))
                 }
+#endif
                 .clipShape(RoundedRectangle (cornerRadius: 11))
             
         }
         .toolbar {
+            #if !os(macOS)
             if state.useNavigation {
                 ToolbarTitleMenu {
                     ForEach(Array(state.openFiles.enumerated()), id: \.offset) { offset, element in
@@ -302,8 +322,10 @@ public struct CodeEditorShell<EmptyContent: View, CodeEditorMenu: View>: View {
                     Button(action: { state.showGotoLine = true }) {
                         Image(systemName: "number")
                     }
+
                 }
             }
+            #endif
         }
         //.background { Color (uiColor: .systemBackground) }
 
@@ -322,8 +344,13 @@ struct ShowHint: View {
         let ranges = lines[0].ranges(of: "\u{ffff}")
         if ranges.count == 2 {
             var highlighted = AttributedString(text[ranges[0].upperBound..<ranges[1].lowerBound])
+#if os(macOS)
+            highlighted.foregroundColor = NSColor.windowBackgroundColor
+            highlighted.backgroundColor = NSColor.textColor
+#else
             highlighted.foregroundColor = UIColor.systemBackground
             highlighted.backgroundColor = Color.primary
+#endif
 
             str.append(AttributedString(text[text.startIndex..<ranges[0].lowerBound]))
             str.append(highlighted)
@@ -402,9 +429,15 @@ struct DemoCodeEditorShell: View {
 }
 
 #Preview {
-    if UIDevice.current.userInterfaceIdiom == .pad {
+#if os(macOS)
+    let large = true
+#else
+    let large = UIDevice.current.userInterfaceIdiom == .pad
+#endif
+
+    if large {
         ZStack {
-            Color(uiColor: .systemGray6)
+            Color(.lightGray)
             if #available(iOS 18.0, *) {
                 NavigationSplitView {
                     Text("Sidebar")

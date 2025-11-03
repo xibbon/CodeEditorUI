@@ -6,9 +6,12 @@
 //
 
 import Foundation
+import SwiftUI
+
+#if canImport(UIKit)
 import Runestone
 import RunestoneUI
-import SwiftUI
+#endif
 
 ///
 /// Tracks the state for the editor, you can affect the editor by invoking methods in this API
@@ -44,7 +47,9 @@ open class CodeEditorState {
     var saveError: Bool = false
     var saveErrorMessage = ""
     var saveIdx = 0
+#if !os(macOS)
     var codeEditorDefaultTheme: CodeEditorTheme
+#endif
 
     /// Whether to show the path browser
     public var showPathBrowser: Bool = true
@@ -72,14 +77,18 @@ open class CodeEditorState {
     /// The font family to use, the empty string or "System font" become the system font
     public var fontFamily: String = "" {
         didSet {
+#if !os(macOS)
             self.codeEditorDefaultTheme = CodeEditorTheme(fontFamily: fontFamily, fontSize: fontSize)
+#endif
         }
     }
     
     /// Controls font size
     public var fontSize: CGFloat = 16 {
         didSet {
+#if !os(macOS)
             self.codeEditorDefaultTheme = CodeEditorTheme(fontFamily: fontFamily, fontSize: fontSize)
+#endif
             UserDefaults.standard.set(fontSize, forKey: "xogot/appearance/font_size")
         }
     }
@@ -88,13 +97,17 @@ open class CodeEditorState {
         self.fontFamily = family
         self.fontSize = size
     }
+#if !os(macOS)
     /// Controls indentation strategy
     public var indentStrategy: IndentStrategy = .tab(length: 4)
+#endif
 
     /// Initializes the code editor state that you can use to control what is shown
     public init() {
         currentEditor = nil
+#if !os(macOS)
         self.codeEditorDefaultTheme = CodeEditorTheme()
+#endif
         updateCurrentTextEditor()
     }
 
@@ -468,9 +481,11 @@ open class CodeEditorState {
     public func hasFirstResponder() -> Bool {
         guard let currentEditor else { return false }
         if let edited = openFiles[currentEditor] as? EditedItem {
+#if !os(macOS)
             if edited.commands.textView?.isFirstResponder ?? false {
                 return true
             }
+#endif
         }
         return false
     }

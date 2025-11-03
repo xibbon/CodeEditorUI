@@ -8,6 +8,9 @@
 import Foundation
 import SwiftUI
 import WebKit
+#if os(macOS)
+import AppKit
+#endif
 
 /// An HTML page that can be embedeed into the CodeEditorShell in a tab
 public class HtmlItem: HostedItem {
@@ -35,6 +38,10 @@ public class HtmlItem: HostedItem {
     }
 }
 
+#if os(macOS)
+typealias UIViewRepresentable = NSViewRepresentable
+#endif
+
 struct WebView: UIViewRepresentable {
     var text: String
     var anchor: String?
@@ -49,6 +56,15 @@ struct WebView: UIViewRepresentable {
         self.loadUrl = load
     }
 
+#if os(macOS)
+    func makeNSView(context: Context) -> WKWebView {
+        let view = WKWebView(frame: CGRect.zero, configuration: context.coordinator.configuration)
+        view.isInspectable = true
+        view.navigationDelegate = context.coordinator
+        obj.view = view
+        return view
+    }
+#else
     func makeUIView(context: Context) -> WKWebView {
         let view = WKWebView(frame: CGRect.zero, configuration: context.coordinator.configuration)
         view.isInspectable = true
@@ -57,6 +73,7 @@ struct WebView: UIViewRepresentable {
         obj.view = view
         return view
     }
+#endif
 
     func makeCoordinator() -> WebViewCoordinator {
         return WebViewCoordinator (parent: self, loadUrl: loadUrl)
@@ -76,7 +93,11 @@ struct WebView: UIViewRepresentable {
                 guard let externalUrl = URL (string: String (url.description.dropFirst(14))) else {
                     return
                 }
+#if os(macOS)
+                NSWorkspace.shared.open(externalUrl)
+#else
                 UIApplication.shared.open(externalUrl, options: [:], completionHandler: nil)
+#endif
                 return
             }
             if let anchor = loadUrl (url) {
@@ -106,6 +127,22 @@ struct WebView: UIViewRepresentable {
     }
     @State var savedScrollY: CGFloat?
 
+#if os(macOS)
+    func updateNSView(_ webView: WKWebView, context: Context) {
+        webView.evaluateJavaScript("window.scrollY") { result, error in
+            if let scrollY = result as? CGFloat {
+                if scrollY != 0 {
+                    self.savedScrollY = scrollY
+                }
+            }
+        }
+
+        webView.loadHTMLString(text, baseURL: nil)
+        if let anchor {
+            webView.scrollTo (anchor)
+        }
+    }
+#else
     func updateUIView(_ webView: WKWebView, context: Context) {
         webView.evaluateJavaScript("window.scrollY") { result, error in
             if let scrollY = result as? CGFloat {
@@ -120,6 +157,7 @@ struct WebView: UIViewRepresentable {
             webView.scrollTo (anchor)
         }
     }
+#endif
 }
 
 extension WKWebView {

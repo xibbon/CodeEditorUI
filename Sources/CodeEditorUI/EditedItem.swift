@@ -6,13 +6,15 @@
 //
 
 import Foundation
+#if canImport(UIKit)
 import Runestone
 import RunestoneUI
-import TreeSitter
 import TreeSitterGDScriptRunestone
+import TreeSitter
 import TreeSitterJSONRunestone
 import TreeSitterMarkdownRunestone
 import TreeSitterGLSLRunestone
+#endif
 
 import SwiftUI
 /// Represents an edited item in the code editor, it uses a path to reference it, and expect that it
@@ -43,6 +45,7 @@ public class EditedItem: HostedItem {
     ///  - breakpoints: List of breakpoints
     ///  - currentLine: The current line to scroll to on startup
     public init (path: String, content: String, editedItemDelegate: EditedItemDelegate?, fileHint: FileHint = .detect, breakpoints: Set<Int> = Set<Int>(), currentLine: Int? = nil) {
+#if canImport(UIKit)
         switch fileHint {
         case .detect:
             if path.hasSuffix(".gd") || path.contains ("::"){
@@ -71,6 +74,9 @@ public class EditedItem: HostedItem {
             supportsLookup = false
             language = TreeSitterLanguage.glsl
         }
+#else
+        supportsLookup = false
+#endif
         self.editedItemDelegate = editedItemDelegate
         self.breakpoints = breakpoints
         self.currentLine = currentLine
@@ -93,7 +99,9 @@ public class EditedItem: HostedItem {
     /// Delegate
     public var editedItemDelegate: EditedItemDelegate?
 
+#if canImport(UIKit)
     public var language: TreeSitterLanguage? = nil
+#endif
 
     /// List of detected functions, contains the name of the function and the line location
     public var functions: [(String,Int)] = []
@@ -173,7 +181,7 @@ public class EditedItem: HostedItem {
             self.cancelCompletion()
         }
     }
-    
+
     @MainActor
     private func getDelimiter () -> String? {
         if path.hasSuffix(".gd") || path.contains ("::"){

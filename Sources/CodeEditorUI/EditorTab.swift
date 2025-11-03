@@ -32,7 +32,11 @@ struct EditorTab2: View {
         .padding(internalPadding)
         .padding ([.trailing], internalPadding)
         .background {
+#if os(macOS)
+            selected ? Color.accentColor.opacity(0.3) : Color (nsColor: .controlBackgroundColor)
+#else
             selected ? Color.accentColor.opacity(0.3) : Color (uiColor: .secondarySystemBackground)
+#endif
         }
         .clipShape(UnevenRoundedRectangle(topLeadingRadius: 5, bottomLeadingRadius: 0, bottomTrailingRadius: 0, topTrailingRadius: 5, style: .continuous))
         .padding([.horizontal], 3)
@@ -80,7 +84,11 @@ struct EditorTab: View {
         .padding(internalPadding)
         .padding(.horizontal, 1)
         .background {
+            #if os(macOS)
+            selected ? Color.accentColor.opacity(0.2) : Color (.lightGray)
+            #else
             selected ? Color.accentColor.opacity(0.2) : Color (uiColor: .systemGray5)
+            #endif
         }
         .clipShape(UnevenRoundedRectangle(topLeadingRadius: 10, bottomLeadingRadius: 10, bottomTrailingRadius: 10, topTrailingRadius: 10, style: .continuous))
     }
@@ -121,7 +129,7 @@ private extension View {
     }
 }
 
-@available(iOS 18.0, *)
+@available(iOS 18.0, macOS 15.0, *)
 struct EditorTabs: View {
     @Binding var selected: Int?
     @Binding var items: [HostedItem]
@@ -397,7 +405,7 @@ struct DemoEditorTabs: View {
     ]
 
     var body: some View {
-        if #available(iOS 18.0, *) {
+        if #available(iOS 18.0, macOS 15.0, *) {
             EditorTabs(selected: $selected, items: $items) { closeIdx in
                 items.remove(at: closeIdx)
                 if closeIdx == selected {
@@ -416,7 +424,7 @@ struct DemoEditorTabs: View {
 
 #Preview {
     ZStack {
-        Color (uiColor: .secondarySystemBackground)
+        Color (.secondarySystemFill)
 
         DemoEditorTabs()
     }

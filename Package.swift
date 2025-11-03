@@ -6,7 +6,11 @@ import PackageDescription
 let package = Package(
     name: "CodeEditorUI",
     defaultLocalization: "en",
-    platforms: [.iOS(.v17)],
+    platforms: [
+        .iOS(.v17),
+        .visionOS(.v1),
+        .macOS(.v14)
+    ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
@@ -24,13 +28,13 @@ let package = Package(
         .target(
             name: "CodeEditorUI",
             dependencies: [
-                "RunestoneUI",
-                "Runestone",
-                .product(name: "TreeSitterGDScriptRunestone", package: "MiniTreeSitterLanguages"),
-                .product(name: "TreeSitterJSON", package: "MiniTreeSitterLanguages"),
-                .product(name: "TreeSitterJSONRunestone", package: "MiniTreeSitterLanguages"),
-                .product(name: "TreeSitterMarkdownRunestone", package: "MiniTreeSitterLanguages"),
-                .product(name: "TreeSitterGLSLRunestone", package: "MiniTreeSitterLanguages"),
+                .product(name: "RunestoneUI", package: "RunestoneUI", condition: .when(platforms: [.iOS, .visionOS])),
+                .product(name: "Runestone", package: "Runestone", condition: .when(platforms: [.iOS, .visionOS])),
+                .product(name: "TreeSitterGDScriptRunestone", package: "MiniTreeSitterLanguages", condition: .when(platforms: [.iOS, .visionOS])),
+                .product(name: "TreeSitterJSON", package: "MiniTreeSitterLanguages", condition: .when(platforms: [.iOS, .visionOS])),
+                .product(name: "TreeSitterJSONRunestone", package: "MiniTreeSitterLanguages", condition: .when(platforms: [.iOS, .visionOS])),
+                .product(name: "TreeSitterMarkdownRunestone", package: "MiniTreeSitterLanguages", condition: .when(platforms: [.iOS, .visionOS])),
+                .product(name: "TreeSitterGLSLRunestone", package: "MiniTreeSitterLanguages", condition: .when(platforms: [.iOS, .visionOS])),
             ],
             resources: [.process("Resources")],
         ),
