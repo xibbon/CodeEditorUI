@@ -20,8 +20,8 @@ public struct UITextRange {
 }
 
 public struct TextLocation {
-    var lineNumber: Int
-    var column: Int
+    public var lineNumber: Int
+    public var column: Int
 }
 
 
@@ -37,6 +37,28 @@ public class TextView: NSView {
     public var selectedRange: NSRange
     public var contentOffset: NSPoint = .zero
 
+    public var selectedTextRange: UITextRange? {
+        get { nil }
+        set { 
+        }
+    }
+
+    public func firstRect(for range: UITextRange) -> CGRect {
+        return .zero
+    }
+
+    public var beginningOfDocument: UITextPosition {
+        UITextPosition()
+    }
+
+    public var endOfDocument: UITextPosition {
+        UITextPosition()
+    }
+
+    public func textRange(from fromPosition: UITextPosition, to toPosition: UITextPosition) -> UITextRange? {
+        nil
+    }
+
     public func textLocation(at: Int) -> TextLocation? {
         nil
     }
@@ -48,6 +70,14 @@ public class TextView: NSView {
     public override init(frame frameRect: NSRect) {
         selectedRange = NSRange(location: 0, length: 0)
         super.init(frame: frameRect)
+    }
+
+    public var text: String {
+        ""
+    }
+
+    public func text(in: UITextRange) -> String? {
+        nil
     }
 
     public func text(in: NSRange) -> String? {
@@ -140,6 +170,10 @@ public class TextViewCommands {
 
     public func unIdent() {
         print("TextViewCommand: unindent")
+    }
+
+    public func getBufferInfo() -> (currentLine: Int?, lineCount: Int)? {
+        return nil
     }
 }
 

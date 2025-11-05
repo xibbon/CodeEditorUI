@@ -97,10 +97,9 @@ open class CodeEditorState {
         self.fontFamily = family
         self.fontSize = size
     }
-#if !os(macOS)
+
     /// Controls indentation strategy
     public var indentStrategy: IndentStrategy = .tab(length: 4)
-#endif
 
     /// Initializes the code editor state that you can use to control what is shown
     public init() {
@@ -556,3 +555,13 @@ struct CompletionRequest {
     let completions: [CompletionEntry]
     let textViewCursor: Int
 }
+
+#if os(macOS)
+/// Strategy to use when indenting text.
+public enum IndentStrategy: Equatable {
+    /// Indent using tabs. The specified length is used to determine the width of the tab measured in space characers.
+    case tab(length: Int)
+    /// Indent using a number of spaces.
+    case space(length: Int)
+}
+#endif
