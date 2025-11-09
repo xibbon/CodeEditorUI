@@ -9,14 +9,19 @@ import TreeSitter
 
 /// This is the host for all of the coding needs that we have
 @available(iOS 18.0, *)
-public struct CodeEditorShell<EmptyContent: View, CodeEditorMenu: View>: View {
+public struct CodeEditorShell<
+    EmptyContent: View,
+    CodeEditorMenu: View,
+    TabExtension: View
+>: View {
     @Environment(\.dismiss) var dismiss
     @State var state: CodeEditorState
     @State var showDiagnosticDetails = false
     @FocusState var isFocused: Bool
     let emptyContent: () -> EmptyContent
     let urlLoader: (URL) -> String?
-    var codeEditorMenu: (() -> CodeEditorMenu)?
+    let codeEditorMenu: (() -> CodeEditorMenu)?
+    let tabExtension: (() -> TabExtension)?
 
     /// Creates the CodeEditorShell
     /// - Parameters:
@@ -24,11 +29,19 @@ public struct CodeEditorShell<EmptyContent: View, CodeEditorMenu: View>: View {
     ///   - urlLoader: This should load a URL, and upon successful completion, it can return an anchor to scroll to, or nil otherwise
     ///   - emptyView: A view to show if there are no tabs open
     ///   - codeEditorMenu: A view to show injected menu
-    public init (state: CodeEditorState, urlLoader: @escaping (URL) -> String?, @ViewBuilder emptyView: @escaping ()->EmptyContent, @ViewBuilder codeEditorMenu: @escaping () -> CodeEditorMenu) {
+    ///   - tabExtension: a view to inject where the tab bar lives, at the end
+    public init (
+        state: CodeEditorState,
+        urlLoader: @escaping (URL) -> String?,
+        @ViewBuilder emptyView: @escaping ()->EmptyContent,
+        @ViewBuilder codeEditorMenu: @escaping () -> CodeEditorMenu,
+        @ViewBuilder tabExtension: @escaping (() -> TabExtension)
+    ) {
         self._state = State(initialValue: state)
         self.emptyContent = emptyView
         self.urlLoader = urlLoader
         self.codeEditorMenu = codeEditorMenu
+        self.tabExtension = tabExtension
     }
 
     /// Creates the CodeEditorShell
@@ -37,11 +50,16 @@ public struct CodeEditorShell<EmptyContent: View, CodeEditorMenu: View>: View {
     ///   - urlLoader: This should load a URL, and upon successful completion, it can return an anchor to scroll to, or nil otherwise
     ///   - emptyView: A view to show if there are no tabs open
     ///   - codeEditorMenu: A view to show injected menu
-    public init (state: CodeEditorState, urlLoader: @escaping (URL) -> String?, @ViewBuilder emptyView: @escaping ()->EmptyContent) where CodeEditorMenu == EmptyView {
+    public init (
+        state: CodeEditorState,
+        urlLoader: @escaping (URL) -> String?,
+        @ViewBuilder emptyView: @escaping ()->EmptyContent
+    ) where CodeEditorMenu == EmptyView {
         self._state = State(initialValue: state)
         self.emptyContent = emptyView
         self.urlLoader = urlLoader
         self.codeEditorMenu = nil
+        self.tabExtension = nil
     }
 
     @ViewBuilder
@@ -253,6 +271,9 @@ public struct CodeEditorShell<EmptyContent: View, CodeEditorMenu: View>: View {
                             state.attemptClose (idx)
                         })
                     }
+                    if let tabExtension {
+                        tabExtension()
+                    }
                 }
             }
             .alert(String(localized: .error), isPresented: Binding<Bool>(get: { state.saveError }, set: { newV in state.saveError = newV })) {
@@ -400,6 +421,12 @@ struct DemoCodeEditorShell: View {
                 return nil
             } emptyView: {
                 Text (verbatim: "No Files Open")
+            } codeEditorMenu: {
+                EmptyView()
+            } tabExtension: {
+                Button(action: {}) {
+                    Image(systemName: "rainbow")
+                }
             }
             .onAppear {
                 _ = state.openHtml(title: "Help", path: "foo.html", content: "<html><body><title>Hello</title><p>hack</body>")

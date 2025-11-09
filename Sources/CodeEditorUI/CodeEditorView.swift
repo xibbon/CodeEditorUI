@@ -12,7 +12,7 @@ import UniformTypeIdentifiers
 import RunestoneUI
 import TreeSitterGDScriptRunestone
 import Runestone
-public typealias RTextView = RTextView
+public typealias RTextView = Runestone.TextView
 #else
 public typealias RTextView = TextView
 #endif
