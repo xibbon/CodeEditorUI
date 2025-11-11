@@ -128,19 +128,11 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
                 provider.loadItem(forTypeIdentifier: UTType.data.identifier) { data, _ in
                     Task {
                         if let data = data as? Data, let file = try? JSONDecoder().decode(FileNode.self, from: data) {
-                            
                             for url in file.urls {
-                                await result.push("\"\(url)\"")
+                                await result.push(state.encodeDroppedFile(path: url))
                             }
                         } else if let data = data as? Data, let scene = try? JSONDecoder().decode(SceneNode.self, from: data) {
-                            var path = scene.path
-                            if path.contains(".") {
-                                let prefix = String(path.removeFirst())
-                                path = "\"" + path + "\""
-                                await result.push(prefix + path)
-                            } else {
-                                await result.push(scene.path)
-                            }
+                            await result.push(state.encodeScenePath(path: scene.path))
                         } else {
                             await result.error()
                             return
@@ -371,11 +363,11 @@ actor Accumulator {
 
 public struct FileNode: Codable, Sendable {
     public let urls: [String]
-    public let localId: String
+    public let localIds: [String]
 
-    public init(urls: [String], localId: String) {
+    public init(urls: [String], localIds: [String]) {
         self.urls = urls
-        self.localId = localId
+        self.localIds = localIds
     }
 }
 
