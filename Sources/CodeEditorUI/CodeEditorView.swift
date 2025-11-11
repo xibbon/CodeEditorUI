@@ -108,13 +108,34 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
     // Implementation of the DropDelegate method
     public func performDrop(info: DropInfo) -> Bool {
         let cmd = item.commands
-        let offset = cmd.textView?.contentOffset.y
+        guard let textView = cmd.textView else { return false }
+
+        let offset = textView.contentOffset.y
         // we need to include offset as well, otherwise it doesn't work
         guard let pos = cmd.closestPosition(to: CGPoint(x: info.location.x, y: info.location.y + (offset ?? 0))) else { return false }
         guard let range = cmd.textRange (from: pos, to: pos) else { return false }
 
         let result = Accumulator (range: range, cmd: cmd)
         var pending = 0
+
+        // Before we get started, determine if we are on an empty line:
+        var isEmptyLine = false
+        let currentTextPos = textView.offset(from: textView.beginningOfDocument, to: pos)
+
+        // We are on an empty line if we are in column 0, and the next item does not exist, or
+        // it starts at column 0
+        if let currentTextLocation = textView.textLocation(at: currentTextPos) {
+            // Promising
+            if currentTextLocation.column == 0 {
+                if let next = textView.textLocation(at: currentTextPos + 1) {
+                    if next.column == 0 {
+                        isEmptyLine = true
+                    }
+                } else {
+                    isEmptyLine = true
+                }
+            }
+        }
 
         for provider in info.itemProviders(for: [.text, .data]) {
             if provider.hasItemConformingToTypeIdentifier(UTType.data.identifier) {
@@ -123,7 +144,7 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
                     Task {
                         if let data = data as? Data, let file = try? JSONDecoder().decode(FileNode.self, from: data) {
                             for url in file.urls {
-                                await result.push(state.encodeDroppedFile(path: url))
+                                await result.push(state.encodeDroppedFile(path: url, isTargetEmptyLine: isEmptyLine))
                             }
                         } else if let data = data as? Data, let scene = try? JSONDecoder().decode(SceneNode.self, from: data) {
                             await result.push(state.encodeScenePath(path: scene.path))
