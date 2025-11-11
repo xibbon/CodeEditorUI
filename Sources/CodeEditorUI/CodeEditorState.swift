@@ -345,7 +345,7 @@ open class CodeEditorState {
     }
 
     /// Encodes a path that was part of a FileNode drag operation, which in Xogot we know is going to be a URL in our project.
-    open func encodeDroppedFile(path: String) -> String {
+    open func encodeDroppedFile(path: String, isTargetEmptyLine: Bool) -> String {
         "\"\(path)\""
     }
 
