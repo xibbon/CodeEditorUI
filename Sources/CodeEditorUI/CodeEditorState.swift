@@ -331,7 +331,24 @@ open class CodeEditorState {
     /// Used to request that the shell environment opens the specified path.
     open func requestOpen(path: String) {
     }
-    
+
+    /// Encodes a path that was part of a FileNode drag operation, which in Xogot we know is going to be a URL in our project.
+    open func encodeDroppedFile(path: String) -> String {
+        "\"\(path)\""
+    }
+
+    /// Encodes a scene path, which in Xogot is coming from the ScenePad
+    open func encodeScenePath(path _path: String) -> String {
+        var path = _path
+        if path.contains(".") {
+            let prefix = String(path.removeFirst())
+            path = "\"" + path + "\""
+            return prefix + path
+        } else {
+            return path
+        }
+    }
+
     /// Used to return the file contents at path, you can override this
     open func fileList(at path: String) -> [DirectoryElement] {
         var result: [DirectoryElement] = []
