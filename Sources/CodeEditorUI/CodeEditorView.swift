@@ -126,6 +126,8 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
 
         // Before we get started, determine if we are on an empty line:
         var isEmptyLine = false
+
+        // This code relies on Runestone
         let currentTextPos = textView.offset(from: textView.beginningOfDocument, to: pos)
 
         // We are on an empty line if we are in column 0, and the next item does not exist, or

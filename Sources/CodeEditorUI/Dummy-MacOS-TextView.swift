@@ -86,6 +86,10 @@ public class TextView: NSView {
 
     public func replace(_ range: NSRange, withText text: String) {
     }
+
+    public func offset(from: UITextPosition, to: UITextPosition) -> Int {
+        0
+    }
 }
 
 public class TextViewCommands {
