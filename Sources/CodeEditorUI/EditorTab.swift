@@ -86,6 +86,94 @@ struct EditorTab: View {
     }
 }
 
+// MARK: - Custom Gesture Support
+
+#if os(iOS)
+import UIKit
+
+class LongPressDragGestureRecognizer: UILongPressGestureRecognizer {
+    var onLongPressBegin: (() -> Void)?
+    var onDragChanged: ((CGPoint) -> Void)?
+    var onDragEnded: (() -> Void)?
+
+    private var longPressActivated = false
+    private var initialLocation: CGPoint = .zero
+
+    func handleGesture() {
+        switch state {
+        case .began:
+            initialLocation = location(in: view)
+            longPressActivated = true
+            onLongPressBegin?()
+
+        case .changed:
+            if longPressActivated {
+                let currentLocation = location(in: view)
+                let translation = CGPoint(
+                    x: currentLocation.x - initialLocation.x,
+                    y: currentLocation.y - initialLocation.y
+                )
+                onDragChanged?(translation)
+            }
+
+        case .ended, .cancelled, .failed:
+            if longPressActivated {
+                onDragEnded?()
+            }
+            longPressActivated = false
+
+        default:
+            break
+        }
+    }
+}
+
+struct LongPressDragGesture: UIGestureRecognizerRepresentable {
+    var onLongPressBegin: () -> Void
+    var onDragChanged: (CGPoint) -> Void
+    var onDragEnded: () -> Void
+
+    func makeUIGestureRecognizer(context: Context) -> some UIGestureRecognizer {
+        let gesture = LongPressDragGestureRecognizer()
+        gesture.minimumPressDuration = 0.6
+        gesture.allowableMovement = 8
+        gesture.onLongPressBegin = onLongPressBegin
+        gesture.onDragChanged = onDragChanged
+        gesture.onDragEnded = onDragEnded
+
+        gesture.delegate = context.coordinator
+        return gesture
+    }
+
+    func handleUIGestureRecognizerAction(_ recognizer: UIGestureRecognizerType, context: Context) {
+        guard let gesture = recognizer as? LongPressDragGestureRecognizer else { return }
+        gesture.handleGesture()
+    }
+
+    func makeCoordinator(converter: CoordinateSpaceConverter) -> Coordinator {
+        Coordinator(converter: converter)
+    }
+
+    final class Coordinator: NSObject, UIGestureRecognizerDelegate {
+        let converter: CoordinateSpaceConverter
+
+        init(converter: CoordinateSpaceConverter) {
+            self.converter = converter
+        }
+
+        // Allow simultaneous recognition with ScrollView's pan gesture
+        func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+            return true
+        }
+
+        // Don't require other gestures to wait for us
+        func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldBeRequiredToFailBy otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+            return false
+        }
+    }
+}
+#endif
+
 // MARK: - Reorder Support
 
 private struct TabFramePreferenceKey: PreferenceKey {
@@ -251,17 +339,21 @@ struct EditorTabs: View {
                         .opacity(isDragging ? 0.9 : 1.0)
                         .zIndex(isDragging ? 1 : 0)
                         .offset(x: adjustedOffset(for: idx))
+#if os(iOS)
                         .gesture(
-                            DragGesture(minimumDistance: 2)
-                                .onChanged { value in
-                                    if draggingIndex == nil {
-                                        draggingIndex = idx
-                                        dragTranslationX = 0
-                                        proposedIndex = idx
-                                        startAutoscroll()
-                                    }
+                            LongPressDragGesture(
+                                onLongPressBegin: {
+                                    let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                                    impactFeedback.impactOccurred()
+
+                                    draggingIndex = idx
+                                    dragTranslationX = 0
+                                    proposedIndex = idx
+                                    startAutoscroll()
+                                },
+                                onDragChanged: { translation in
                                     guard draggingIndex == idx else { return }
-                                    dragTranslationX = value.translation.width
+                                    dragTranslationX = translation.x
 
                                     if let frame = tabFrames[idx] {
                                         let movingMidX = frame.midX + dragTranslationX
@@ -271,8 +363,10 @@ struct EditorTabs: View {
                                             }
                                         }
                                     }
-                                }
-                                .onEnded { _ in
+                                },
+                                onDragEnded: {
+                                    guard draggingIndex == idx else { return }
+
                                     stopAutoscroll()
 
                                     let dragging = draggingIndex
@@ -307,7 +401,9 @@ struct EditorTabs: View {
                                         committingDrop = false
                                     }
                                 }
+                            )
                         )
+#endif
                         .captureFrame(index: idx)
 
                         // Attach animations only when not committing the drop
@@ -356,6 +452,7 @@ struct EditorTabs: View {
             }
         }
         .coordinateSpace(name: "TabScrollSpace")
+        .scrollDisabled(draggingIndex != nil)
         .scrollPosition($scrollPosition)
         .onScrollGeometryChange(for: ScrollGeometry.self) { geo in
             ScrollGeometry(containerSize: geo.containerSize, contentSize: geo.contentSize, contentOffsetX: geo.contentOffset.x)
