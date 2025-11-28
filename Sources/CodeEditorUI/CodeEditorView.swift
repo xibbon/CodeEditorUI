@@ -147,7 +147,11 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
                                 await result.push(state.encodeDroppedFile(path: url, isTargetEmptyLine: isEmptyLine))
                             }
                         } else if let data = data as? Data, let scene = try? JSONDecoder().decode(SceneNode.self, from: data) {
-                            await result.push(state.encodeScenePath(path: scene.path))
+                            var paths: [String] = []
+                            for path in scene.paths {
+                                paths.append(state.encodeScenePath(path: path))
+                            }
+                            await result.push(paths.joined(separator: ", "))
                         } else {
                             await result.error()
                             return
@@ -383,12 +387,12 @@ public struct FileNode: Codable, Sendable {
 }
 
 public struct SceneNode: Codable, Sendable {
-    public let path: String
-    public let localId: String
+    public let paths: [String]
+    public let localIds: [String]
 
-    public init(path: String, localId: String) {
-        self.path = path
-        self.localId = localId
+    public init(paths: [String], localIds: [String]) {
+        self.paths = paths
+        self.localIds = localIds
     }
 }
 
