@@ -340,13 +340,46 @@ open class CodeEditorState {
     /// Encodes a scene path, which in Xogot is coming from the ScenePad
     open func encodeScenePath(path _path: String) -> String {
         var path = _path
-        if path.contains(".") {
-            let prefix = String(path.removeFirst())
-            path = "\"" + path + "\""
-            return prefix + path
-        } else {
-            return path
+
+        // Remove the prefix ($ or %)
+        let prefix = String(path.removeFirst())
+
+        // Split by "/" and check each segment
+        let segments = path.split(separator: "/")
+        var needsQuoting = false
+
+        for segment in segments {
+            if !isValidASCIIIdentifier(String(segment)) {
+                needsQuoting = true
+                break
+            }
         }
+
+        if needsQuoting {
+            path = "\"" + path + "\""
+        }
+
+        return prefix + path
+    }
+
+    /// Checks if a string is a valid ASCII identifier (matches Godot's logic)
+    private func isValidASCIIIdentifier(_ str: String) -> Bool {
+        guard !str.isEmpty else { return false }
+
+        // First character cannot be a digit
+        if let first = str.first, first.isNumber {
+            return false
+        }
+
+        // All characters must be a-z, A-Z, 0-9, or _
+        for char in str {
+            let isValid = char.isLetter || char.isNumber || char == "_"
+            if !isValid {
+                return false
+            }
+        }
+
+        return true
     }
 
     /// Used to return the file contents at path, you can override this
