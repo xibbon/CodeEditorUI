@@ -151,7 +151,10 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
                             for path in scene.paths {
                                 paths.append(state.encodeScenePath(path: path))
                             }
-                            await result.push(paths.joined(separator: ", "))
+                            // If the paths contain @onready (modifier key was pressed), join with newlines
+                            // Otherwise join with ", " for inline paths
+                            let separator = paths.first?.contains("@onready") == true ? "\n" : ", "
+                            await result.push(paths.joined(separator: separator))
                         } else {
                             await result.error()
                             return
