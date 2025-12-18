@@ -303,13 +303,16 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
     func calculateOffsetAndHeight(req: CompletionRequest) -> (offsetX: CGFloat, offsetY: CGFloat, height: CGFloat) {
         let yBelow = req.at.maxY+8
         let yAbove = req.at.minY-10
-        // Calculate maximum available height either above or below
-        let maxHeight = min(34 * 6.0, max(yAbove, (keyboardOffset - (req.at.maxY + 8))))
+        // Calculate available space above and below
+        let spaceAbove = yAbove
+        let spaceBelow = (keyboardOffset > 0 ? keyboardOffset : codeEditorSize.height) - yBelow
+        // Choose the larger space and cap at 34 * 6.0
+        let maxHeight = min(34 * 6.0, max(spaceAbove, spaceBelow))
         // Calculate xOffset based on current position
         let xOffset = min(codeEditorSize.width - 350, req.at.minX)
-        // Calculate yOffset and determine wheater to put completion above or below based on space
-        let yOffset = codeEditorSize.height - maxHeight < yBelow ? (yAbove - maxHeight) : yBelow
-        
+        // Calculate yOffset and determine whether to put completion above or below based on space
+        let yOffset = spaceBelow < spaceAbove ? (yAbove - maxHeight) : yBelow
+
         return (xOffset, yOffset, maxHeight)
     }
 }
