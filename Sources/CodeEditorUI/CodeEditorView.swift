@@ -77,11 +77,16 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
     func insertCompletion () {
         guard let req = item.completionRequest else { return }
         completionInProgress = true
-        if item.selectedCompletion > req.completions.count {
-            print("item.selectedCompletion=\(item.selectedCompletion) > req.completions.count=\(req.completions.count)")
+        guard !req.completions.isEmpty else {
+            item.cancelCompletion()
+            completionInProgress = false
             return
         }
-        let insertFull = req.completions[item.selectedCompletion].insert
+        let selectedIndex = min(max(item.selectedCompletion, 0), req.completions.count - 1)
+        if selectedIndex != item.selectedCompletion {
+            item.selectedCompletion = selectedIndex
+        }
+        let insertFull = req.completions[selectedIndex].insert
         let count = req.prefix.count
         let startLoc = req.on.selectedRange.location-count
         if startLoc >= 0 {
@@ -219,7 +224,7 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
             .includeLookupSymbol(item.supportsLookup)
             .onKeyPress(.downArrow) {
                 if let req = item.completionRequest {
-                    if item.selectedCompletion < req.completions.count {
+                    if item.selectedCompletion + 1 < req.completions.count {
                         item.selectedCompletion += 1
                     }
                     return .handled
