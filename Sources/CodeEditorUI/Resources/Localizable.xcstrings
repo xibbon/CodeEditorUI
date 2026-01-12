@@ -10,6 +10,12 @@
             "value" : "# رقم السطر: **%lld**"
           }
         },
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "# লাইন নম্বর: **%lld**"
+          }
+        },
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
@@ -40,6 +46,24 @@
             "value" : "# Numéro de ligne : **%lld**"
           }
         },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "# पंक्ति संख्या: **%lld**"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "# Sor száma: **%lld**"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "# Nomor Baris: **%lld**"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -52,10 +76,28 @@
             "value" : "# 行番号: **%lld**"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "# 줄 번호: **%lld**"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "# Nombor Baris: **%lld**"
+          }
+        },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "# Regelnr.: **%lld**"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "# Numer linii: **%lld**"
           }
         },
         "pt-BR" : {
@@ -70,10 +112,34 @@
             "value" : "# Номер строки: **%lld**"
           }
         },
+        "ta" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "# வரி எண்: **%lld**"
+          }
+        },
+        "te" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "# లైన్ నంబర్: **%lld**"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "# หมายเลขบรรทัด: **%lld**"
+          }
+        },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "# Satır Numarası: **%lld**"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "# Số dòng: **%lld**"
           }
         },
         "zh-Hans" : {
@@ -91,6 +157,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "إلغاء"
+          }
+        },
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "বাতিল"
           }
         },
         "cs" : {
@@ -123,6 +195,24 @@
             "value" : "Annuler"
           }
         },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "रद्द करें"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mégse"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Batal"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -135,10 +225,28 @@
             "value" : "キャンセル"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "취소"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Batal"
+          }
+        },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Annuleren"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anuluj"
           }
         },
         "pt-BR" : {
@@ -153,10 +261,34 @@
             "value" : "Отмена"
           }
         },
+        "ta" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ரத்து செய்"
+          }
+        },
+        "te" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "రద్దు చేయండి"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ยกเลิก"
+          }
+        },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "İptal"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Huỷ bỏ"
           }
         },
         "zh-Hans" : {
@@ -174,6 +306,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "إغلاق"
+          }
+        },
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "বন্ধ করুন"
           }
         },
         "cs" : {
@@ -206,6 +344,24 @@
             "value" : "Fermer"
           }
         },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बंद करें"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bezárás"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tutup"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -218,10 +374,28 @@
             "value" : "閉じる"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "닫기"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tutup"
+          }
+        },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sluiten"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zamknij"
           }
         },
         "pt-BR" : {
@@ -236,10 +410,34 @@
             "value" : "Закрыть"
           }
         },
+        "ta" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "மூடு"
+          }
+        },
+        "te" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "మూసివేయండి"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ปิด"
+          }
+        },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kapat"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đóng"
           }
         },
         "zh-Hans" : {
@@ -257,6 +455,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "خطأ"
+          }
+        },
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "সমস্যা/ভুল"
           }
         },
         "cs" : {
@@ -289,6 +493,24 @@
             "value" : "Erreur"
           }
         },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "एरर"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hiba"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -301,10 +523,28 @@
             "value" : "エラー"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오류"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ralat"
+          }
+        },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fout"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Błąd"
           }
         },
         "pt-BR" : {
@@ -319,10 +559,34 @@
             "value" : "Ошибка"
           }
         },
+        "ta" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "பிழை"
+          }
+        },
+        "te" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "లోపం"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ผิดพลาด"
+          }
+        },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hata"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lỗi"
           }
         },
         "zh-Hans" : {
@@ -340,6 +604,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ملف"
+          }
+        },
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ফাইল"
           }
         },
         "cs" : {
@@ -372,6 +642,24 @@
             "value" : "Fichier"
           }
         },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "फ़ाइल"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fájl"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -384,10 +672,28 @@
             "value" : "ファイル"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "파일"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fail"
+          }
+        },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bestand"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plik"
           }
         },
         "pt-BR" : {
@@ -402,10 +708,34 @@
             "value" : "Файл"
           }
         },
+        "ta" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "கோப்பு"
+          }
+        },
+        "te" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ఫైల్"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไฟล์"
+          }
+        },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dosya"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tệp"
           }
         },
         "zh-Hans" : {
@@ -423,6 +753,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "الملف غير موجود %@"
+          }
+        },
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ফাইল পাওয়া যায়নি %@"
           }
         },
         "cs" : {
@@ -455,6 +791,24 @@
             "value" : "Fichier non trouvé %@"
           }
         },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "फ़ाइल नहीं मिली %@"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fájl nem található %@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Berkas tidak ditemukan %@"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -467,10 +821,28 @@
             "value" : "ファイルが見つかりません %@"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "파일을 찾을 수 없습니다 %@"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fail tidak ditemui %@"
+          }
+        },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bestand niet gevonden %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plik nie znaleziony %@"
           }
         },
         "pt-BR" : {
@@ -485,10 +857,34 @@
             "value" : "Файл не найден %@"
           }
         },
+        "ta" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "கோப்பு காணப்படவில்லை %@"
+          }
+        },
+        "te" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ఫైల్ కనపడలేదు %@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่พบไฟล์ %@"
+          }
+        },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dosya bulunamadı %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không tìm thấy tệp %@"
           }
         },
         "zh-Hans" : {
@@ -506,6 +902,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "تجاهل"
+          }
+        },
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "উপেক্ষা করুন"
           }
         },
         "cs" : {
@@ -538,6 +940,24 @@
             "value" : "Ignorer"
           }
         },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अनदेखा करें"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Figyelmen kívül hagy"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abaikan"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -550,10 +970,28 @@
             "value" : "無視"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "무시"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abaikan"
+          }
+        },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Negeren"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignoruj"
           }
         },
         "pt-BR" : {
@@ -568,10 +1006,34 @@
             "value" : "Игнорировать"
           }
         },
+        "ta" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "அவகணிக்க"
+          }
+        },
+        "te" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ప్రమాదం చేయండి"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ละเว้น"
+          }
+        },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Yoksay"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bỏ qua"
           }
         },
         "zh-Hans" : {
@@ -589,6 +1051,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "خطأ داخلي، لا ينبغي أن يحدث هذا: %@"
+          }
+        },
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "অভ্যন্তরীণ ত্রুটি, এটি হওয়া উচিত নয়: %@"
           }
         },
         "cs" : {
@@ -621,6 +1089,24 @@
             "value" : "Erreur interne, cela ne devrait pas arriver : %@"
           }
         },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "आंतरिक त्रुटि, ऐसा नहीं होना चाहिए: %@"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Belső hiba, ennek nem szabadna megtörténnie: %@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kesalahan internal, ini seharusnya tidak terjadi: %@"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -633,10 +1119,28 @@
             "value" : "内部エラー、これは発生しないはずです: %@"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "내부 오류, 이 상황은 발생하지 않아야 합니다: %@"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ralat dalaman, ini tidak sepatutnya berlaku: %@"
+          }
+        },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Interne fout, dit zou niet mogen gebeuren: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Błąd wewnętrzny, to nie powinno się zdarzyć: %@"
           }
         },
         "pt-BR" : {
@@ -651,10 +1155,34 @@
             "value" : "Внутренняя ошибка, этого не должно происходить: %@"
           }
         },
+        "ta" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "உள்ளக பிழை, இது நிகழக்கூடாது: %@"
+          }
+        },
+        "te" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "అంతర్గత లోపం, ఇది జరగకూడదు: %@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ข้อผิดพลาดภายใน, สิ่งนี้ไม่ควรเกิดขึ้น: %@"
+          }
+        },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dahili hata, bu olmamalı: %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lỗi nội bộ, điều này không nên xảy ra: %@"
           }
         },
         "zh-Hans" : {
@@ -672,6 +1200,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "انتقل إلى"
+          }
+        },
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "যাও"
           }
         },
         "cs" : {
@@ -704,6 +1238,24 @@
             "value" : "Aller à"
           }
         },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस पर जाएं"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ugrás ide"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lompat Ke"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -716,10 +1268,28 @@
             "value" : "ジャンプ先"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이동"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lompat Ke"
+          }
+        },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ga naar"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przejdź do"
           }
         },
         "pt-BR" : {
@@ -734,10 +1304,34 @@
             "value" : "Перейти к"
           }
         },
+        "ta" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "அடிக்கோடு செல்ல"
+          }
+        },
+        "te" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "దూకండి"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไปที่"
+          }
+        },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Git"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chuyển đến"
           }
         },
         "zh-Hans" : {
@@ -755,6 +1349,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "رقم السطر"
+          }
+        },
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "লাইন নম্বর"
           }
         },
         "cs" : {
@@ -787,6 +1387,24 @@
             "value" : "Numéro de ligne"
           }
         },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "पंक्ति संख्या"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sor száma"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nomor Baris"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -799,10 +1417,28 @@
             "value" : "行番号"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "줄 번호"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombor Baris"
+          }
+        },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Regelnummer"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Numer linii"
           }
         },
         "pt-BR" : {
@@ -817,10 +1453,34 @@
             "value" : "Номер строки"
           }
         },
+        "ta" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "வரி எண்"
+          }
+        },
+        "te" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "లైన్ నంబర్"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "หมายเลขบรรทัด"
+          }
+        },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Satır Numarası"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Số dòng"
           }
         },
         "zh-Hans" : {
@@ -838,6 +1498,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "فتح المظلل"
+          }
+        },
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "শেডার খুলুন"
           }
         },
         "cs" : {
@@ -870,6 +1536,24 @@
             "value" : "Ouvrir le shader"
           }
         },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "शेडर खोलें"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shader megnyitása"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buka Shader"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -882,10 +1566,28 @@
             "value" : "シェーダーを開く"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셰이더 열기"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buka Shader"
+          }
+        },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open Shader"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otwórz shader"
           }
         },
         "pt-BR" : {
@@ -900,10 +1602,34 @@
             "value" : "Открыть шейдер"
           }
         },
+        "ta" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ஷேடரைத் திறக்கவும்"
+          }
+        },
+        "te" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "షేడర్ తెరవండి"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เปิดเชดเดอร์"
+          }
+        },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gölgelendiriciyi Aç"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở Shader"
           }
         },
         "zh-Hans" : {
@@ -921,6 +1647,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "اختار"
+          }
+        },
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "নির্বাচন করুন"
           }
         },
         "cs" : {
@@ -953,6 +1685,24 @@
             "value" : "Choisir"
           }
         },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "चुनें"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kiválaszt"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -965,10 +1715,28 @@
             "value" : "選択"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "선택"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih"
+          }
+        },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kiezen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wybierz"
           }
         },
         "pt-BR" : {
@@ -983,10 +1751,34 @@
             "value" : "Выбрать"
           }
         },
+        "ta" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "தேர்வு செய்"
+          }
+        },
+        "te" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ఎంచుకోండి"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เลือก"
+          }
+        },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Seç"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chọn"
           }
         },
         "zh-Hans" : {
@@ -1004,6 +1796,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "معاينة: %@"
+          }
+        },
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "পূর্বরূপ: %@"
           }
         },
         "cs" : {
@@ -1036,6 +1834,24 @@
             "value" : "Aperçu : %@"
           }
         },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "पूर्वावलोकन: %@"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Előnézet: %@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pratinjau: %@"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1048,10 +1864,28 @@
             "value" : "プレビュー: %@"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "미리보기: %@"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pratonton: %@"
+          }
+        },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Voorbeeld: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podgląd: %@"
           }
         },
         "pt-BR" : {
@@ -1066,10 +1900,34 @@
             "value" : "Предварительный просмотр: %@"
           }
         },
+        "ta" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "முன்னோட்டம்: %@"
+          }
+        },
+        "te" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "మునుజూపు: %@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตัวอย่าง: %@"
+          }
+        },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Önizleme: %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xem trước: %@"
           }
         },
         "zh-Hans" : {
@@ -1087,6 +1945,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "إعادة المحاولة"
+          }
+        },
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "পুনরায় চেষ্টা করুন"
           }
         },
         "cs" : {
@@ -1119,6 +1983,24 @@
             "value" : "Réessayer"
           }
         },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "फिर कोशिश करें"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Újra"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coba Lagi"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1131,10 +2013,28 @@
             "value" : "再試行"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다시 시도"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuba semula"
+          }
+        },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Probeer opnieuw"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ponów Próbę"
           }
         },
         "pt-BR" : {
@@ -1149,10 +2049,34 @@
             "value" : "Повторить"
           }
         },
+        "ta" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "மீண்டும் முயற்சிக்கவும்"
+          }
+        },
+        "te" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "మళ్ళీ ప్రయత్నించండి"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ลองใหม่"
+          }
+        },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tekrar Dene"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thử lại"
           }
         },
         "zh-Hans" : {
@@ -1170,6 +2094,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "حفظ الشادر"
+          }
+        },
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "শেডার সংরক্ষণ করুন"
           }
         },
         "cs" : {
@@ -1202,6 +2132,24 @@
             "value" : "Enregistrer le shader"
           }
         },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "शेडर सहेजें"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shader mentése"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simpan Shader"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1214,10 +2162,28 @@
             "value" : "シェーダーを保存"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셰이더 저장"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simpan Shader"
+          }
+        },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Shader Opslaan"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zapisz shader"
           }
         },
         "pt-BR" : {
@@ -1232,10 +2198,34 @@
             "value" : "Сохранить шейдер"
           }
         },
+        "ta" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ஷேடரை சேமிக்கவும்"
+          }
+        },
+        "te" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "షేడర్‌ను సేవ్ చేయండి"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "บันทึกเชดเดอร์"
+          }
+        },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gölgelendiriciyi Kaydet"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lưu Shader"
           }
         },
         "zh-Hans" : {
@@ -1253,6 +2243,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "احفظ الشادر باسم..."
+          }
+        },
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "শেডার হিসাবে সংরক্ষণ করুন..."
           }
         },
         "cs" : {
@@ -1285,6 +2281,24 @@
             "value" : "Enregistrer le shader sous..."
           }
         },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "शेडर को ऐसे सहेजें..."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shader mentése másként..."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simpan Shader Sebagai..."
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1297,10 +2311,28 @@
             "value" : "シェーダーを別名で保存..."
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셰이더를 다른 이름으로 저장..."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simpan Shader Sebagai..."
+          }
+        },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Shader opslaan als..."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zapisz shader jako..."
           }
         },
         "pt-BR" : {
@@ -1315,10 +2347,34 @@
             "value" : "Сохранить шейдер как..."
           }
         },
+        "ta" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ஷேடரை சேமிக்கவும்..."
+          }
+        },
+        "te" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "షేడర్‌ను ఇలా సేవ్ చేయండి..."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "บันทึกเชดเดอร์เป็น..."
+          }
+        },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gölgelendiriciyi Farklı Kaydet..."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lưu Shader Dưới dạng..."
           }
         },
         "zh-Hans" : {
@@ -1336,6 +2392,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "اختر خطًا"
+          }
+        },
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "একটি ফন্ট নির্বাচন করুন"
           }
         },
         "cs" : {
@@ -1368,6 +2430,24 @@
             "value" : "Sélectionner une police"
           }
         },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "फ़ॉन्ट चुनें"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Válasszon egy betűtípust"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih Font"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1380,10 +2460,28 @@
             "value" : "フォントを選択"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "폰트 선택"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih Fon"
+          }
+        },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Selecteer een lettertype"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wybierz czcionkę"
           }
         },
         "pt-BR" : {
@@ -1398,10 +2496,34 @@
             "value" : "Выберите шрифт"
           }
         },
+        "ta" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ஒரு எழுத்துருவை தேர்ந்தெடுக்கவும்"
+          }
+        },
+        "te" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ఫాంట్‌ను ఎంచుకోండి"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เลือกแบบอักษร"
+          }
+        },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bir Yazı Tipi Seç"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chọn một phông chữ"
           }
         },
         "zh-Hans" : {
@@ -1419,6 +2541,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "محرر الطيف"
+          }
+        },
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "শেডার এডিটর"
           }
         },
         "cs" : {
@@ -1451,6 +2579,24 @@
             "value" : "Éditeur de shader"
           }
         },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "शेडर संपादक"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shader szerkesztő"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editor Shader"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1463,10 +2609,28 @@
             "value" : "シェーダーエディター"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "셰이더 에디터"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editor Shader"
+          }
+        },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Shader-editor"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edytor shaderów"
           }
         },
         "pt-BR" : {
@@ -1481,10 +2645,34 @@
             "value" : "Редактор шейдеров"
           }
         },
+        "ta" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ஷேடர் எடிட்டர்"
+          }
+        },
+        "te" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "షేడర్ ఎడిటర్"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตัวแก้ไขเชเดอร์"
+          }
+        },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Shader Düzenleyici"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trình chỉnh sửa Shader"
           }
         },
         "zh-Hans" : {
@@ -1502,6 +2690,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "الثعلب البني السريع يقفز فوق الكلب الكسول"
+          }
+        },
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "দ্রুত বাদামী শিয়ালটি অলস কুকুরের উপর দিয়ে লাফ দেয়"
           }
         },
         "cs" : {
@@ -1534,6 +2728,24 @@
             "value" : "Le rapide renard brun saute par-dessus le chien paresseux"
           }
         },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "तेज़ भूरी लोमड़ी सुस्त कुत्ते के ऊपर कूदती है"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A gyors barna róka átugrik a lusta kutya fölött"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rubah coklat cepat melompati anjing malas"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1546,10 +2758,28 @@
             "value" : "素早い茶色の狐が怠け者の犬を飛び越える"
           }
         },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "빠른 갈색 여우가 게으른 개를 뛰어넘습니다"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Musang coklat pantas melompat melepasi anjing malas"
+          }
+        },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "De snelle bruine vos springt over de luie hond"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Szybki brązowy lis przeskakuje nad leniwym psem"
           }
         },
         "pt-BR" : {
@@ -1564,10 +2794,34 @@
             "value" : "Быстрая коричневая лиса перепрыгивает через ленивую собаку"
           }
         },
+        "ta" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "வேகமான பழுப்பு நரி சோம்பேறி நாயின் மீது குதிக்கிறது"
+          }
+        },
+        "te" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "తేలికగా ఉన్న కుక్కపై వేగంగా ఉన్న గోధుమ నక్క దూకింది"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "สุนัขจิ้งจอกสีน้ำตาลกระโดดข้ามสุนัขขี้เกียจ"
+          }
+        },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hızlı kahverengi tilki tembel köpeğin üzerinden atlar"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con cáo nâu nhanh nhẹn nhảy qua con chó lười biếng"
           }
         },
         "zh-Hans" : {
