@@ -36,7 +36,10 @@ let package = Package(
                 .product(name: "TreeSitterMarkdownRunestone", package: "MiniTreeSitterLanguages", condition: .when(platforms: [.iOS, .visionOS])),
                 .product(name: "TreeSitterGLSLRunestone", package: "MiniTreeSitterLanguages", condition: .when(platforms: [.iOS, .visionOS])),
             ],
-            resources: [.process("Resources")],
+            resources: [
+                .process("Resources/Localizable.xcstrings"),
+                .copy("Resources/monaco"),
+            ],
         ),
         .testTarget(
             name: "CodeEditorUITests",

@@ -103,6 +103,30 @@ public struct CodeEditorShell<
     @State var disclosureControlWidth: CGFloat = 0
     @State var errorWindowWidth: CGFloat = 0
 
+    func editorView(_ editedItem: EditedItem) -> some View {
+#if canImport(AppKit)
+        MonacoEditorView(
+            state: state,
+            item: editedItem,
+            contents: Binding<String>(get: {
+                editedItem.content
+            }, set: { newV in
+                editedItem.content = newV
+            })
+        )
+#else
+        CodeEditorView(
+            state: state,
+            item: editedItem,
+            contents: Binding<String>(get: {
+                editedItem.content
+            }, set: { newV in
+                editedItem.content = newV
+            })
+        )
+#endif
+    }
+
     @ViewBuilder
     var editorContent: some View {
         if let currentIdx = state.currentEditor, currentIdx >= 0, currentIdx < state.openFiles.count  {
@@ -120,18 +144,11 @@ public struct CodeEditorShell<
                                     Divider()
                                 }
                                 ZStack(alignment: .top) {
-                                    CodeEditorView(
-                                        state: state,
-                                        item: editedItem,
-                                        contents: Binding<String>(get: {
-                                            editedItem.content
-                                        }, set: { newV in
-                                            editedItem.content = newV
-                                        })
-                                    )
-                                    .focusable()
-                                    .id(file)
-                                    .focused($isFocused, equals: true)
+                                    editorView(editedItem)
+                                        .focusable()
+                                        .id(file)
+                                        .focused($isFocused, equals: true)
+
                                     if state.showGotoLine {
                                         GotoLineView(showing: $state.showGotoLine) { newLine in
                                             editedItem.commands.requestGoto(line: newLine-1)

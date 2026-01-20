@@ -54,6 +54,9 @@ open class CodeEditorState {
     /// Whether to show the path browser
     public var showPathBrowser: Bool = true
 
+    /// Uses the Monaco editor (WebView) instead of the native editor.
+    public var useMonacoEditor: Bool = false
+
     public var lineHeightMultiplier: CGFloat = 1.6
 
     /// Configures whether the editors show line numbers
