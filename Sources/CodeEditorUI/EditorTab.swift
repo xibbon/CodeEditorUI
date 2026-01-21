@@ -32,7 +32,11 @@ struct EditorTab2: View {
         .padding(internalPadding)
         .padding ([.trailing], internalPadding)
         .background {
+#if os(macOS)
+            selected ? Color.accentColor.opacity(0.3) : Color (nsColor: .controlBackgroundColor)
+#else
             selected ? Color.accentColor.opacity(0.3) : Color (uiColor: .secondarySystemBackground)
+#endif
         }
         .clipShape(UnevenRoundedRectangle(topLeadingRadius: 5, bottomLeadingRadius: 0, bottomTrailingRadius: 0, topTrailingRadius: 5, style: .continuous))
         .padding([.horizontal], 3)
@@ -54,6 +58,7 @@ struct EditorTab: View {
                         .foregroundStyle(selected ? Color.accentColor : Color.secondary.opacity(0.8))
                         .font(.caption)
                 }
+                .buttonStyle(.plain)
             }
             ZStack {
                 Text (item.title)
@@ -80,7 +85,11 @@ struct EditorTab: View {
         .padding(internalPadding)
         .padding(.horizontal, 1)
         .background {
+            #if os(macOS)
+            selected ? Color.accentColor.opacity(0.2) : Color (.lightGray)
+            #else
             selected ? Color.accentColor.opacity(0.2) : Color (uiColor: .systemGray5)
+            #endif
         }
         .clipShape(UnevenRoundedRectangle(topLeadingRadius: 10, bottomLeadingRadius: 10, bottomTrailingRadius: 10, topTrailingRadius: 10, style: .continuous))
     }
@@ -209,7 +218,7 @@ private extension View {
     }
 }
 
-@available(iOS 18.0, *)
+@available(iOS 18.0, macOS 11.0, *)
 struct EditorTabs: View {
     @Binding var selected: Int?
     @Binding var items: [HostedItem]
@@ -227,11 +236,11 @@ struct EditorTabs: View {
     @State private var hstackOrigin: CGPoint = .zero
 
     // Scroll management
-    @State private var scrollPosition = ScrollPosition(edge: .leading)
     @State private var contentSize: CGSize = .zero
     @State private var containerSize: CGSize = .zero
     @State private var contentOffsetX: CGFloat = 0
     @State private var autoscrollTimer: Timer?
+    @State private var scrollPositionStorage = ScrollPositionStorage()
 
     // Auto-scroll config
     private let edgeActivationWidth: CGFloat = 60
@@ -246,6 +255,17 @@ struct EditorTabs: View {
         var containerSize: CGSize
         var contentSize: CGSize
         var contentOffsetX: CGFloat
+    }
+    private struct ScrollPositionStorage {
+        var value: Any? = nil
+    }
+
+    @available(iOS 18.0, macOS 15.0, *)
+    private func scrollPositionBinding() -> Binding<ScrollPosition> {
+        Binding(
+            get: { (scrollPositionStorage.value as? ScrollPosition) ?? ScrollPosition(edge: .leading) },
+            set: { scrollPositionStorage.value = $0 }
+        )
     }
 
     private func targetIndex(for midX: CGFloat) -> Int? {
@@ -290,6 +310,10 @@ struct EditorTabs: View {
     }
 
     private func startAutoscroll() {
+        guard #available(iOS 18.0, macOS 15.0, *) else { return }
+        if scrollPositionStorage.value == nil {
+            scrollPositionStorage.value = ScrollPosition(edge: .leading)
+        }
         guard autoscrollTimer == nil else { return }
         autoscrollTimer = Timer.scheduledTimer(withTimeInterval: autoScrollTick, repeats: true) { _ in
             guard let dragging = draggingIndex,
@@ -314,7 +338,10 @@ struct EditorTabs: View {
             guard delta != 0 else { return }
 
             let newX = max(0, min(contentSize.width - containerSize.width, contentOffsetX + delta))
-            scrollPosition.scrollTo(x: newX)
+            if var position = scrollPositionStorage.value as? ScrollPosition {
+                position.scrollTo(x: newX)
+                scrollPositionStorage.value = position
+            }
         }
     }
 
@@ -324,7 +351,7 @@ struct EditorTabs: View {
     }
 
     var body: some View {
-        ScrollView(.horizontal) {
+        let scrollView = ScrollView(.horizontal) {
             HStack(spacing: tabSpacing) {
                 if let selected {
                     ForEach(Array(items.enumerated()), id: \.offset) { idx, _ in
@@ -453,19 +480,24 @@ struct EditorTabs: View {
         }
         .coordinateSpace(name: "TabScrollSpace")
         .scrollDisabled(draggingIndex != nil)
-        .scrollPosition($scrollPosition)
-        .onScrollGeometryChange(for: ScrollGeometry.self) { geo in
-            ScrollGeometry(containerSize: geo.containerSize, contentSize: geo.contentSize, contentOffsetX: geo.contentOffset.x)
-        } action: { old, new in
-            containerSize = new.containerSize
-            contentSize = new.contentSize
-            contentOffsetX = new.contentOffsetX
-        }
         .onPreferenceChange(TabFramePreferenceKey.self) { tabFrames = $0 }
         .onPreferenceChange(HStackOriginPreferenceKey.self) { hstackOrigin = $0 }
         .scrollIndicators(.hidden)
         .onDisappear {
             stopAutoscroll()
+        }
+        if #available(iOS 18.0, macOS 15.0, *) {
+            scrollView
+                .scrollPosition(scrollPositionBinding())
+                .onScrollGeometryChange(for: ScrollGeometry.self) { geo in
+                    ScrollGeometry(containerSize: geo.containerSize, contentSize: geo.contentSize, contentOffsetX: geo.contentOffset.x)
+                } action: { _, new in
+                    containerSize = new.containerSize
+                    contentSize = new.contentSize
+                    contentOffsetX = new.contentOffsetX
+                }
+        } else {
+            scrollView
         }
     }
 }
@@ -494,7 +526,7 @@ struct DemoEditorTabs: View {
     ]
 
     var body: some View {
-        if #available(iOS 18.0, *) {
+        if #available(iOS 18.0, macOS 15.0, *) {
             EditorTabs(selected: $selected, items: $items) { closeIdx in
                 items.remove(at: closeIdx)
                 if closeIdx == selected {
@@ -513,7 +545,7 @@ struct DemoEditorTabs: View {
 
 #Preview {
     ZStack {
-        Color (uiColor: .secondarySystemBackground)
+        Color (.secondarySystemFill)
 
         DemoEditorTabs()
     }

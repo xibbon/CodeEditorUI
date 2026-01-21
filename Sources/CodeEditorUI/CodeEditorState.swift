@@ -6,9 +6,12 @@
 //
 
 import Foundation
+import SwiftUI
+
+#if canImport(UIKit)
 import Runestone
 import RunestoneUI
-import SwiftUI
+#endif
 
 ///
 /// Tracks the state for the editor, you can affect the editor by invoking methods in this API
@@ -40,14 +43,21 @@ open class CodeEditorState {
     /// If true, it means that the currently selected editor in `currentEditor` is a text editor
     public var currentTabIsTextEditor: Bool = false
     
+#if canImport(UIKit)
     var completionRequest: CompletionRequest? = nil
+#endif
     var saveError: Bool = false
     var saveErrorMessage = ""
     var saveIdx = 0
+#if !os(macOS)
     var codeEditorDefaultTheme: CodeEditorTheme
+#endif
 
     /// Whether to show the path browser
     public var showPathBrowser: Bool = true
+
+    /// Uses the Monaco editor (WebView) instead of the native editor.
+    public var useMonacoEditor: Bool = false
 
     public var lineHeightMultiplier: CGFloat = 1.6
 
@@ -72,14 +82,18 @@ open class CodeEditorState {
     /// The font family to use, the empty string or "System font" become the system font
     public var fontFamily: String = "" {
         didSet {
+#if !os(macOS)
             self.codeEditorDefaultTheme = CodeEditorTheme(fontFamily: fontFamily, fontSize: fontSize)
+#endif
         }
     }
     
     /// Controls font size
     public var fontSize: CGFloat = 16 {
         didSet {
+#if !os(macOS)
             self.codeEditorDefaultTheme = CodeEditorTheme(fontFamily: fontFamily, fontSize: fontSize)
+#endif
             UserDefaults.standard.set(fontSize, forKey: "xogot/appearance/font_size")
         }
     }
@@ -88,13 +102,16 @@ open class CodeEditorState {
         self.fontFamily = family
         self.fontSize = size
     }
+
     /// Controls indentation strategy
     public var indentStrategy: IndentStrategy = .tab(length: 4)
 
     /// Initializes the code editor state that you can use to control what is shown
     public init() {
         currentEditor = nil
+#if !os(macOS)
         self.codeEditorDefaultTheme = CodeEditorTheme()
+#endif
         updateCurrentTextEditor()
     }
 
@@ -518,9 +535,11 @@ open class CodeEditorState {
     public func hasFirstResponder() -> Bool {
         guard let currentEditor else { return false }
         if let edited = openFiles[currentEditor] as? EditedItem {
-            if edited.commands.textView?.isFirstResponder ?? false {
+#if !os(macOS)
+            if edited.commands.isFirstResponder {
                 return true
             }
+#endif
         }
         return false
     }
@@ -574,14 +593,14 @@ open class CodeEditorState {
     public func undo() {
         guard let currentEditor else { return }
         if let item = openFiles[currentEditor] as? EditedItem {
-            item.commands.textView?.undoManager?.undo()
+            item.commands.undo()
         }
     }
 
     public func redo() {
         guard let currentEditor else { return }
         if let item = openFiles[currentEditor] as? EditedItem {
-            item.commands.textView?.undoManager?.redo()
+            item.commands.redo()
         }
     }
 
@@ -597,7 +616,8 @@ open class CodeEditorState {
 //    }
 }
 
-/// This packet describes the parameters to trigger the code compeltion window
+#if canImport(UIKit)
+/// This packet describes the parameters to trigger the code completion window.
 struct CompletionRequest {
     let at: CGRect
     let on: TextView
@@ -605,3 +625,14 @@ struct CompletionRequest {
     let completions: [CompletionEntry]
     let textViewCursor: Int
 }
+#endif
+
+#if os(macOS)
+/// Strategy to use when indenting text.
+public enum IndentStrategy: Equatable {
+    /// Indent using tabs. The specified length is used to determine the width of the tab measured in space characers.
+    case tab(length: Int)
+    /// Indent using a number of spaces.
+    case space(length: Int)
+}
+#endif

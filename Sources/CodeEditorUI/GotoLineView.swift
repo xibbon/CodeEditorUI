@@ -53,10 +53,19 @@ struct GotoLineView: View {
             }
         }
         .padding()
+#if os(macOS)
         .background(RoundedRectangle(cornerRadius: 10).fill(
             //Color(uiColor: .systemGray6)
             .ultraThickMaterial
-        ).stroke(Color(uiColor: .systemGray4)))
+        )
+            .stroke(Color(.gray)))
+#else
+            .background(RoundedRectangle(cornerRadius: 10).fill(
+                //Color(uiColor: .systemGray6)
+                .ultraThickMaterial
+            )
+        .stroke(Color(uiColor: .systemGray4)))
+#endif
         .shadow(color: colorScheme == .dark ? .clear : Color.gray, radius: 40, x: 10, y: 30)
         .onChange(of: line) { old, new in
             if let line = Int(new), line > 0 { // }, line < maxLines {

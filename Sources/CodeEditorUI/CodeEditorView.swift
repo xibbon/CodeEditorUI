@@ -5,11 +5,13 @@
 //  Created by Miguel de Icaza on 3/29/24.
 //
 
+#if canImport(UIKit)
+
 import SwiftUI
+import UniformTypeIdentifiers
 import RunestoneUI
 import TreeSitterGDScriptRunestone
 import Runestone
-import UniformTypeIdentifiers
 
 enum CodeEditorStatus {
     case ok
@@ -35,7 +37,7 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
         self._contents = contents
     }
 
-    public func uitextViewChanged(_ textView: Runestone.TextView) {
+    public func uitextViewChanged(_ textView: TextView) {
         item.editedTextChanged(on: textView)
     }
 
@@ -43,15 +45,18 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
         item.editedTextSelectionChanged(on: textView)
     }
 
-    public func uitextViewLoaded(_ textView: Runestone.TextView) {
+    public func uitextViewLoaded(_ textView: TextView) {
+#if canImport(UIKit)
+        item.commands = item.runestoneCommands
+#endif
         item.started(on: textView)
     }
 
-    public func uitextViewGutterTapped(_ textView: Runestone.TextView, line: Int) {
+    public func uitextViewGutterTapped(_ textView: TextView, line: Int) {
         item.gutterTapped(on: textView, line: line)
     }
 
-    public func uitextViewRequestWordLookup(_ textView: Runestone.TextView, at position: UITextPosition, word: String) {
+    public func uitextViewRequestWordLookup(_ textView: TextView, at position: UITextPosition, word: String) {
         item.editedItemDelegate?.lookup(item, on: textView, at: position, word: word)
     }
     
@@ -112,7 +117,7 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
 
     // Implementation of the DropDelegate method
     public func performDrop(info: DropInfo) -> Bool {
-        let cmd = item.commands
+        let cmd = item.runestoneCommands
         guard let textView = cmd.textView else { return false }
 
         let offset = textView.contentOffset.y
@@ -125,6 +130,8 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
 
         // Before we get started, determine if we are on an empty line:
         var isEmptyLine = false
+
+        // This code relies on Runestone
         let currentTextPos = textView.offset(from: textView.beginningOfDocument, to: pos)
 
         // We are on an empty line if we are in column 0, and the next item does not exist, or
@@ -190,12 +197,12 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
 
     // Needed so we can show the cursor moving
     public func dropEntered(info: DropInfo) {
-        item.commands.textView?.becomeFirstResponder()
+        item.runestoneCommands.textView?.becomeFirstResponder()
     }
 
     // Update the cursor position near the drop site.
     public func dropUpdated(info: DropInfo) -> DropProposal? {
-        let cmd = item.commands
+        let cmd = item.runestoneCommands
         let offset = cmd.textView?.contentOffset.y
         // we need to include offset as well, otherwise it doesn't work
         guard let pos = cmd.closestPosition(to: CGPoint(x: info.location.x, y: info.location.y + (offset ?? 0))) else { return nil }
@@ -206,9 +213,12 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
 
     public var body: some View {
         ZStack (alignment: .topLeading){
+#if os(macOS)
+            Text("This is where the editor goes")
+#else
             let b = Bindable(item)
             TextViewUI (text: $contents,
-                        commands: item.commands,
+                        commands: item.runestoneCommands,
                         keyboardOffset: $keyboardOffset,
                         breakpoints: b.breakpoints,
                         delegate: self
@@ -297,6 +307,7 @@ public struct CodeEditorView: View, DropDelegate, TextViewUIDelegate {
                     .offset(x: xOffset, y: yOffset)
                     .frame(minWidth: 200, maxWidth: 350, maxHeight: maxHeight)
             }
+#endif
         }
         .onGeometryChange(for: CGSize.self) { proxy in
             proxy.size
@@ -428,4 +439,6 @@ struct DemoCodeEditorView: View {
 #Preview {
     DemoCodeEditorView()
 }
+#endif
+
 #endif
