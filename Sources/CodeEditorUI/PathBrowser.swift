@@ -67,6 +67,7 @@ struct PathBrowser: View {
                     }
                 }
             }
+            .buttonStyle(.plain)
         }
     }
 

@@ -1,23 +1,35 @@
-#if canImport(AppKit)
 import Foundation
 import SwiftUI
 import WebKit
 
-public struct MonacoEditorView: NSViewRepresentable {
+#if os(macOS)
+import AppKit
+#endif
+
+#if os(macOS)
+typealias PlatformViewRepresentable = NSViewRepresentable
+#else
+typealias PlatformViewRepresentable = UIViewRepresentable
+#endif
+
+public struct MonacoEditorView: PlatformViewRepresentable {
     @Binding var contents: String
     let item: EditedItem
     let state: CodeEditorState
+    let breakpoints: Set<Int>
 
-    public init(state: CodeEditorState, item: EditedItem, contents: Binding<String>) {
+    public init(state: CodeEditorState, item: EditedItem, contents: Binding<String>, breakpoints: Set<Int> = []) {
         self.state = state
         self.item = item
         self._contents = contents
+        self.breakpoints = breakpoints
     }
 
     public func makeCoordinator() -> Coordinator {
         Coordinator(parent: self)
     }
 
+#if os(macOS)
     public func makeNSView(context: Context) -> WKWebView {
         makeWebView(context: context)
     }
@@ -25,17 +37,38 @@ public struct MonacoEditorView: NSViewRepresentable {
     public func updateNSView(_ webView: WKWebView, context: Context) {
         update(webView: webView, context: context)
     }
+#else
+    public func makeUIView(context: Context) -> WKWebView {
+        makeWebView(context: context)
+    }
+
+    public func updateUIView(_ webView: WKWebView, context: Context) {
+        update(webView: webView, context: context)
+    }
+#endif
 
     private func makeWebView(context: Context) -> WKWebView {
         let configuration = WKWebViewConfiguration()
         let contentController = WKUserContentController()
-        contentController.add(context.coordinator, name: Coordinator.messageHandlerName)
+        contentController.add(context.coordinator, name: Coordinator.textChangedHandler)
+        contentController.add(context.coordinator, name: Coordinator.selectionChangedHandler)
+        contentController.add(context.coordinator, name: Coordinator.gutterTappedHandler)
+        contentController.add(context.coordinator, name: Coordinator.readyHandler)
         configuration.userContentController = contentController
         let view = WKWebView(frame: .zero, configuration: configuration)
         view.navigationDelegate = context.coordinator
         view.isInspectable = true
+#if !os(macOS)
+        view.isFindInteractionEnabled = true
+#endif
+        let monacoTextView = MonacoTextView(webView: view, text: contents)
+        let commands = MonacoEditorCommands(webView: view, textView: monacoTextView)
+        item.commands = commands
+
         context.coordinator.webView = view
         context.coordinator.parent = self
+        context.coordinator.monacoTextView = monacoTextView
+        context.coordinator.commands = commands
 
         if let baseURL = monacoBaseURL() {
             let config = monacoConfiguration(for: context.environment)
@@ -43,6 +76,8 @@ public struct MonacoEditorView: NSViewRepresentable {
             view.loadHTMLString(html, baseURL: baseURL)
             context.coordinator.lastKnownText = contents
             context.coordinator.lastConfiguration = config
+            context.coordinator.lastBreakpoints = breakpoints
+            context.coordinator.setBreakpoints(breakpoints)
         } else {
             view.loadHTMLString(Self.missingMonacoHTML, baseURL: nil)
         }
@@ -52,6 +87,7 @@ public struct MonacoEditorView: NSViewRepresentable {
 
     private func update(webView: WKWebView, context: Context) {
         context.coordinator.parent = self
+        context.coordinator.commands?.attach(webView: webView, textView: context.coordinator.monacoTextView)
 
         let config = monacoConfiguration(for: context.environment)
         if config != context.coordinator.lastConfiguration {
@@ -62,6 +98,11 @@ public struct MonacoEditorView: NSViewRepresentable {
         if contents != context.coordinator.lastKnownText {
             context.coordinator.lastKnownText = contents
             context.coordinator.setContents(contents)
+        }
+
+        if breakpoints != context.coordinator.lastBreakpoints {
+            context.coordinator.lastBreakpoints = breakpoints
+            context.coordinator.setBreakpoints(breakpoints)
         }
     }
 }
@@ -78,37 +119,77 @@ struct MonacoConfiguration: Equatable {
 }
 
 extension MonacoEditorView {
+    @MainActor
     public final class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
-        static let messageHandlerName = "monacoTextChanged"
+        static let textChangedHandler = "monacoTextChanged"
+        static let selectionChangedHandler = "monacoSelectionChanged"
+        static let gutterTappedHandler = "monacoGutterTapped"
+        static let readyHandler = "monacoReady"
 
         var parent: MonacoEditorView
         weak var webView: WKWebView?
+        var monacoTextView: MonacoTextView?
+        var commands: MonacoEditorCommands?
         var lastKnownText: String = ""
         var lastConfiguration: MonacoConfiguration?
+        var lastBreakpoints: Set<Int> = []
         private var pendingText: String?
         private var pendingConfiguration: MonacoConfiguration?
+        private var pendingBreakpoints: Set<Int>?
         private var isReady = false
+        private var hasStarted = false
 
         init(parent: MonacoEditorView) {
             self.parent = parent
         }
 
         deinit {
-            webView?.configuration.userContentController.removeScriptMessageHandler(forName: Self.messageHandlerName)
+            let controller = webView?.configuration.userContentController
+            controller?.removeScriptMessageHandler(forName: Self.textChangedHandler)
+            controller?.removeScriptMessageHandler(forName: Self.selectionChangedHandler)
+            controller?.removeScriptMessageHandler(forName: Self.gutterTappedHandler)
+            controller?.removeScriptMessageHandler(forName: Self.readyHandler)
         }
 
         public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-            guard message.name == Self.messageHandlerName else { return }
-            guard let text = message.body as? String else { return }
-            guard text != lastKnownText else { return }
-            lastKnownText = text
-            parent.contents = text
-            parent.item.content = text
-            parent.item.dirty = true
+            switch message.name {
+            case Self.textChangedHandler:
+                guard let text = message.body as? String else { return }
+                guard text != lastKnownText else { return }
+                lastKnownText = text
+                monacoTextView?.text = text
+                parent.contents = text
+                parent.item.content = text
+                if let monacoTextView {
+                    parent.item.editedTextChanged(on: monacoTextView)
+                }
+            case Self.selectionChangedHandler:
+                guard let payload = message.body as? [String: Any] else { return }
+                guard let start = (payload["start"] as? NSNumber)?.intValue,
+                      let end = (payload["end"] as? NSNumber)?.intValue else { return }
+                monacoTextView?.updateSelection(start: start, end: end)
+                if let monacoTextView {
+                    parent.item.editedTextSelectionChanged(on: monacoTextView)
+                }
+            case Self.gutterTappedHandler:
+                guard let lineNumber = (message.body as? NSNumber)?.intValue else { return }
+                let lineIndex = max(0, lineNumber - 1)
+                if let monacoTextView {
+                    parent.item.gutterTapped(on: monacoTextView, line: lineIndex)
+                }
+            case Self.readyHandler:
+                isReady = true
+                flushPendingUpdates()
+                if !hasStarted, let monacoTextView {
+                    hasStarted = true
+                    parent.item.started(on: monacoTextView)
+                }
+            default:
+                break
+            }
         }
 
         public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            isReady = true
             if let pendingText {
                 setContents(pendingText)
                 self.pendingText = nil
@@ -116,6 +197,10 @@ extension MonacoEditorView {
             if let pendingConfiguration {
                 setConfiguration(pendingConfiguration)
                 self.pendingConfiguration = nil
+            }
+            if let pendingBreakpoints {
+                setBreakpoints(pendingBreakpoints)
+                self.pendingBreakpoints = nil
             }
         }
 
@@ -128,6 +213,7 @@ extension MonacoEditorView {
                 pendingText = text
                 return
             }
+            monacoTextView?.text = text
             let js = "window.setEditorValue(\(MonacoEditorView.jsStringLiteral(text)));"
             webView.evaluateJavaScript(js, completionHandler: nil)
         }
@@ -147,6 +233,37 @@ extension MonacoEditorView {
             let js = "window.configureEditor(\(options), \(language), \(theme));"
             webView.evaluateJavaScript(js, completionHandler: nil)
         }
+
+        func setBreakpoints(_ breakpoints: Set<Int>) {
+            let sorted = breakpoints.filter { $0 >= 0 }.sorted()
+            let lineNumbers = sorted.map { $0 + 1 }
+            guard let webView else {
+                pendingBreakpoints = breakpoints
+                return
+            }
+            if !isReady {
+                pendingBreakpoints = breakpoints
+                return
+            }
+            let jsArray = MonacoEditorView.jsIntArrayLiteral(lineNumbers)
+            let js = "window.setBreakpoints(\(jsArray));"
+            webView.evaluateJavaScript(js, completionHandler: nil)
+        }
+
+        private func flushPendingUpdates() {
+            if let pendingText {
+                setContents(pendingText)
+                self.pendingText = nil
+            }
+            if let pendingConfiguration {
+                setConfiguration(pendingConfiguration)
+                self.pendingConfiguration = nil
+            }
+            if let pendingBreakpoints {
+                setBreakpoints(pendingBreakpoints)
+                self.pendingBreakpoints = nil
+            }
+        }
     }
 
     private func monacoBaseURL() -> URL? {
@@ -154,12 +271,26 @@ extension MonacoEditorView {
         if let resourceURL = Bundle.module.resourceURL {
             candidates.append(resourceURL)
             candidates.append(resourceURL.appendingPathComponent("monaco", isDirectory: true))
+            candidates.append(resourceURL.appendingPathComponent("monaco.bundle", isDirectory: true))
             candidates.append(resourceURL.appendingPathComponent("package", isDirectory: true))
+        }
+        if let bundleURL = Bundle.module.url(forResource: "monaco", withExtension: "bundle") {
+            candidates.append(bundleURL)
+            if let bundle = Bundle(url: bundleURL), let bundleResourceURL = bundle.resourceURL {
+                candidates.append(bundleResourceURL)
+            }
         }
         if let resourceURL = Bundle.main.resourceURL {
             candidates.append(resourceURL)
             candidates.append(resourceURL.appendingPathComponent("monaco", isDirectory: true))
+            candidates.append(resourceURL.appendingPathComponent("monaco.bundle", isDirectory: true))
             candidates.append(resourceURL.appendingPathComponent("package", isDirectory: true))
+        }
+        if let bundleURL = Bundle.main.url(forResource: "monaco", withExtension: "bundle") {
+            candidates.append(bundleURL)
+            if let bundle = Bundle(url: bundleURL), let bundleResourceURL = bundle.resourceURL {
+                candidates.append(bundleResourceURL)
+            }
         }
 
         for baseURL in candidates {
@@ -206,6 +337,7 @@ extension MonacoEditorView {
             "lineHeight": configuration.lineHeight,
             "minimap": ["enabled": false],
             "automaticLayout": true,
+            "glyphMargin": true,
         ]
 
         guard let data = try? JSONSerialization.data(withJSONObject: options, options: []),
@@ -223,6 +355,14 @@ extension MonacoEditorView {
         return json
     }
 
+    private static func jsIntArrayLiteral(_ values: [Int]) -> String {
+        guard let data = try? JSONSerialization.data(withJSONObject: values, options: []),
+              let json = String(data: data, encoding: .utf8) else {
+            return "[]"
+        }
+        return json
+    }
+
     private static func monacoHTML(contents: String, configuration: MonacoConfiguration) -> String {
         let initialValue = jsStringLiteral(contents)
         let optionsJSON = optionsJSON(for: configuration)
@@ -232,7 +372,7 @@ extension MonacoEditorView {
         <!doctype html>
         <html>
           <head>
-            <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0">
+            <meta name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0\">
             <style>
               html, body, #container {
                 margin: 0;
@@ -242,14 +382,24 @@ extension MonacoEditorView {
                 overflow: hidden;
                 background: transparent;
               }
+              .monaco-breakpoint {
+                background: #e05a50;
+                border-radius: 6px;
+                width: 10px;
+                height: 10px;
+                margin-left: 4px;
+                margin-top: 4px;
+              }
             </style>
-            <script src="min/vs/loader.js"></script>
+            <script src=\"min/vs/loader.js\"></script>
             <script>
               var editor = null;
               var pendingValue = \(initialValue);
               var pendingOptions = \(optionsJSON);
               var pendingLanguage = \(language);
               var pendingTheme = \(theme);
+              var pendingBreakpoints = [];
+              var breakpointDecorations = [];
 
               function applyPending() {
                 if (!editor) { return; }
@@ -265,6 +415,22 @@ extension MonacoEditorView {
                 if (typeof pendingValue === "string" && editor.getValue() !== pendingValue) {
                   editor.setValue(pendingValue);
                 }
+                applyBreakpoints();
+              }
+
+              function applyBreakpoints() {
+                if (!editor) { return; }
+                if (!pendingBreakpoints) { return; }
+                var decorations = pendingBreakpoints.map(function(lineNumber) {
+                  return {
+                    range: new monaco.Range(lineNumber, 1, lineNumber, 1),
+                    options: {
+                      isWholeLine: true,
+                      glyphMarginClassName: "monaco-breakpoint"
+                    }
+                  };
+                });
+                breakpointDecorations = editor.deltaDecorations(breakpointDecorations, decorations);
               }
 
               window.setEditorValue = function(value) {
@@ -279,6 +445,42 @@ extension MonacoEditorView {
                 applyPending();
               };
 
+              window.setBreakpoints = function(lines) {
+                if (!Array.isArray(lines)) {
+                  pendingBreakpoints = [];
+                } else {
+                  pendingBreakpoints = lines;
+                }
+                applyBreakpoints();
+              };
+
+              window.focusEditor = function() {
+                if (editor) { editor.focus(); }
+              };
+
+              window.gotoLine = function(lineNumber) {
+                if (!editor) { return; }
+                editor.revealLineInCenter(lineNumber);
+                editor.setPosition({ lineNumber: lineNumber, column: 1 });
+                editor.focus();
+              };
+
+              window.runEditorAction = function(actionId) {
+                if (!editor) { return; }
+                var action = editor.getAction(actionId);
+                if (action) { action.run(); }
+              };
+
+              window.undoEditor = function() {
+                if (!editor) { return; }
+                editor.trigger("keyboard", "undo", null);
+              };
+
+              window.redoEditor = function() {
+                if (!editor) { return; }
+                editor.trigger("keyboard", "redo", null);
+              };
+
               function startEditor() {
                 require.config({ paths: { vs: "min/vs" } });
                 require(["vs/editor/editor.main"], function() {
@@ -289,9 +491,31 @@ extension MonacoEditorView {
                   });
                   editor = monaco.editor.create(document.getElementById("container"), createOptions);
                   applyPending();
+
                   editor.onDidChangeModelContent(function() {
-                    window.webkit.messageHandlers.\(Coordinator.messageHandlerName).postMessage(editor.getValue());
+                    window.webkit.messageHandlers.\(Coordinator.textChangedHandler).postMessage(editor.getValue());
                   });
+
+                  editor.onDidChangeCursorSelection(function(e) {
+                    var model = editor.getModel();
+                    if (!model) { return; }
+                    var selection = e.selection;
+                    var startOffset = model.getOffsetAt({ lineNumber: selection.startLineNumber, column: selection.startColumn });
+                    var endOffset = model.getOffsetAt({ lineNumber: selection.endLineNumber, column: selection.endColumn });
+                    window.webkit.messageHandlers.\(Coordinator.selectionChangedHandler).postMessage({ start: startOffset, end: endOffset });
+                  });
+
+                  editor.onMouseDown(function(e) {
+                    if (!e || !e.target || !e.target.position) { return; }
+                    var targetType = e.target.type;
+                    if (targetType === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN ||
+                        targetType === monaco.editor.MouseTargetType.GUTTER_LINE_NUMBERS ||
+                        targetType === monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS) {
+                      window.webkit.messageHandlers.\(Coordinator.gutterTappedHandler).postMessage(e.target.position.lineNumber);
+                    }
+                  });
+
+                  window.webkit.messageHandlers.\(Coordinator.readyHandler).postMessage(true);
                 });
               }
 
@@ -299,7 +523,7 @@ extension MonacoEditorView {
             </script>
           </head>
           <body>
-            <div id="container"></div>
+            <div id=\"container\"></div>
           </body>
         </html>
         """
@@ -309,7 +533,7 @@ extension MonacoEditorView {
     <!doctype html>
     <html>
       <head>
-        <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0">
+        <meta name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0\">
         <style>
           html, body {
             margin: 0;
@@ -362,4 +586,3 @@ private enum MonacoLanguageResolver {
         }
     }
 }
-#endif

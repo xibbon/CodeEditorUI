@@ -112,7 +112,8 @@ public struct CodeEditorShell<
                 editedItem.content
             }, set: { newV in
                 editedItem.content = newV
-            })
+            }),
+            breakpoints: editedItem.breakpoints
         )
 #else
         CodeEditorView(
@@ -153,7 +154,7 @@ public struct CodeEditorShell<
                                         GotoLineView(showing: $state.showGotoLine) { newLine in
                                             editedItem.commands.requestGoto(line: newLine-1)
                                             DispatchQueue.main.asyncAfter(deadline: .now()+0.1) {
-                                                editedItem.commands.becomeFirstResponder()
+                                                editedItem.requestFocus()
                                             }
                                         }
                                         .ignoresSafeArea(.all)
@@ -249,7 +250,7 @@ public struct CodeEditorShell<
                     new >= 0, new < state.openFiles.count,
                    let editedItem = state.openFiles[new] as? EditedItem
                 {
-                    editedItem.commands.becomeFirstResponder()
+                    editedItem.requestFocus()
                 } else {
                     isFocused = false
                 }

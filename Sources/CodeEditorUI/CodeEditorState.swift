@@ -43,7 +43,9 @@ open class CodeEditorState {
     /// If true, it means that the currently selected editor in `currentEditor` is a text editor
     public var currentTabIsTextEditor: Bool = false
     
+#if canImport(UIKit)
     var completionRequest: CompletionRequest? = nil
+#endif
     var saveError: Bool = false
     var saveErrorMessage = ""
     var saveIdx = 0
@@ -501,7 +503,7 @@ open class CodeEditorState {
         guard let currentEditor else { return false }
         if let edited = openFiles[currentEditor] as? EditedItem {
 #if !os(macOS)
-            if edited.commands.textView?.isFirstResponder ?? false {
+            if edited.commands.isFirstResponder {
                 return true
             }
 #endif
@@ -558,14 +560,14 @@ open class CodeEditorState {
     public func undo() {
         guard let currentEditor else { return }
         if let item = openFiles[currentEditor] as? EditedItem {
-            item.commands.textView?.undoManager?.undo()
+            item.commands.undo()
         }
     }
 
     public func redo() {
         guard let currentEditor else { return }
         if let item = openFiles[currentEditor] as? EditedItem {
-            item.commands.textView?.undoManager?.redo()
+            item.commands.redo()
         }
     }
 
@@ -581,7 +583,8 @@ open class CodeEditorState {
 //    }
 }
 
-/// This packet describes the parameters to trigger the code compeltion window
+#if canImport(UIKit)
+/// This packet describes the parameters to trigger the code completion window.
 struct CompletionRequest {
     let at: CGRect
     let on: TextView
@@ -589,6 +592,7 @@ struct CompletionRequest {
     let completions: [CompletionEntry]
     let textViewCursor: Int
 }
+#endif
 
 #if os(macOS)
 /// Strategy to use when indenting text.

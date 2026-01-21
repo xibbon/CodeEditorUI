@@ -18,7 +18,8 @@ let package = Package(
             targets: ["CodeEditorUI"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/xibbon/RunestoneUI", branch: "main"),
+        //.package(url: "https://github.com/xibbon/RunestoneUI", branch: "main"),
+	.package(path: "../RunestoneUI"),
         .package(url: "https://github.com/xibbon/Runestone", branch: "main"),
         .package(url: "https://github.com/xibbon/MiniTreeSitterLanguages", branch: "main"),
     ],
@@ -38,7 +39,7 @@ let package = Package(
             ],
             resources: [
                 .process("Resources/Localizable.xcstrings"),
-                .copy("Resources/monaco"),
+                .copy("Resources/monaco.bundle"),
             ],
         ),
         .testTarget(

@@ -58,6 +58,7 @@ struct EditorTab: View {
                         .foregroundStyle(selected ? Color.accentColor : Color.secondary.opacity(0.8))
                         .font(.caption)
                 }
+                .buttonStyle(.plain)
             }
             ZStack {
                 Text (item.title)

@@ -7,6 +7,7 @@
 
 import Foundation
 
+@MainActor
 open class HostedItem: Identifiable, Hashable, Equatable {
     /// - Parameters:
     ///  - path: the path that will be passed to the HostServices API to load and save the file
