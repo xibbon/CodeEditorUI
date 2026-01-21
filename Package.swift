@@ -40,6 +40,7 @@ let package = Package(
             resources: [
                 .process("Resources/Localizable.xcstrings"),
                 .copy("Resources/monaco.bundle"),
+                .copy("Resources/monaco-bridge.js"),
             ],
         ),
         .testTarget(

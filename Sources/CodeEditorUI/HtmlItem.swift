@@ -163,7 +163,7 @@ struct WebView: UIViewRepresentable {
 extension WKWebView {
     func scrollTo (_ anchor: String) {
         DispatchQueue.main.asyncAfter(deadline: .now().advanced(by: .milliseconds(1000))) {
-            let str = "document.getElementById ('\(anchor)').scrollIntoView()"
+            let str = "(function(){var el=document.getElementById('\(anchor)'); if(!el){return false;} el.scrollIntoView(); return true; })()"
             self.evaluateJavaScript(str) { ret, error in
                 print ("ScrollRet: \(String(describing: ret))")
                 print ("ScrollError: \(String(describing: error))")

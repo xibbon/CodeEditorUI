@@ -59,6 +59,9 @@ open class CodeEditorState {
     /// Uses the Monaco editor (WebView) instead of the native editor.
     public var useMonacoEditor: Bool = false
 
+    /// Enables Monaco debug logging via WKWebView message handlers.
+    public var monacoDebugLogging: Bool = true
+
     public var lineHeightMultiplier: CGFloat = 1.6
 
     /// Configures whether the editors show line numbers

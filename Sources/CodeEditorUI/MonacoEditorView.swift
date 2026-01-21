@@ -54,10 +54,19 @@ public struct MonacoEditorView: PlatformViewRepresentable {
         contentController.add(context.coordinator, name: Coordinator.selectionChangedHandler)
         contentController.add(context.coordinator, name: Coordinator.gutterTappedHandler)
         contentController.add(context.coordinator, name: Coordinator.readyHandler)
+        if state.monacoDebugLogging {
+            contentController.add(context.coordinator, name: Coordinator.logHandler)
+        }
+        injectMonacoScripts(into: contentController, environment: context.environment)
         configuration.userContentController = contentController
         let view = WKWebView(frame: .zero, configuration: configuration)
         view.navigationDelegate = context.coordinator
-        view.isInspectable = true
+        view.isInspectable = state.monacoDebugLogging
+#if os(macOS)
+        if state.monacoDebugLogging {
+            configuration.preferences.setValue(true, forKey: "developerExtrasEnabled")
+        }
+#endif
 #if !os(macOS)
         view.isFindInteractionEnabled = true
 #endif
@@ -71,14 +80,21 @@ public struct MonacoEditorView: PlatformViewRepresentable {
         context.coordinator.commands = commands
 
         if let baseURL = monacoBaseURL() {
+            if state.monacoDebugLogging {
+                print("[Monaco] Using base URL: \(baseURL.path)")
+            }
             let config = monacoConfiguration(for: context.environment)
             let html = Self.monacoHTML(contents: contents, configuration: config)
             view.loadHTMLString(html, baseURL: baseURL)
             context.coordinator.lastKnownText = contents
             context.coordinator.lastConfiguration = config
             context.coordinator.lastBreakpoints = breakpoints
+            context.coordinator.setContents(contents)
             context.coordinator.setBreakpoints(breakpoints)
         } else {
+            if state.monacoDebugLogging {
+                print("[Monaco] Base URL not found for assets.")
+            }
             view.loadHTMLString(Self.missingMonacoHTML, baseURL: nil)
         }
 
@@ -105,6 +121,40 @@ public struct MonacoEditorView: PlatformViewRepresentable {
             context.coordinator.setBreakpoints(breakpoints)
         }
     }
+
+    private func injectMonacoScripts(into controller: WKUserContentController, environment: EnvironmentValues) {
+        let config = monacoConfiguration(for: environment)
+        let configObject: [String: Any] = [
+            "options": Self.optionsDictionary(for: config),
+            "language": config.language,
+            "theme": config.theme,
+            "debugLoggingEnabled": config.debugLoggingEnabled
+        ]
+        let configJSON = Self.jsonStringLiteral(configObject)
+        let configScript = "window.monacoConfig = \(configJSON);"
+        let configUserScript = WKUserScript(source: configScript, injectionTime: .atDocumentStart, forMainFrameOnly: true)
+        controller.addUserScript(configUserScript)
+
+        if let bridgeSource = monacoBridgeSource() {
+            let bridgeScript = WKUserScript(source: bridgeSource, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
+            controller.addUserScript(bridgeScript)
+        } else if state.monacoDebugLogging {
+            print("[Monaco] monaco-bridge.js not found in bundle resources.")
+        }
+    }
+
+    private func monacoBridgeSource() -> String? {
+        let candidates: [URL?] = [
+            Bundle.module.url(forResource: "monaco-bridge", withExtension: "js"),
+            Bundle.main.url(forResource: "monaco-bridge", withExtension: "js")
+        ]
+        for url in candidates {
+            if let url, let source = try? String(contentsOf: url, encoding: .utf8) {
+                return source
+            }
+        }
+        return nil
+    }
 }
 
 struct MonacoConfiguration: Equatable {
@@ -116,6 +166,7 @@ struct MonacoConfiguration: Equatable {
     let wordWrap: Bool
     let renderWhitespace: Bool
     let theme: String
+    let debugLoggingEnabled: Bool
 }
 
 extension MonacoEditorView {
@@ -125,6 +176,7 @@ extension MonacoEditorView {
         static let selectionChangedHandler = "monacoSelectionChanged"
         static let gutterTappedHandler = "monacoGutterTapped"
         static let readyHandler = "monacoReady"
+        static let logHandler = "monacoLog"
 
         var parent: MonacoEditorView
         weak var webView: WKWebView?
@@ -149,10 +201,13 @@ extension MonacoEditorView {
             controller?.removeScriptMessageHandler(forName: Self.selectionChangedHandler)
             controller?.removeScriptMessageHandler(forName: Self.gutterTappedHandler)
             controller?.removeScriptMessageHandler(forName: Self.readyHandler)
+            controller?.removeScriptMessageHandler(forName: Self.logHandler)
         }
 
         public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             switch message.name {
+            case Self.logHandler:
+                log(message.body)
             case Self.textChangedHandler:
                 guard let text = message.body as? String else { return }
                 guard text != lastKnownText else { return }
@@ -189,7 +244,25 @@ extension MonacoEditorView {
             }
         }
 
+        private func log(_ body: Any) {
+            let enabled = parent.state.monacoDebugLogging
+            guard enabled else { return }
+            if let payload = body as? [String: Any] {
+                let level = payload["level"] as? String ?? "log"
+                let message = payload["message"] as? String ?? "\(payload)"
+                print("[Monaco][\(level)] \(message)")
+            } else if let message = body as? String {
+                print("[Monaco] \(message)")
+            } else {
+                print("[Monaco] \(body)")
+            }
+        }
+
         public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            if parent.state.monacoDebugLogging {
+                print("[Monaco] WebView didFinish navigation")
+                runDebugProbe(in: webView)
+            }
             if let pendingText {
                 setContents(pendingText)
                 self.pendingText = nil
@@ -201,6 +274,41 @@ extension MonacoEditorView {
             if let pendingBreakpoints {
                 setBreakpoints(pendingBreakpoints)
                 self.pendingBreakpoints = nil
+            }
+        }
+
+        public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+            if parent.state.monacoDebugLogging {
+                print("[Monaco] WebView didFail navigation: \(error.localizedDescription)")
+            }
+        }
+
+        public func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+            if parent.state.monacoDebugLogging {
+                print("[Monaco] WebView didFailProvisionalNavigation: \(error.localizedDescription)")
+            }
+        }
+
+        private func runDebugProbe(in webView: WKWebView) {
+            let probes: [(String, String)] = [
+                ("readyState", "document.readyState"),
+                ("scriptCount", "document.getElementsByTagName('script').length"),
+                ("hasSetEditorValue", "typeof window.setEditorValue"),
+                ("hasConfigureEditor", "typeof window.configureEditor"),
+                ("hasReplaceTextAt", "typeof window.replaceTextAt"),
+                ("hasMonacoLog", "typeof window.monacoLog"),
+                ("hasRequire", "typeof require")
+            ]
+            for (label, script) in probes {
+                webView.evaluateJavaScript(script) { result, error in
+                    if let error {
+                        print("[Monaco][probe] \(label) error: \(error.localizedDescription)")
+                    } else if let result {
+                        print("[Monaco][probe] \(label): \(result)")
+                    } else {
+                        print("[Monaco][probe] \(label): nil")
+                    }
+                }
             }
         }
 
@@ -316,7 +424,8 @@ extension MonacoEditorView {
             showLineNumbers: state.showLines,
             wordWrap: state.lineWrapping,
             renderWhitespace: state.showSpaces || state.showTabs,
-            theme: theme
+            theme: theme,
+            debugLoggingEnabled: state.monacoDebugLogging
         )
     }
 
@@ -327,8 +436,8 @@ extension MonacoEditorView {
         return family
     }
 
-    private static func optionsJSON(for configuration: MonacoConfiguration) -> String {
-        let options: [String: Any] = [
+    private static func optionsDictionary(for configuration: MonacoConfiguration) -> [String: Any] {
+        [
             "lineNumbers": configuration.showLineNumbers ? "on" : "off",
             "wordWrap": configuration.wordWrap ? "on" : "off",
             "renderWhitespace": configuration.renderWhitespace ? "all" : "none",
@@ -337,10 +446,16 @@ extension MonacoEditorView {
             "lineHeight": configuration.lineHeight,
             "minimap": ["enabled": false],
             "automaticLayout": true,
-            "glyphMargin": true,
+            "glyphMargin": true
         ]
+    }
 
-        guard let data = try? JSONSerialization.data(withJSONObject: options, options: []),
+    private static func optionsJSON(for configuration: MonacoConfiguration) -> String {
+        jsonStringLiteral(optionsDictionary(for: configuration))
+    }
+
+    private static func jsonStringLiteral(_ object: Any) -> String {
+        guard let data = try? JSONSerialization.data(withJSONObject: object, options: []),
               let json = String(data: data, encoding: .utf8) else {
             return "{}"
         }
@@ -352,7 +467,7 @@ extension MonacoEditorView {
               let json = String(data: data, encoding: .utf8) else {
             return "\"\""
         }
-        return json
+        return json.replacingOccurrences(of: "</", with: "<\\/")
     }
 
     private static func jsIntArrayLiteral(_ values: [Int]) -> String {
@@ -364,10 +479,8 @@ extension MonacoEditorView {
     }
 
     private static func monacoHTML(contents: String, configuration: MonacoConfiguration) -> String {
-        let initialValue = jsStringLiteral(contents)
-        let optionsJSON = optionsJSON(for: configuration)
-        let language = jsStringLiteral(configuration.language)
-        let theme = jsStringLiteral(configuration.theme)
+        _ = contents
+        _ = configuration
         return """
         <!doctype html>
         <html>
@@ -392,167 +505,6 @@ extension MonacoEditorView {
               }
             </style>
             <script src=\"min/vs/loader.js\"></script>
-            <script>
-              var editor = null;
-              var pendingValue = \(initialValue);
-              var pendingOptions = \(optionsJSON);
-              var pendingLanguage = \(language);
-              var pendingTheme = \(theme);
-              var pendingBreakpoints = [];
-              var breakpointDecorations = [];
-
-              function applyPending() {
-                if (!editor) { return; }
-                if (pendingOptions) {
-                  editor.updateOptions(pendingOptions);
-                }
-                if (pendingLanguage) {
-                  monaco.editor.setModelLanguage(editor.getModel(), pendingLanguage);
-                }
-                if (pendingTheme) {
-                  monaco.editor.setTheme(pendingTheme);
-                }
-                if (typeof pendingValue === "string" && editor.getValue() !== pendingValue) {
-                  editor.setValue(pendingValue);
-                }
-                applyBreakpoints();
-              }
-
-              function applyBreakpoints() {
-                if (!editor) { return; }
-                if (!pendingBreakpoints) { return; }
-                var decorations = pendingBreakpoints.map(function(lineNumber) {
-                  return {
-                    range: new monaco.Range(lineNumber, 1, lineNumber, 1),
-                    options: {
-                      isWholeLine: true,
-                      glyphMarginClassName: "monaco-breakpoint"
-                    }
-                  };
-                });
-                breakpointDecorations = editor.deltaDecorations(breakpointDecorations, decorations);
-              }
-
-              window.setEditorValue = function(value) {
-                pendingValue = value;
-                applyPending();
-              };
-
-              window.configureEditor = function(options, language, theme) {
-                pendingOptions = options || pendingOptions;
-                pendingLanguage = language || pendingLanguage;
-                pendingTheme = theme || pendingTheme;
-                applyPending();
-              };
-
-              window.setBreakpoints = function(lines) {
-                if (!Array.isArray(lines)) {
-                  pendingBreakpoints = [];
-                } else {
-                  pendingBreakpoints = lines;
-                }
-                applyBreakpoints();
-              };
-
-              window.replaceTextAt = function(lineNumber, searchText, replacementText, isRegex, isCaseSensitive) {
-                if (!editor) { return; }
-                var model = editor.getModel();
-                if (!model) { return; }
-                if (lineNumber < 1 || lineNumber > model.getLineCount()) { return; }
-                var maxColumn = model.getLineMaxColumn(lineNumber);
-                var range = new monaco.Range(lineNumber, 1, lineNumber, maxColumn);
-                var matches = model.findMatches(searchText, range, !!isRegex, !!isCaseSensitive, null, false);
-                if (!matches || matches.length === 0) { return; }
-                editor.pushUndoStop();
-                editor.executeEdits("replaceTextAt", [{
-                  range: matches[0].range,
-                  text: replacementText,
-                  forceMoveMarkers: true
-                }]);
-                editor.pushUndoStop();
-              };
-
-              window.insertText = function(text) {
-                if (!editor) { return; }
-                var selection = editor.getSelection();
-                if (!selection) { return; }
-                editor.pushUndoStop();
-                editor.executeEdits("insertText", [{
-                  range: selection,
-                  text: text,
-                  forceMoveMarkers: true
-                }]);
-                editor.pushUndoStop();
-                editor.focus();
-              };
-
-              window.focusEditor = function() {
-                if (editor) { editor.focus(); }
-              };
-
-              window.gotoLine = function(lineNumber) {
-                if (!editor) { return; }
-                editor.revealLineInCenter(lineNumber);
-                editor.setPosition({ lineNumber: lineNumber, column: 1 });
-                editor.focus();
-              };
-
-              window.runEditorAction = function(actionId) {
-                if (!editor) { return; }
-                var action = editor.getAction(actionId);
-                if (action) { action.run(); }
-              };
-
-              window.undoEditor = function() {
-                if (!editor) { return; }
-                editor.trigger("keyboard", "undo", null);
-              };
-
-              window.redoEditor = function() {
-                if (!editor) { return; }
-                editor.trigger("keyboard", "redo", null);
-              };
-
-              function startEditor() {
-                require.config({ paths: { vs: "min/vs" } });
-                require(["vs/editor/editor.main"], function() {
-                  var createOptions = Object.assign({}, pendingOptions || {}, {
-                    value: pendingValue || "",
-                    language: pendingLanguage || "plaintext",
-                    theme: pendingTheme || "vs"
-                  });
-                  editor = monaco.editor.create(document.getElementById("container"), createOptions);
-                  applyPending();
-
-                  editor.onDidChangeModelContent(function() {
-                    window.webkit.messageHandlers.\(Coordinator.textChangedHandler).postMessage(editor.getValue());
-                  });
-
-                  editor.onDidChangeCursorSelection(function(e) {
-                    var model = editor.getModel();
-                    if (!model) { return; }
-                    var selection = e.selection;
-                    var startOffset = model.getOffsetAt({ lineNumber: selection.startLineNumber, column: selection.startColumn });
-                    var endOffset = model.getOffsetAt({ lineNumber: selection.endLineNumber, column: selection.endColumn });
-                    window.webkit.messageHandlers.\(Coordinator.selectionChangedHandler).postMessage({ start: startOffset, end: endOffset });
-                  });
-
-                  editor.onMouseDown(function(e) {
-                    if (!e || !e.target || !e.target.position) { return; }
-                    var targetType = e.target.type;
-                    if (targetType === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN ||
-                        targetType === monaco.editor.MouseTargetType.GUTTER_LINE_NUMBERS ||
-                        targetType === monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS) {
-                      window.webkit.messageHandlers.\(Coordinator.gutterTappedHandler).postMessage(e.target.position.lineNumber);
-                    }
-                  });
-
-                  window.webkit.messageHandlers.\(Coordinator.readyHandler).postMessage(true);
-                });
-              }
-
-              window.addEventListener("load", startEditor);
-            </script>
           </head>
           <body>
             <div id=\"container\"></div>
@@ -593,6 +545,8 @@ private enum MonacoLanguageResolver {
     static func language(for path: String) -> String {
         let ext = (path as NSString).pathExtension.lowercased()
         switch ext {
+        case "gd", "gdscript":
+            return "gdscript"
         case "swift":
             return "swift"
         case "js":
