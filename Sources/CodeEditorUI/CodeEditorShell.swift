@@ -284,11 +284,9 @@ public struct CodeEditorShell<
                     if let codeEditorMenu, state.openFiles.count > 0 {
                         codeEditorMenu()
                     }
-                    if #available(iOS 18.0, macOS 15.0, *) {
-                        EditorTabs(selected: $state.currentEditor, items: $state.openFiles, closeRequest: { idx in
-                            state.attemptClose (idx)
-                        })
-                    }
+                    EditorTabs(selected: $state.currentEditor, items: $state.openFiles, closeRequest: { idx in
+                        state.attemptClose (idx)
+                    })
                     if let tabExtension {
                         tabExtension()
                     }
