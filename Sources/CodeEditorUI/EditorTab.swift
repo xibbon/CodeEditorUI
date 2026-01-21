@@ -218,7 +218,7 @@ private extension View {
     }
 }
 
-@available(iOS 18.0, macOS 15.0, *)
+@available(iOS 18.0, macOS 11.0, *)
 struct EditorTabs: View {
     @Binding var selected: Int?
     @Binding var items: [HostedItem]
@@ -236,11 +236,11 @@ struct EditorTabs: View {
     @State private var hstackOrigin: CGPoint = .zero
 
     // Scroll management
-    @State private var scrollPosition = ScrollPosition(edge: .leading)
     @State private var contentSize: CGSize = .zero
     @State private var containerSize: CGSize = .zero
     @State private var contentOffsetX: CGFloat = 0
     @State private var autoscrollTimer: Timer?
+    @State private var scrollPositionStorage = ScrollPositionStorage()
 
     // Auto-scroll config
     private let edgeActivationWidth: CGFloat = 60
@@ -255,6 +255,17 @@ struct EditorTabs: View {
         var containerSize: CGSize
         var contentSize: CGSize
         var contentOffsetX: CGFloat
+    }
+    private struct ScrollPositionStorage {
+        var value: Any? = nil
+    }
+
+    @available(iOS 18.0, macOS 15.0, *)
+    private func scrollPositionBinding() -> Binding<ScrollPosition> {
+        Binding(
+            get: { (scrollPositionStorage.value as? ScrollPosition) ?? ScrollPosition(edge: .leading) },
+            set: { scrollPositionStorage.value = $0 }
+        )
     }
 
     private func targetIndex(for midX: CGFloat) -> Int? {
@@ -299,6 +310,10 @@ struct EditorTabs: View {
     }
 
     private func startAutoscroll() {
+        guard #available(iOS 18.0, macOS 15.0, *) else { return }
+        if scrollPositionStorage.value == nil {
+            scrollPositionStorage.value = ScrollPosition(edge: .leading)
+        }
         guard autoscrollTimer == nil else { return }
         autoscrollTimer = Timer.scheduledTimer(withTimeInterval: autoScrollTick, repeats: true) { _ in
             guard let dragging = draggingIndex,
@@ -323,7 +338,10 @@ struct EditorTabs: View {
             guard delta != 0 else { return }
 
             let newX = max(0, min(contentSize.width - containerSize.width, contentOffsetX + delta))
-            scrollPosition.scrollTo(x: newX)
+            if var position = scrollPositionStorage.value as? ScrollPosition {
+                position.scrollTo(x: newX)
+                scrollPositionStorage.value = position
+            }
         }
     }
 
@@ -333,7 +351,7 @@ struct EditorTabs: View {
     }
 
     var body: some View {
-        ScrollView(.horizontal) {
+        let scrollView = ScrollView(.horizontal) {
             HStack(spacing: tabSpacing) {
                 if let selected {
                     ForEach(Array(items.enumerated()), id: \.offset) { idx, _ in
@@ -462,19 +480,24 @@ struct EditorTabs: View {
         }
         .coordinateSpace(name: "TabScrollSpace")
         .scrollDisabled(draggingIndex != nil)
-        .scrollPosition($scrollPosition)
-        .onScrollGeometryChange(for: ScrollGeometry.self) { geo in
-            ScrollGeometry(containerSize: geo.containerSize, contentSize: geo.contentSize, contentOffsetX: geo.contentOffset.x)
-        } action: { old, new in
-            containerSize = new.containerSize
-            contentSize = new.contentSize
-            contentOffsetX = new.contentOffsetX
-        }
         .onPreferenceChange(TabFramePreferenceKey.self) { tabFrames = $0 }
         .onPreferenceChange(HStackOriginPreferenceKey.self) { hstackOrigin = $0 }
         .scrollIndicators(.hidden)
         .onDisappear {
             stopAutoscroll()
+        }
+        if #available(iOS 18.0, macOS 15.0, *) {
+            scrollView
+                .scrollPosition(scrollPositionBinding())
+                .onScrollGeometryChange(for: ScrollGeometry.self) { geo in
+                    ScrollGeometry(containerSize: geo.containerSize, contentSize: geo.contentSize, contentOffsetX: geo.contentOffset.x)
+                } action: { _, new in
+                    containerSize = new.containerSize
+                    contentSize = new.contentSize
+                    contentOffsetX = new.contentOffsetX
+                }
+        } else {
+            scrollView
         }
     }
 }
