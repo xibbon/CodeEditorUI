@@ -60,3 +60,13 @@ public protocol EditorTextView: AnyObject {
 #if canImport(Runestone)
 extension Runestone.TextView: EditorTextView {}
 #endif
+
+public extension EditorTextView {
+    func bufferInfo() -> (currentLine: Int?, lineCount: Int) {
+        let lineCount = text.isEmpty ? 1 : text.reduce(into: 1) { count, ch in
+            if ch == "\n" { count += 1 }
+        }
+        let currentLine = textLocation(at: selectedRange.location)?.lineNumber
+        return (currentLine: currentLine, lineCount: lineCount)
+    }
+}

@@ -39,6 +39,11 @@ public final class MonacoEditorCommands: EditorCommands {
         }
     }
 
+    public func getBufferInfo() -> (currentLine: Int?, lineCount: Int)? {
+        guard let textView else { return nil }
+        return textView.bufferInfo()
+    }
+
     public func requestGoto(line: Int, completion: (() -> Void)? = nil) {
         let lineNumber = line + 1
         runJS("window.gotoLine(\(lineNumber));") {

@@ -8,6 +8,7 @@ import RunestoneUI
 public protocol EditorCommands: AnyObject {
     var isFirstResponder: Bool { get }
     func onTextViewReady(callback: @escaping (EditorTextView) -> Void)
+    func getBufferInfo() -> (currentLine: Int?, lineCount: Int)?
     func requestGoto(line: Int, completion: (() -> Void)?)
     func becomeFirstResponder()
     func requestFind()
@@ -31,6 +32,10 @@ public final class NoopEditorCommands: EditorCommands {
     public var isFirstResponder: Bool { false }
 
     public func onTextViewReady(callback: @escaping (EditorTextView) -> Void) {
+    }
+
+    public func getBufferInfo() -> (currentLine: Int?, lineCount: Int)? {
+        nil
     }
 
     public func requestGoto(line: Int, completion: (() -> Void)? = nil) {
@@ -69,6 +74,11 @@ public final class RunestoneEditorCommands: EditorCommands {
         commands.onTextViewReady { textView in
             callback(textView)
         }
+    }
+
+    public func getBufferInfo() -> (currentLine: Int?, lineCount: Int)? {
+        guard let textView = commands.textView else { return nil }
+        return textView.bufferInfo()
     }
 
     public func requestGoto(line: Int, completion: (() -> Void)? = nil) {
@@ -125,6 +135,11 @@ extension TextViewCommands: EditorCommands {
         onTextViewReady { (textView: TextView) in
             callback(textView)
         }
+    }
+
+    public func getBufferInfo() -> (currentLine: Int?, lineCount: Int)? {
+        guard let textView else { return nil }
+        return textView.bufferInfo()
     }
 
     public func undo() {
