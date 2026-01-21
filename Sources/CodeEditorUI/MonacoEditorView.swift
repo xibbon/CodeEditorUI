@@ -454,6 +454,24 @@ extension MonacoEditorView {
                 applyBreakpoints();
               };
 
+              window.replaceTextAt = function(lineNumber, searchText, replacementText, isRegex, isCaseSensitive) {
+                if (!editor) { return; }
+                var model = editor.getModel();
+                if (!model) { return; }
+                if (lineNumber < 1 || lineNumber > model.getLineCount()) { return; }
+                var maxColumn = model.getLineMaxColumn(lineNumber);
+                var range = new monaco.Range(lineNumber, 1, lineNumber, maxColumn);
+                var matches = model.findMatches(searchText, range, !!isRegex, !!isCaseSensitive, null, false);
+                if (!matches || matches.length === 0) { return; }
+                editor.pushUndoStop();
+                editor.executeEdits("replaceTextAt", [{
+                  range: matches[0].range,
+                  text: replacementText,
+                  forceMoveMarkers: true
+                }]);
+                editor.pushUndoStop();
+              };
+
               window.focusEditor = function() {
                 if (editor) { editor.focus(); }
               };

@@ -44,6 +44,15 @@ public final class MonacoEditorCommands: EditorCommands {
         return textView.bufferInfo()
     }
 
+    public func replaceTextAt(line: Int, text: String, withText: String, options: NSString.CompareOptions) {
+        let lineNumber = line + 1
+        let searchText = jsStringLiteral(text)
+        let replacementText = jsStringLiteral(withText)
+        let isRegex = options.contains(.regularExpression) ? "true" : "false"
+        let isCaseSensitive = options.contains(.caseInsensitive) ? "false" : "true"
+        runJS("window.replaceTextAt(\(lineNumber), \(searchText), \(replacementText), \(isRegex), \(isCaseSensitive));")
+    }
+
     public func requestGoto(line: Int, completion: (() -> Void)? = nil) {
         let lineNumber = line + 1
         runJS("window.gotoLine(\(lineNumber));") {
@@ -117,5 +126,13 @@ public final class MonacoEditorCommands: EditorCommands {
         webView.evaluateJavaScript(script) { _, _ in
             completion?()
         }
+    }
+
+    private func jsStringLiteral(_ value: String) -> String {
+        guard let data = try? JSONEncoder().encode(value),
+              let json = String(data: data, encoding: .utf8) else {
+            return "\"\""
+        }
+        return json
     }
 }

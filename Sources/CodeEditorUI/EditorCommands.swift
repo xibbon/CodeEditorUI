@@ -9,6 +9,7 @@ public protocol EditorCommands: AnyObject {
     var isFirstResponder: Bool { get }
     func onTextViewReady(callback: @escaping (EditorTextView) -> Void)
     func getBufferInfo() -> (currentLine: Int?, lineCount: Int)?
+    func replaceTextAt(line: Int, text: String, withText: String, options: NSString.CompareOptions)
     func requestGoto(line: Int, completion: (() -> Void)?)
     func becomeFirstResponder()
     func requestFind()
@@ -36,6 +37,13 @@ public final class NoopEditorCommands: EditorCommands {
 
     public func getBufferInfo() -> (currentLine: Int?, lineCount: Int)? {
         nil
+    }
+
+    public func replaceTextAt(line: Int, text: String, withText: String, options: NSString.CompareOptions) {
+        _ = line
+        _ = text
+        _ = withText
+        _ = options
     }
 
     public func requestGoto(line: Int, completion: (() -> Void)? = nil) {
@@ -79,6 +87,10 @@ public final class RunestoneEditorCommands: EditorCommands {
     public func getBufferInfo() -> (currentLine: Int?, lineCount: Int)? {
         guard let textView = commands.textView else { return nil }
         return textView.bufferInfo()
+    }
+
+    public func replaceTextAt(line: Int, text: String, withText: String, options: NSString.CompareOptions) {
+        commands.replaceTextAt(line: line, text: text, withText: withText, options: options)
     }
 
     public func requestGoto(line: Int, completion: (() -> Void)? = nil) {
