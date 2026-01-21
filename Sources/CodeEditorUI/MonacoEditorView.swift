@@ -472,6 +472,20 @@ extension MonacoEditorView {
                 editor.pushUndoStop();
               };
 
+              window.insertText = function(text) {
+                if (!editor) { return; }
+                var selection = editor.getSelection();
+                if (!selection) { return; }
+                editor.pushUndoStop();
+                editor.executeEdits("insertText", [{
+                  range: selection,
+                  text: text,
+                  forceMoveMarkers: true
+                }]);
+                editor.pushUndoStop();
+                editor.focus();
+              };
+
               window.focusEditor = function() {
                 if (editor) { editor.focus(); }
               };

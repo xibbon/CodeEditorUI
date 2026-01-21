@@ -53,6 +53,11 @@ public final class MonacoEditorCommands: EditorCommands {
         runJS("window.replaceTextAt(\(lineNumber), \(searchText), \(replacementText), \(isRegex), \(isCaseSensitive));")
     }
 
+    public func insertText(_ text: String) {
+        let literal = jsStringLiteral(text)
+        runJS("window.insertText(\(literal));")
+    }
+
     public func requestGoto(line: Int, completion: (() -> Void)? = nil) {
         let lineNumber = line + 1
         runJS("window.gotoLine(\(lineNumber));") {

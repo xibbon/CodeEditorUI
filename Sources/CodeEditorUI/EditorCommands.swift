@@ -10,6 +10,7 @@ public protocol EditorCommands: AnyObject {
     func onTextViewReady(callback: @escaping (EditorTextView) -> Void)
     func getBufferInfo() -> (currentLine: Int?, lineCount: Int)?
     func replaceTextAt(line: Int, text: String, withText: String, options: NSString.CompareOptions)
+    func insertText(_ text: String)
     func requestGoto(line: Int, completion: (() -> Void)?)
     func becomeFirstResponder()
     func requestFind()
@@ -44,6 +45,10 @@ public final class NoopEditorCommands: EditorCommands {
         _ = text
         _ = withText
         _ = options
+    }
+
+    public func insertText(_ text: String) {
+        _ = text
     }
 
     public func requestGoto(line: Int, completion: (() -> Void)? = nil) {
@@ -91,6 +96,10 @@ public final class RunestoneEditorCommands: EditorCommands {
 
     public func replaceTextAt(line: Int, text: String, withText: String, options: NSString.CompareOptions) {
         commands.replaceTextAt(line: line, text: text, withText: withText, options: options)
+    }
+
+    public func insertText(_ text: String) {
+        commands.textView?.insertText(text)
     }
 
     public func requestGoto(line: Int, completion: (() -> Void)? = nil) {
@@ -152,6 +161,10 @@ extension TextViewCommands: EditorCommands {
     public func getBufferInfo() -> (currentLine: Int?, lineCount: Int)? {
         guard let textView else { return nil }
         return textView.bufferInfo()
+    }
+
+    public func insertText(_ text: String) {
+        textView?.insertText(text)
     }
 
     public func undo() {
