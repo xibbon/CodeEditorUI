@@ -128,6 +128,7 @@ struct PathBrowser: View {
                         .foregroundStyle(Color.primary)
                 }
                 .foregroundStyle(.secondary)
+                .buttonStyle(.plain)
             }
         }
         .padding([.vertical], 10)
