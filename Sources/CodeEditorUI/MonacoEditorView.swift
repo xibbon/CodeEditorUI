@@ -533,7 +533,8 @@ extension MonacoEditorView {
             "minimap": ["enabled": false],
             "automaticLayout": true,
             "glyphMargin": true,
-            "contextmenu": false
+            "contextmenu": false,
+            "autoIndent": "advanced"
         ]
     }
 
@@ -634,6 +635,8 @@ private enum MonacoLanguageResolver {
         switch ext {
         case "gd", "gdscript":
             return "gdscript"
+        case "gdshader", "gdshaderinclude", "gdshaderinc":
+            return "gdshader"
         case "swift":
             return "swift"
         case "js":

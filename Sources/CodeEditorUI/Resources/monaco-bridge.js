@@ -16,6 +16,7 @@
   var lspSyncForced = false;
   var lspSyncPatched = false;
   var gdscriptRegistered = false;
+  var gdshaderRegistered = false;
   var debugLoggingEnabled = !!config.debugLoggingEnabled;
   var contextMenuActionMap = Object.create(null);
 
@@ -703,6 +704,7 @@
     require(["vs/editor/editor.main"], function () {
       monacoLog("info", "editor.main loaded");
       registerGDScript();
+      registerGodotShader();
       var createOptions = Object.assign({}, pendingOptions || {}, {
         value: pendingValue || "",
         language: pendingLanguage || "plaintext",
@@ -930,30 +932,58 @@
         "tool",
         "export",
         "setget",
+        "assert",
+        "breakpoint",
+        "sync",
+        "remote",
+        "master",
+        "puppet",
+        "slave",
+        "remotesync",
+        "mastersync",
+        "puppetsync",
+        "trait",
+        "namespace",
+        "when",
       ],
       builtins: [
-        "bool",
-        "int",
-        "float",
-        "String",
-        "Array",
-        "Dictionary",
         "Vector2",
         "Vector2i",
         "Vector3",
         "Vector3i",
         "Vector4",
         "Vector4i",
+        "Color",
         "Rect2",
         "Rect2i",
+        "Array",
+        "Basis",
+        "Dictionary",
+        "Plane",
+        "Quat",
+        "RID",
+        "Rect3",
+        "Transform",
         "Transform2D",
         "Transform3D",
-        "Basis",
-        "Color",
+        "AABB",
+        "String",
         "NodePath",
-        "RID",
-        "Callable",
+        "PoolByteArray",
+        "PoolIntArray",
+        "PoolRealArray",
+        "PoolStringArray",
+        "PoolVector2Array",
+        "PoolVector3Array",
+        "PoolColorArray",
+        "bool",
+        "int",
+        "float",
         "Signal",
+        "Callable",
+        "StringName",
+        "Quaternion",
+        "Projection",
         "PackedByteArray",
         "PackedInt32Array",
         "PackedInt64Array",
@@ -961,22 +991,75 @@
         "PackedFloat64Array",
         "PackedStringArray",
         "PackedVector2Array",
+        "PackedVector2iArray",
         "PackedVector3Array",
+        "PackedVector3iArray",
         "PackedVector4Array",
         "PackedColorArray",
+        "JSON",
+        "UPNP",
+        "OS",
+        "IP",
+        "JSONRPC",
+        "XRVRS",
+        "Variant",
+        "void",
       ],
       tokenizer: {
         root: [
+          [
+            /@(abstract|export|export_category|export_color_no_alpha|export_custom|export_dir|export_enum|export_exp_easing|export_file|export_file_path|export_flags|export_flags_2d_navigation|export_flags_2d_physics|export_flags_2d_render|export_flags_3d_navigation|export_flags_3d_physics|export_flags_3d_render|export_flags_avoidance|export_global_dir|export_global_file|export_group|export_multiline|export_node_path|export_placeholder|export_range|export_storage|export_subgroup|export_tool_button|icon|onready|rpc|static_unload|tool|warning_ignore|warning_ignore_restore|warning_ignore_start)\b/,
+            "annotation",
+          ],
+          [/@[a-zA-Z_]\w*/, "annotation"],
+          [/\bclass_name\b/, { token: "keyword", next: "@className" }],
+          [/\bextends\b/, { token: "keyword", next: "@extendsName" }],
+          [/\bclass\b/, { token: "keyword", next: "@classDecl" }],
+          [/\benum\b/, { token: "keyword", next: "@enumDecl" }],
+          [/\bfunc\b/, { token: "keyword", next: "@functionDecl" }],
+          [/\bsignal\b/, { token: "keyword", next: "@signalDecl" }],
+          [/\b(?:var|const)\b/, { token: "keyword", next: "@varDecl" }],
           [/^\s*#.*$/, "comment"],
           [/#.*$/, "comment"],
-          [/\b0[xX][0-9a-fA-F]+\b/, "number.hex"],
-          [/\b\d+(\.\d+)?([eE][\-+]?\d+)?\b/, "number"],
+          [/^\s*(get|set)\b(?=\s*:)/, "function"],
+          [/\b(?:true|false|null)\b/, "constant.language"],
+          [/\b(?:PI|TAU|INF|NAN)\b/, "constant.language"],
+          [/0b[01_]+/i, "number.binary"],
+          [/0x[0-9a-fA-F_]+/, "number.hex"],
+          [/([0-9][0-9_]*)?\.[0-9_]*([eE][\-+]?[0-9_]+)?/, "number.float"],
+          [/[0-9][0-9_]*[eE][\-+]?[0-9_]+/, "number.float"],
+          [/-?[0-9][0-9_]*/, "number"],
+          [/(->)\s*([a-zA-Z_]\w*)/, ["operator", "type.identifier"]],
+          [/(\bis\b|\bas\b)\s+([a-zA-Z_]\w*)/, ["keyword", "type.identifier"]],
+          [/\bNodePath\b/, { token: "type", next: "@nodePathCtor" }],
+          [
+            /\b(get_node_or_null|has_node|has_node_and_resource|find_node|get_node)\b/,
+            { token: "function", next: "@nodePathCall" },
+          ],
+          [/(\^|&)"([^"\\]|\\.)*"/, "string"],
+          [/(\^|&)'([^'\\]|\\.)*'/, "string"],
+          [/\$[A-Za-z0-9_\/\.\:%-]+/, "string"],
+          [/%[A-Za-z0-9_\/\.\:%-]+/, "string"],
           [/"""/, "string", "@tripleDouble"],
           [/'''/, "string", "@tripleSingle"],
-          [/"([^"\\]|\\.)*"/, "string"],
-          [/'([^'\\]|\\.)*'/, "string"],
+          [/"/, "string", "@stringDouble"],
+          [/'/, "string", "@stringSingle"],
+          [/([.])\s*([a-zA-Z_]\w*)/, ["delimiter", "variable.other.property"]],
           [/[\[\]{}()]/, "@brackets"],
           [/[;,.]/, "delimiter"],
+          [
+            /\b(and|or|not)\b/,
+            "operator",
+          ],
+          [/(?:&&|\|\||<<=|>>=|<<|>>|\^|~|<=|>=|==|<|>|!=|!|->|\+=|-=|\*\*=|\*=|\^=|\/=|%=|&=|~=|\|=|\*\*|\*|\/|%|\+|-|=)/,
+            "operator",
+          ],
+          [/\b[A-Z][A-Za-z0-9_]*\b/, "type.identifier"],
+          [/\b[A-Z_][A-Z_0-9]*\b/, "constant"],
+          [
+            /\b(?!if\b|elif\b|else\b|for\b|while\b|match\b|case\b|return\b|break\b|continue\b|pass\b|yield\b|await\b|func\b|class\b|signal\b|var\b|const\b)[a-zA-Z_]\w*(?=\s*\()/,
+            "function",
+          ],
           [
             /[a-zA-Z_][\w]*/,
             {
@@ -989,6 +1072,101 @@
           ],
           { include: "@whitespace" },
         ],
+        className: [
+          [/\s+/, "white"],
+          [/[a-zA-Z_]\w*(?:\.[a-zA-Z_]\w*)?/, "type.identifier", "@pop"],
+          ["", "", "@pop"],
+        ],
+        extendsName: [
+          [/\s+/, "white"],
+          [/[a-zA-Z_]\w*(?:\.[a-zA-Z_]\w*)?/, "type.identifier", "@pop"],
+          ["", "", "@pop"],
+        ],
+        classDecl: [
+          [/\s+/, "white"],
+          [/[a-zA-Z_]\w*/, "type.identifier", "@pop"],
+          ["", "", "@pop"],
+        ],
+        enumDecl: [
+          [/\s+/, "white"],
+          [/[a-zA-Z_]\w*/, "type.identifier"],
+          [/\{/, { token: "delimiter.bracket", next: "@enumBody" }],
+          ["", "", "@pop"],
+        ],
+        enumBody: [
+          [/\s+/, "white"],
+          [/}/, { token: "delimiter.bracket", next: "@pop" }],
+          [/,/, "delimiter"],
+          [/[a-zA-Z_]\w*/, "constant"],
+          [/[0-9][0-9_]*/, "number"],
+        ],
+        functionDecl: [
+          [/\s+/, "white"],
+          [/[a-zA-Z_]\w*/, "function", "@maybeParams"],
+          [/\(/, { token: "delimiter.parenthesis", next: "@params" }],
+          ["", "", "@pop"],
+        ],
+        signalDecl: [
+          [/\s+/, "white"],
+          [/[a-zA-Z_]\w*/, "function", "@maybeParams"],
+          [/\(/, { token: "delimiter.parenthesis", next: "@params" }],
+          ["", "", "@pop"],
+        ],
+        maybeParams: [
+          [/\s+/, "white"],
+          [/\(/, { token: "delimiter.parenthesis", next: "@params" }],
+          ["", "", "@pop"],
+        ],
+        params: [
+          [/\s+/, "white"],
+          [/\)/, { token: "delimiter.parenthesis", next: "@pop" }],
+          [/,/, "delimiter"],
+          [/(:)\s*([a-zA-Z_]\w*)/, ["delimiter", "type.identifier"]],
+          [/=/, "operator"],
+          [/[a-zA-Z_]\w*/, "variable.parameter"],
+        ],
+        varDecl: [
+          [/\s+/, "white"],
+          [/[a-zA-Z_]\w*/, "variable", "@varDeclAfterName"],
+          ["", "", "@pop"],
+        ],
+        varDeclAfterName: [
+          [/\s+/, "white"],
+          [/(set|get)\b/, "function"],
+          [/(setget)\b/, "keyword"],
+          [/(:)\s*([a-zA-Z_]\w*)/, ["delimiter", "type.identifier"]],
+          [/(=|:=)/, "operator", "@pop"],
+          [/,/, "delimiter"],
+          [/$/, "", "@pop"],
+        ],
+        nodePathCtor: [
+          [/\s+/, "white"],
+          [/\(/, "delimiter.parenthesis"],
+          [/"/, "string", "@nodePathStringDouble"],
+          [/'/, "string", "@nodePathStringSingle"],
+          [/\)/, { token: "delimiter.parenthesis", next: "@pop" }],
+          ["", "", "@pop"],
+        ],
+        nodePathCall: [
+          [/\s+/, "white"],
+          [/\(/, "delimiter.parenthesis"],
+          [/"/, "string", "@nodePathStringDouble"],
+          [/'/, "string", "@nodePathStringSingle"],
+          [/\)/, { token: "delimiter.parenthesis", next: "@pop" }],
+          ["", "", "@pop"],
+        ],
+        nodePathStringDouble: [
+          [/%/, "keyword"],
+          [/\\./, "constant.character.escape"],
+          [/[^\\"]+/, "string"],
+          [/"/, "string", "@pop"],
+        ],
+        nodePathStringSingle: [
+          [/%/, "keyword"],
+          [/\\./, "constant.character.escape"],
+          [/[^\\']+/, "string"],
+          [/'/, "string", "@pop"],
+        ],
         tripleDouble: [
           [/"""/, "string", "@pop"],
           [/[^]+/, "string"],
@@ -996,6 +1174,20 @@
         tripleSingle: [
           [/'''/, "string", "@pop"],
           [/[^]+/, "string"],
+        ],
+        stringDouble: [
+          [/%(?:\d+\$)?[+-]?(?:\d+)?(?:\.\d+)?[sdif]/, "constant.character.format"],
+          [/\{[^"\\n}]*\}/, "constant.character.format"],
+          [/\\./, "constant.character.escape"],
+          [/[^\\%"]+/, "string"],
+          [/"/, "string", "@pop"],
+        ],
+        stringSingle: [
+          [/%(?:\d+\$)?[+-]?(?:\d+)?(?:\.\d+)?[sdif]/, "constant.character.format"],
+          [/\{[^'\\n}]*\}/, "constant.character.format"],
+          [/\\./, "constant.character.escape"],
+          [/[^\\%']+/, "string"],
+          [/'/, "string", "@pop"],
         ],
         whitespace: [[/[ \t\r\n]+/, ""]],
       },
@@ -1067,6 +1259,363 @@
             indentLevel += 1;
           }
         }
+        return edits;
+      },
+    });
+  }
+
+  function registerGodotShader() {
+    if (gdshaderRegistered) {
+      return;
+    }
+    gdshaderRegistered = true;
+    monacoLog("info", "registering gdshader");
+    monaco.languages.register({
+      id: "gdshader",
+      aliases: ["Godot Shader", "gdshader", "gdshaderinclude"],
+      extensions: [".gdshader", ".gdshaderinclude", ".gdshaderinc"],
+    });
+
+    monaco.languages.setLanguageConfiguration("gdshader", {
+      comments: {
+        lineComment: "//",
+        blockComment: ["/*", "*/"],
+      },
+      brackets: [
+        ["{", "}"],
+        ["[", "]"],
+        ["(", ")"],
+      ],
+      autoClosingPairs: [
+        { open: "{", close: "}" },
+        { open: "[", close: "]" },
+        { open: "(", close: ")" },
+        { open: '"', close: '"', notIn: ["string", "comment"] },
+        { open: "'", close: "'", notIn: ["string", "comment"] },
+        { open: "/*", close: "*/", notIn: ["string"] },
+      ],
+      surroundingPairs: [
+        { open: "{", close: "}" },
+        { open: "[", close: "]" },
+        { open: "(", close: ")" },
+        { open: '"', close: '"' },
+        { open: "'", close: "'" },
+      ],
+      indentationRules: {
+        increaseIndentPattern: /{\s*(?:\/\/.*|#.*)?$/,
+        decreaseIndentPattern: /^\s*}/,
+      },
+      onEnterRules: [
+        {
+          beforeText: /{\s*$/,
+          afterText: /^\s*}/,
+          action: { indentAction: monaco.languages.IndentAction.IndentOutdent },
+        },
+        {
+          beforeText: /{\s*$/,
+          action: { indentAction: monaco.languages.IndentAction.Indent },
+        },
+        {
+          beforeText: /^\s*}/,
+          action: { indentAction: monaco.languages.IndentAction.Outdent },
+        },
+      ],
+    });
+
+    monaco.languages.setMonarchTokensProvider("gdshader", {
+      keywords: ["shader_type", "render_mode", "struct"],
+      controlKeywords: [
+        "if",
+        "else",
+        "do",
+        "while",
+        "for",
+        "continue",
+        "break",
+        "switch",
+        "case",
+        "default",
+        "return",
+        "discard",
+      ],
+      modifierKeywords: [
+        "const",
+        "global",
+        "instance",
+        "uniform",
+        "varying",
+        "in",
+        "out",
+        "inout",
+        "flat",
+        "smooth",
+      ],
+      precisionKeywords: ["lowp", "mediump", "highp", "precision"],
+      typeKeywords: [
+        "void",
+        "bool",
+        "int",
+        "uint",
+        "float",
+        "double",
+        "vec2",
+        "vec3",
+        "vec4",
+        "bvec2",
+        "bvec3",
+        "bvec4",
+        "ivec2",
+        "ivec3",
+        "ivec4",
+        "uvec2",
+        "uvec3",
+        "uvec4",
+        "mat2",
+        "mat3",
+        "mat4",
+        "sampler2D",
+        "sampler2DArray",
+        "sampler3D",
+        "samplerCube",
+        "samplerCubeArray",
+        "samplerExternalOES",
+      ],
+      builtins: [
+        "COLOR",
+        "ALBEDO",
+        "ALPHA",
+        "ALPHA_SCISSOR",
+        "ALPHA_HASH_SCALE",
+        "METALLIC",
+        "ROUGHNESS",
+        "SPECULAR",
+        "EMISSION",
+        "NORMAL",
+        "NORMAL_MAP",
+        "NORMAL_MAP_DEPTH",
+        "RIM",
+        "RIM_TINT",
+        "CLEARCOAT",
+        "CLEARCOAT_GLOSS",
+        "ANISOTROPY",
+        "ANISOTROPY_FLOW",
+        "SSS_STRENGTH",
+        "AO",
+        "AO_LIGHT_AFFECT",
+        "REFRACTION",
+        "REFRACTION_ROUGHNESS",
+        "UV",
+        "UV2",
+        "VERTEX",
+        "NORMAL_MATRIX",
+        "TANGENT",
+        "BINORMAL",
+        "WORLD_MATRIX",
+        "MODEL_MATRIX",
+        "VIEW_MATRIX",
+        "PROJECTION_MATRIX",
+        "INV_VIEW_MATRIX",
+        "INV_PROJECTION_MATRIX",
+        "INV_VIEW_PROJECTION_MATRIX",
+        "SCREEN_TEXTURE",
+        "DEPTH_TEXTURE",
+        "TIME",
+        "PI",
+        "TAU",
+      ],
+      functions: [
+        "sin",
+        "cos",
+        "tan",
+        "asin",
+        "acos",
+        "atan",
+        "radians",
+        "degrees",
+        "pow",
+        "exp",
+        "log",
+        "exp2",
+        "log2",
+        "sqrt",
+        "inversesqrt",
+        "abs",
+        "sign",
+        "floor",
+        "ceil",
+        "fract",
+        "mod",
+        "min",
+        "max",
+        "clamp",
+        "mix",
+        "step",
+        "smoothstep",
+        "length",
+        "distance",
+        "dot",
+        "cross",
+        "normalize",
+        "reflect",
+        "refract",
+        "texture",
+        "textureLod",
+        "vertex",
+        "fragment",
+        "light",
+        "start",
+        "process",
+        "sky",
+        "fog",
+      ],
+      tokenizer: {
+        root: [
+          [/\b(shader_type|render_mode)\b/, { token: "keyword", next: "@classifier" }],
+          [/\bstruct\b/, { token: "keyword", next: "@structName" }],
+          [/^\s*#.*$/, "preprocessor"],
+          [/\/\/.*$/, "comment"],
+          [/\/\*/, "comment", "@comment"],
+          [
+            /\b(?:source_color|hint_(?:color|range|(?:black_)?albedo|normal|(?:default_)?(?:white|black)|aniso|anisotropy|roughness_(?:[rgba]|normal|gray))|filter_(?:nearest|linear)(?:_mipmap(?:_anisotropic)?)?|repeat_(?:en|dis)able)\b/,
+            "type.annotation",
+          ],
+          [/\b(?:E|PI|TAU)\b/, "constant.language"],
+          [/\b0[xX][0-9a-fA-F]+\b/, "number.hex"],
+          [/\b\d+(\.\d+)?([eE][\-+]?\d+)?\b/, "number"],
+          [/\b(?:true|false)\b/, "constant.language"],
+          [/"([^"\\]|\\.)*"/, "string"],
+          [/'([^'\\]|\\.)*'/, "string"],
+          [
+            /\b[a-zA-Z_]\w*(?=(?:\s*\[\s*\w*\s*\])?\s+[a-zA-Z_]\w*\b)/,
+            "type.identifier",
+          ],
+          [
+            /\b[a-zA-Z_]\w*(?=\s*\[\s*\w*\s*\]\s*[(])|\b[A-Z]\w*(?=\s*[(])/,
+            "type.constructor",
+          ],
+          [
+            /\b(?!if\b|else\b|do\b|while\b|for\b|continue\b|break\b|switch\b|case\b|default\b|return\b|discard\b|struct\b)[a-zA-Z_]\w*(?=\s*[(])/,
+            "function",
+          ],
+          [/([.])\s*([xyzw]{2,4}|[rgba]{2,4}|[stpq]{2,4})\b/, ["delimiter", "variable.other.property"]],
+          [/([.])\s*([a-zA-Z_]\w*)\b(?!\s*\()/, ["delimiter", "variable.other.property"]],
+          [/\b[A-Z][A-Z_0-9]*\b/, "variable.language"],
+          [/[\[\]{}()]/, "@brackets"],
+          [/[;,.]/, "delimiter"],
+          [/:/, "operator"],
+          [
+            /\<\<\=?|\>\>\=?|[-+*/&|<>=!]\=|\&\&|[|][|]|[-+~!*/%<>&^|=]/,
+            "operator",
+          ],
+          [
+            /[a-zA-Z_][\w]*/,
+            {
+              cases: {
+                "@keywords": "keyword",
+                "@controlKeywords": "keyword.control",
+                "@modifierKeywords": "storage.modifier",
+                "@precisionKeywords": "storage.type",
+                "@typeKeywords": "type",
+                "@builtins": "variable.language",
+                "@functions": "function",
+                "@default": "identifier",
+              },
+            },
+          ],
+          { include: "@whitespace" },
+        ],
+        classifier: [
+          [/\s+/, "white"],
+          [/^\s*#.*$/, "preprocessor"],
+          [/\/\/.*$/, "comment"],
+          [/\/\*/, "comment", "@comment"],
+          [/[,]/, "delimiter"],
+          [/[;]/, { token: "delimiter", next: "@pop" }],
+          [/[a-zA-Z_][\w]*/, "type.identifier"],
+        ],
+        structName: [
+          [/\s+/, "white"],
+          [/[a-zA-Z_][\w]*/, { token: "type.identifier", next: "@pop" }],
+          ["", "", "@pop"],
+        ],
+        comment: [
+          [/[^\/*]+/, "comment"],
+          [/\*\//, "comment", "@pop"],
+          [/[\/*]/, "comment"],
+        ],
+        whitespace: [[/[ \t\r\n]+/, ""]],
+      },
+    });
+
+    monaco.languages.registerDocumentFormattingEditProvider("gdshader", {
+      provideDocumentFormattingEdits: function (model, options) {
+        var tabSize = options && options.tabSize ? options.tabSize : 4;
+        var insertSpaces =
+          options && options.insertSpaces !== undefined ? options.insertSpaces : true;
+        var indentUnit = insertSpaces ? " ".repeat(tabSize) : "\t";
+        var lineCount = model.getLineCount();
+        var edits = [];
+        var indentLevel = 0;
+
+        function isPreprocessor(lineText) {
+          return /^\s*#/.test(lineText);
+        }
+
+        function stripStringsAndComments(lineText) {
+          var withoutLineComments = lineText.replace(/\/\/.*$/, "");
+          var withoutBlockComments = withoutLineComments.replace(/\/\*.*\*\//g, "");
+          var withoutDoubleStrings = withoutBlockComments.replace(/"([^"\\]|\\.)*"/g, "");
+          return withoutDoubleStrings.replace(/'([^'\\]|\\.)*'/g, "");
+        }
+
+        function countMatches(re, text) {
+          var matches = text.match(re);
+          return matches ? matches.length : 0;
+        }
+
+        for (var lineNumber = 1; lineNumber <= lineCount; lineNumber++) {
+          var line = model.getLineContent(lineNumber);
+          var trimmed = line.trim();
+          if (trimmed.length === 0) {
+            if (line.length > 0) {
+              edits.push({
+                range: new monaco.Range(lineNumber, 1, lineNumber, line.length + 1),
+                text: "",
+              });
+            }
+            continue;
+          }
+
+          var currentIndentLevel = indentLevel;
+          if (/^\}/.test(trimmed)) {
+            currentIndentLevel = Math.max(0, currentIndentLevel - 1);
+          }
+
+          var desiredIndent = isPreprocessor(trimmed)
+            ? ""
+            : indentUnit.repeat(currentIndentLevel);
+          var actualIndentMatch = /^\s*/.exec(line);
+          var actualIndent = actualIndentMatch ? actualIndentMatch[0] : "";
+          if (actualIndent !== desiredIndent) {
+            edits.push({
+              range: new monaco.Range(lineNumber, 1, lineNumber, actualIndent.length + 1),
+              text: desiredIndent,
+            });
+          }
+
+          if (!isPreprocessor(trimmed)) {
+            var braceSource = stripStringsAndComments(line);
+            var openCount = countMatches(/\{/g, braceSource);
+            var closeCount = countMatches(/\}/g, braceSource);
+            if (/^\}/.test(trimmed)) {
+              closeCount = Math.max(0, closeCount - 1);
+            }
+            indentLevel = Math.max(0, currentIndentLevel + openCount - closeCount);
+          } else {
+            indentLevel = currentIndentLevel;
+          }
+        }
+
         return edits;
       },
     });

@@ -54,7 +54,7 @@ public class EditedItem: HostedItem {
             } else if path.hasSuffix (".md") {
                 language = TreeSitterLanguage.markdown
                 supportsLookup = false
-            } else if path.hasSuffix(".gdshader") || path.hasSuffix(".gdshaderinc") {
+            } else if path.hasSuffix(".gdshader") || path.hasSuffix(".gdshaderinc") || path.hasSuffix(".gdshaderinclude") {
                 language = TreeSitterLanguage.glsl
                 supportsLookup = false
             } else {
