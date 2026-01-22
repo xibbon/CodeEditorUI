@@ -1011,6 +1011,19 @@
         var edits = [];
         var indentLevel = 0;
 
+        function indentationLevelForLine(lineText) {
+          var match = /^\s*/.exec(lineText);
+          var indent = match ? match[0] : "";
+          if (!indent) {
+            return 0;
+          }
+          var columns = 0;
+          for (var i = 0; i < indent.length; i++) {
+            columns += indent[i] === "\t" ? tabSize : 1;
+          }
+          return Math.floor(columns / tabSize);
+        }
+
         function shouldDedent(lineText) {
           return /^(elif|else|case|except|finally)\b/.test(lineText);
         }
@@ -1032,9 +1045,13 @@
             }
             continue;
           }
+          var actualIndentLevel = indentationLevelForLine(line);
           var currentIndentLevel = indentLevel;
           if (shouldDedent(trimmed)) {
             currentIndentLevel = Math.max(0, currentIndentLevel - 1);
+          }
+          if (actualIndentLevel < currentIndentLevel) {
+            currentIndentLevel = actualIndentLevel;
           }
           var desiredIndent = indentUnit.repeat(currentIndentLevel);
           var actualIndentMatch = /^\s*/.exec(line);
