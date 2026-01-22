@@ -434,7 +434,7 @@ extension MonacoEditorView {
     }
 
     private func normalizedFontFamily(_ family: String) -> String {
-        if family.isEmpty || family == "System font" {
+        if family.isEmpty || family == "System Font" {
             return "monospace"
         }
         return family
