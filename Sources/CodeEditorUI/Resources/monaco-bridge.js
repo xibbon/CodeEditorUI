@@ -17,6 +17,7 @@
   var lspSyncPatched = false;
   var gdscriptRegistered = false;
   var debugLoggingEnabled = !!config.debugLoggingEnabled;
+  var contextMenuActionMap = Object.create(null);
 
   function postMessage(handlerName, payload) {
     try {
@@ -490,6 +491,137 @@
     }
   };
 
+  function collectActionItems() {
+    if (!editor || !editor.getSupportedActions) {
+      return [];
+    }
+    var actions = editor.getSupportedActions();
+    if (!Array.isArray(actions)) {
+      return [];
+    }
+    var seen = Object.create(null);
+    var results = [];
+    actions.forEach(function (action) {
+      if (!action || !action.id || seen[action.id]) {
+        return;
+      }
+      var isSupported =
+        typeof action.isSupported === "function"
+          ? action.isSupported()
+          : action.enabled !== false;
+      var label = action.label || action.alias || action.id;
+      seen[action.id] = true;
+      results.push({
+        id: action.id,
+        label: label,
+        enabled: !!isSupported,
+      });
+    });
+    return results;
+  }
+
+  function buildMenuItems(actions, resolveKeybinding) {
+    var results = [];
+    if (!Array.isArray(actions)) {
+      return results;
+    }
+    actions.forEach(function (action) {
+      if (!action) {
+        return;
+      }
+      if (action.id === "vs.actions.separator") {
+        results.push({ kind: "separator" });
+        return;
+      }
+      var hasChildren = Array.isArray(action.actions);
+      if (hasChildren) {
+        var nested = buildMenuItems(action.actions, resolveKeybinding);
+        if (nested.length === 0) {
+          return;
+        }
+        results.push({
+          kind: "submenu",
+          id: action.id || null,
+          label: action.label || action.id,
+          children: nested,
+        });
+        return;
+      }
+      var enabled =
+        typeof action.isSupported === "function"
+          ? action.isSupported()
+          : action.enabled !== false;
+      var label = action.label || action.alias || action.id;
+      if (action.id) {
+        var keybinding = null;
+        if (resolveKeybinding) {
+          keybinding = resolveKeybinding(action);
+        }
+        contextMenuActionMap[action.id] = action;
+        results.push({
+          kind: "action",
+          id: action.id,
+          label: label,
+          enabled: !!enabled,
+          keybinding: keybinding || null,
+        });
+      }
+    });
+    return results;
+  }
+
+  function collectContextMenuItems() {
+    if (!editor) {
+      return collectActionItems();
+    }
+    contextMenuActionMap = Object.create(null);
+    try {
+      if (editor.getContribution) {
+          var controller = editor.getContribution("editor.contrib.contextmenu");
+          if (controller && typeof controller._getMenuActions === "function") {
+            var model = editor.getModel && editor.getModel();
+            var menuId = editor.contextMenuId;
+            var actions = controller._getMenuActions(model, menuId);
+            var resolveKeybinding = function (action) {
+              try {
+                if (typeof controller._keybindingFor === "function") {
+                  var binding = controller._keybindingFor(action);
+                  if (binding && typeof binding.getLabel === "function") {
+                    return binding.getLabel();
+                  }
+                }
+              } catch (e) {}
+              return null;
+            };
+            return buildMenuItems(actions, resolveKeybinding);
+        }
+      }
+    } catch (e) {}
+    var fallback = collectActionItems();
+    return fallback.map(function (item) {
+      return { kind: "action", id: item.id, label: item.label, enabled: item.enabled };
+    });
+  }
+
+  window.runMenuAction = function (actionId) {
+    if (!actionId) {
+      return;
+    }
+    window.runEditorAction(actionId);
+    var action = contextMenuActionMap ? contextMenuActionMap[actionId] : null;
+    if (action && typeof action.run === "function") {
+      action.run();
+      return;
+    }
+  };
+
+  window.requestCommandPaletteItems = function () {
+    if (!editor) {
+      return;
+    }
+    postMessage("monacoCommandPalette", { actions: collectActionItems() });
+  };
+
   window.undoEditor = function () {
     if (!editor) {
       return;
@@ -616,6 +748,78 @@
           postMessage("monacoGutterTapped", e.target.position.lineNumber);
         }
       });
+
+      editor.onContextMenu(function (e) {
+        if (!e || !editor) {
+          return;
+        }
+        var model = editor.getModel();
+        var selection = editor.getSelection();
+        var selectionPayload = null;
+        var selectedText = "";
+        if (model && selection) {
+          selectionPayload = {
+            startLineNumber: selection.startLineNumber,
+            startColumn: selection.startColumn,
+            endLineNumber: selection.endLineNumber,
+            endColumn: selection.endColumn,
+          };
+          selectedText = model.getValueInRange(selection);
+        }
+        var position = e.target && e.target.position ? e.target.position : null;
+        var word = null;
+        if (model && position) {
+          var wordInfo = model.getWordAtPosition(position);
+          if (wordInfo && wordInfo.word) {
+            word = wordInfo.word;
+          }
+        }
+        var point = null;
+        if (e.event && typeof e.event.posx === "number" && typeof e.event.posy === "number") {
+          point = { x: e.event.posx, y: e.event.posy };
+        }
+        postMessage("monacoContextMenu", {
+          position: position,
+          selection: selectionPayload,
+          selectedText: selectedText,
+          word: word,
+          point: point,
+          actions: collectContextMenuItems(),
+        });
+        if (e.event && typeof e.event.preventDefault === "function") {
+          e.event.preventDefault();
+        }
+        if (e.event && typeof e.event.stopPropagation === "function") {
+          e.event.stopPropagation();
+        }
+      });
+
+      if (!window.__monacoCommandPaletteKeyHandlerInstalled) {
+        window.__monacoCommandPaletteKeyHandlerInstalled = true;
+        window.addEventListener(
+          "keydown",
+          function (ev) {
+            if (!editor) {
+              return;
+            }
+            var isCmdOrCtrl = ev.metaKey || ev.ctrlKey;
+            var isPalette =
+              (isCmdOrCtrl && ev.shiftKey && (ev.key === "P" || ev.key === "p")) ||
+              ev.key === "F1";
+            if (!isPalette) {
+              return;
+            }
+            if (ev.preventDefault) {
+              ev.preventDefault();
+            }
+            if (ev.stopPropagation) {
+              ev.stopPropagation();
+            }
+            window.requestCommandPaletteItems();
+          },
+          true
+        );
+      }
 
       loadScript(
         "monaco-lsp-client.js",

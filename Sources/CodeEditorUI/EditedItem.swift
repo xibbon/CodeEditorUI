@@ -201,6 +201,16 @@ public class EditedItem: HostedItem {
         editedItemDelegate?.gutterTapped (self, textView, line)
     }
 
+    @MainActor
+    public func contextMenuRequested(on textView: EditorTextView, request: MonacoContextMenuRequest) {
+        editedItemDelegate?.contextMenuRequested(self, on: textView, request: request)
+    }
+
+    @MainActor
+    public func commandPaletteRequested(on textView: EditorTextView, request: MonacoCommandPaletteRequest) {
+        editedItemDelegate?.commandPaletteRequested(self, on: textView, request: request)
+    }
+
     public var textLocation = TextLocation(lineNumber: 0, column: 0)
 
     @MainActor
@@ -255,10 +265,28 @@ public protocol EditedItemDelegate: AnyObject {
     func gutterTapped (_ editedItem: EditedItem, _ textView: EditorTextView, _ line: Int)
     /// Invoked when the user has requested the "Lookup Definition" from the context menu in the editor, it contains the position where this took place and the word that should be looked up
     func lookup (_ editedItem: EditedItem, on: EditorTextView, at: EditorTextPosition, word: String)
+    /// Invoked when Monaco requests a native context menu.
+    func contextMenuRequested(_ editedItem: EditedItem, on: EditorTextView, request: MonacoContextMenuRequest)
+    /// Invoked when Monaco requests a native command palette.
+    func commandPaletteRequested(_ editedItem: EditedItem, on: EditorTextView, request: MonacoCommandPaletteRequest)
     /// Invoked when a closing is imminent on the UI
     func closing (_ editedItem: EditedItem)
     /// Requests that the given item be saved, returns nil on success or details on error, if newPath is not-nil, save to a new filename
     func save(editedItem: EditedItem, contents: String, newPath: String?) -> HostServiceIOError?
+}
+
+public extension EditedItemDelegate {
+    func contextMenuRequested(_ editedItem: EditedItem, on: EditorTextView, request: MonacoContextMenuRequest) {
+        _ = editedItem
+        _ = on
+        _ = request
+    }
+
+    func commandPaletteRequested(_ editedItem: EditedItem, on: EditorTextView, request: MonacoCommandPaletteRequest) {
+        _ = editedItem
+        _ = on
+        _ = request
+    }
 }
 
 public struct Issue {

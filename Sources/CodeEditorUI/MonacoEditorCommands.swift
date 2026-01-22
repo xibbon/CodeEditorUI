@@ -111,6 +111,15 @@ public final class MonacoEditorCommands: EditorCommands {
         runJS("window.runEditorAction('editor.action.outdentLines');")
     }
 
+    public func runAction(id: String) {
+        let literal = jsStringLiteral(id)
+        runJS("if (window.runMenuAction) { window.runMenuAction(\(literal)); } else { window.runEditorAction(\(literal)); }")
+    }
+
+    public func requestCommandPaletteItems() {
+        runJS("window.requestCommandPaletteItems && window.requestCommandPaletteItems();")
+    }
+
     private func flushCallbacksIfReady() {
         guard let textView else { return }
         if pendingCallbacks.isEmpty {

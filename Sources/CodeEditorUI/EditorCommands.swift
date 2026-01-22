@@ -26,6 +26,14 @@ public extension EditorCommands {
     func requestGoto(line: Int) {
         requestGoto(line: line, completion: nil)
     }
+
+    func runAction(id: String) {
+        (self as? MonacoEditorCommands)?.runAction(id: id)
+    }
+
+    func requestCommandPaletteItems() {
+        (self as? MonacoEditorCommands)?.requestCommandPaletteItems()
+    }
 }
 
 public final class NoopEditorCommands: EditorCommands {

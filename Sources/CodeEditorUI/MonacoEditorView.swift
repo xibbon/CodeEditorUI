@@ -54,6 +54,8 @@ public struct MonacoEditorView: PlatformViewRepresentable {
         contentController.add(context.coordinator, name: Coordinator.selectionChangedHandler)
         contentController.add(context.coordinator, name: Coordinator.gutterTappedHandler)
         contentController.add(context.coordinator, name: Coordinator.readyHandler)
+        contentController.add(context.coordinator, name: Coordinator.contextMenuHandler)
+        contentController.add(context.coordinator, name: Coordinator.commandPaletteHandler)
         if state.monacoDebugLogging {
             contentController.add(context.coordinator, name: Coordinator.logHandler)
         }
@@ -180,6 +182,8 @@ extension MonacoEditorView {
         static let selectionChangedHandler = "monacoSelectionChanged"
         static let gutterTappedHandler = "monacoGutterTapped"
         static let readyHandler = "monacoReady"
+        static let contextMenuHandler = "monacoContextMenu"
+        static let commandPaletteHandler = "monacoCommandPalette"
         static let logHandler = "monacoLog"
 
         var parent: MonacoEditorView
@@ -205,6 +209,8 @@ extension MonacoEditorView {
             controller?.removeScriptMessageHandler(forName: Self.selectionChangedHandler)
             controller?.removeScriptMessageHandler(forName: Self.gutterTappedHandler)
             controller?.removeScriptMessageHandler(forName: Self.readyHandler)
+            controller?.removeScriptMessageHandler(forName: Self.contextMenuHandler)
+            controller?.removeScriptMessageHandler(forName: Self.commandPaletteHandler)
             controller?.removeScriptMessageHandler(forName: Self.logHandler)
         }
 
@@ -236,6 +242,30 @@ extension MonacoEditorView {
                 if let monacoTextView {
                     parent.item.gutterTapped(on: monacoTextView, line: lineIndex)
                 }
+            case Self.contextMenuHandler:
+                guard let payload = message.body as? [String: Any] else { return }
+                guard let monacoTextView else { return }
+                let actions = parseMenuItems(from: payload["actions"])
+                let selectedText = payload["selectedText"] as? String ?? ""
+                let word = payload["word"] as? String
+                let location = parseTextLocation(from: payload["position"])
+                let selection = parseSelection(from: payload["selection"])
+                let point = parsePoint(from: payload["point"])
+                let request = MonacoContextMenuRequest(
+                    location: location,
+                    selection: selection,
+                    selectedText: selectedText,
+                    word: word,
+                    actions: actions,
+                    viewPoint: point
+                )
+                parent.item.contextMenuRequested(on: monacoTextView, request: request)
+            case Self.commandPaletteHandler:
+                guard let payload = message.body as? [String: Any] else { return }
+                guard let monacoTextView else { return }
+                let actions = parseActionItems(from: payload["actions"])
+                let request = MonacoCommandPaletteRequest(actions: actions)
+                parent.item.commandPaletteRequested(on: monacoTextView, request: request)
             case Self.readyHandler:
                 isReady = true
                 flushPendingUpdates()
@@ -246,6 +276,58 @@ extension MonacoEditorView {
             default:
                 break
             }
+        }
+
+        private func parseActionItems(from value: Any?) -> [MonacoActionItem] {
+            guard let entries = value as? [[String: Any]] else { return [] }
+            return entries.compactMap { entry in
+                guard let id = entry["id"] as? String else { return nil }
+                let label = entry["label"] as? String ?? id
+                let enabled = (entry["enabled"] as? NSNumber)?.boolValue ?? true
+                return MonacoActionItem(id: id, label: label, enabled: enabled)
+            }
+        }
+
+        private func parseMenuItems(from value: Any?) -> [MonacoMenuItem] {
+            guard let entries = value as? [[String: Any]] else { return [] }
+            return entries.compactMap { entry in
+                let kindRaw = entry["kind"] as? String ?? "action"
+                let kind = MonacoMenuItem.Kind(rawValue: kindRaw) ?? .action
+                let id = entry["id"] as? String
+                let label = entry["label"] as? String
+                let enabled = (entry["enabled"] as? NSNumber)?.boolValue ?? true
+                let keybinding = entry["keybinding"] as? String
+                let children = parseMenuItems(from: entry["children"])
+                return MonacoMenuItem(kind: kind, id: id, label: label, enabled: enabled, keybinding: keybinding, children: children)
+            }
+        }
+
+        private func parseTextLocation(from value: Any?) -> TextLocation? {
+            guard let entry = value as? [String: Any] else { return nil }
+            guard let lineNumber = (entry["lineNumber"] as? NSNumber)?.intValue else { return nil }
+            let column = (entry["column"] as? NSNumber)?.intValue ?? 1
+            return TextLocation(lineNumber: max(0, lineNumber - 1), column: max(0, column - 1))
+        }
+
+        private func parseSelection(from value: Any?) -> MonacoSelectionRange? {
+            guard let entry = value as? [String: Any] else { return nil }
+            guard let startLine = (entry["startLineNumber"] as? NSNumber)?.intValue,
+                  let startColumn = (entry["startColumn"] as? NSNumber)?.intValue,
+                  let endLine = (entry["endLineNumber"] as? NSNumber)?.intValue,
+                  let endColumn = (entry["endColumn"] as? NSNumber)?.intValue else { return nil }
+            return MonacoSelectionRange(
+                startLine: max(0, startLine - 1),
+                startColumn: max(0, startColumn - 1),
+                endLine: max(0, endLine - 1),
+                endColumn: max(0, endColumn - 1)
+            )
+        }
+
+        private func parsePoint(from value: Any?) -> CGPoint? {
+            guard let entry = value as? [String: Any] else { return nil }
+            guard let x = (entry["x"] as? NSNumber)?.doubleValue,
+                  let y = (entry["y"] as? NSNumber)?.doubleValue else { return nil }
+            return CGPoint(x: x, y: y)
         }
 
         private func log(_ body: Any) {
@@ -450,7 +532,8 @@ extension MonacoEditorView {
             "lineHeight": configuration.lineHeight,
             "minimap": ["enabled": false],
             "automaticLayout": true,
-            "glyphMargin": true
+            "glyphMargin": true,
+            "contextmenu": false
         ]
     }
 
