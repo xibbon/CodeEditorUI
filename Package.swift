@@ -41,6 +41,7 @@ let package = Package(
                 .process("Resources/Localizable.xcstrings"),
                 .copy("Resources/monaco.bundle"),
                 .copy("Resources/monaco-bridge.js"),
+                .copy("Resources/monaco-lsp-client.js"),
             ],
         ),
         .testTarget(

@@ -128,7 +128,11 @@ public struct MonacoEditorView: PlatformViewRepresentable {
             "options": Self.optionsDictionary(for: config),
             "language": config.language,
             "theme": config.theme,
-            "debugLoggingEnabled": config.debugLoggingEnabled
+            "debugLoggingEnabled": config.debugLoggingEnabled,
+            "initialValue": contents,
+            "lspWebSocketURL": state.lspWebSocketURL,
+            "lspWorkspaceRoot": state.lspWorkspaceRoot as Any,
+            "documentPath": item.path
         ]
         let configJSON = Self.jsonStringLiteral(configObject)
         let configScript = "window.monacoConfig = \(configJSON);"

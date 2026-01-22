@@ -7,3 +7,8 @@ prep:
 	tar xzvf monaco-editor-$(MONACO_VERSION).tar.gz
 	mkdir -p $(MONACO_BUNDLE_DIR) || true
 	tar xzvf monaco-editor-$(MONACO_VERSION).tar.gz --strip-components=1 -C $(MONACO_BUNDLE_DIR) package/min
+
+#
+# This expects a recent monaco-editor checkout in ../monaco-editor
+bring-lsp:
+	bash scripts/build-monaco-lsp.sh

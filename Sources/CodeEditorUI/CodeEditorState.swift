@@ -62,6 +62,12 @@ open class CodeEditorState {
     /// Enables Monaco debug logging via WKWebView message handlers.
     public var monacoDebugLogging: Bool = true
 
+    /// WebSocket URL for the Monaco LSP client bridge.
+    public var lspWebSocketURL: String = "ws://127.0.0.1:6009"
+
+    /// Optional workspace root for the Monaco LSP client (absolute path).
+    public var lspWorkspaceRoot: String? = nil
+
     public var lineHeightMultiplier: CGFloat = 1.6
 
     /// Configures whether the editors show line numbers

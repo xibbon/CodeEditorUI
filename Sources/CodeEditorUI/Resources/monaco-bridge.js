@@ -7,6 +7,14 @@
   var pendingTheme = config.theme || "vs";
   var pendingBreakpoints = [];
   var breakpointDecorations = [];
+  var lspClient = null;
+  var lspReady = false;
+  var lspWebSocketURL = config.lspWebSocketURL || "ws://127.0.0.1:6009";
+  var lspWorkspaceRoot = config.lspWorkspaceRoot || null;
+  var documentPath = config.documentPath || null;
+  var lspInitPatched = false;
+  var lspSyncForced = false;
+  var lspSyncPatched = false;
   var gdscriptRegistered = false;
   var debugLoggingEnabled = !!config.debugLoggingEnabled;
 
@@ -27,6 +35,339 @@
       return;
     }
     postMessage("monacoLog", { level: level, message: message });
+  }
+  window.monacoLog = monacoLog;
+
+  function loadScript(src, onLoad, onError) {
+    var script = document.createElement("script");
+    script.src = src;
+    script.async = true;
+    script.onload = function () {
+      if (onLoad) {
+        onLoad();
+      }
+    };
+    script.onerror = function () {
+      if (onError) {
+        onError();
+      }
+    };
+    document.head.appendChild(script);
+  }
+
+  function startLspClient() {
+    if (lspReady || !window.MonacoLspClient) {
+      return;
+    }
+    try {
+      if (typeof window.__startMonacoLspClient === "function") {
+        var result = window.__startMonacoLspClient(window.MonacoLspClient);
+        if (result && typeof result.then === "function") {
+          result
+            .then(function (client) {
+              lspClient = client || lspClient;
+              lspReady = true;
+              forceStartTextSync(lspClient);
+              enableFullTextSyncIfNeeded(lspClient);
+              ensureEditorModel();
+              logModelState("LSP ready:");
+            })
+            .catch(function (e) {
+              lspReady = false;
+              monacoLog("error", "Failed to start Monaco LSP client: " + e);
+            });
+        } else {
+          lspClient = result;
+          lspReady = true;
+          forceStartTextSync(lspClient);
+          enableFullTextSyncIfNeeded(lspClient);
+          ensureEditorModel();
+          logModelState("LSP ready:");
+        }
+      } else {
+        monacoLog("info", "Monaco LSP client loaded (no start callback)");
+        lspReady = true;
+      }
+    } catch (e) {
+      lspReady = false;
+      monacoLog("error", "Failed to start Monaco LSP client: " + e);
+    }
+  }
+
+  function toFileUri(path) {
+    if (!path) {
+      return null;
+    }
+    if (path.indexOf("file://") === 0) {
+      return path;
+    }
+    if (path[0] !== "/") {
+      return null;
+    }
+    return "file://" + encodeURI(path);
+  }
+
+  function joinPath(base, rel) {
+    if (!base) {
+      return null;
+    }
+    var cleanBase = base.replace(/\/+$/, "");
+    var cleanRel = (rel || "").replace(/^\/+/, "");
+    if (!cleanRel) {
+      return cleanBase;
+    }
+    return cleanBase + "/" + cleanRel;
+  }
+
+  function resolveDocumentUri() {
+    if (documentPath && documentPath.indexOf("file://") === 0) {
+      return documentPath;
+    }
+    if (documentPath && documentPath[0] === "/") {
+      return toFileUri(documentPath);
+    }
+    if (lspWorkspaceRoot && documentPath) {
+      return toFileUri(joinPath(lspWorkspaceRoot, documentPath));
+    }
+    return null;
+  }
+
+  function basename(path) {
+    if (!path) {
+      return "";
+    }
+    var clean = path.replace(/\/+$/, "");
+    var parts = clean.split("/");
+    return parts.length ? parts[parts.length - 1] : clean;
+  }
+
+  function ensureEditorModel() {
+    if (!editor) {
+      return;
+    }
+    var desiredUri = resolveDocumentUri();
+    var currentModel = editor.getModel();
+    var value = currentModel ? currentModel.getValue() : pendingValue || "";
+    if (desiredUri) {
+      var targetUri = monaco.Uri.parse(desiredUri);
+      if (!currentModel || currentModel.uri.toString() !== targetUri.toString()) {
+        var newModel = monaco.editor.createModel(value, pendingLanguage || "plaintext", targetUri);
+        if (currentModel) {
+          currentModel.dispose();
+        }
+        editor.setModel(newModel);
+      }
+    }
+    if (editor.getModel() && pendingLanguage) {
+      monaco.editor.setModelLanguage(editor.getModel(), pendingLanguage);
+    }
+  }
+
+  function logModelState(prefix) {
+    if (!editor || !debugLoggingEnabled) {
+      return;
+    }
+    var model = editor.getModel();
+    if (!model) {
+      monacoLog("info", prefix + " model=nil");
+      return;
+    }
+    monacoLog(
+      "info",
+      prefix +
+        " uri=" +
+        model.uri.toString() +
+        " language=" +
+        model.getLanguageId()
+    );
+  }
+
+  function forceStartTextSync(lspClient) {
+    if (lspSyncForced || !lspClient) {
+      return;
+    }
+    var bridge = lspClient._bridge || lspClient.bridge;
+    if (!bridge || bridge._started === undefined) {
+      return;
+    }
+    lspSyncForced = true;
+    var startSync = function () {
+      if (!bridge) {
+        return;
+      }
+      if (!bridge._started) {
+        bridge._started = true;
+        monaco.editor.onDidCreateModel(function (m) {
+          if (typeof bridge._getOrCreateManagedModel === "function") {
+            try {
+              bridge._getOrCreateManagedModel(m);
+            } catch (e) {}
+          }
+        });
+      }
+      monaco.editor.getModels().forEach(function (m) {
+        if (typeof bridge._getOrCreateManagedModel === "function") {
+          try {
+            bridge._getOrCreateManagedModel(m);
+          } catch (e) {}
+        }
+      });
+    };
+
+    var initPromise = lspClient._initPromise;
+    if (initPromise && typeof initPromise.then === "function") {
+      initPromise.then(startSync).catch(startSync);
+    } else {
+      startSync();
+    }
+  }
+
+  function patchLspInit(lsp) {
+    if (lspInitPatched || !lsp || !lsp.MonacoLspClient) {
+      return;
+    }
+    lspInitPatched = true;
+    var proto = lsp.MonacoLspClient.prototype;
+    if (typeof proto._init !== "function") {
+      return;
+    }
+    proto._init = function () {
+      var rootUri = lspWorkspaceRoot ? toFileUri(lspWorkspaceRoot) : null;
+      var rootPath = lspWorkspaceRoot || null;
+      var workspaceFolders = rootUri
+        ? [{ uri: rootUri, name: basename(lspWorkspaceRoot) }]
+        : null;
+      var self = this;
+      return self._connection.server
+        .initialize({
+          processId: null,
+          capabilities: self._capabilitiesRegistry.getClientCapabilities(),
+          rootUri: rootUri,
+          rootPath: rootPath,
+          workspaceFolders: workspaceFolders,
+        })
+        .then(function (result) {
+          self._connection.server.initialized({});
+          self._capabilitiesRegistry.setServerCapabilities(result.capabilities);
+          if (
+            workspaceFolders &&
+            self._connection.server &&
+            typeof self._connection.server.workspaceDidChangeWorkspaceFolders ===
+              "function"
+          ) {
+            try {
+              self._connection.server.workspaceDidChangeWorkspaceFolders({
+                event: { added: workspaceFolders, removed: [] },
+              });
+            } catch (e) {}
+          }
+        });
+    };
+  }
+
+  function getSyncKindFromCapabilities(capabilities) {
+    if (!capabilities || !capabilities.textDocumentSync) {
+      return null;
+    }
+    if (typeof capabilities.textDocumentSync === "number") {
+      return capabilities.textDocumentSync;
+    }
+    if (
+      typeof capabilities.textDocumentSync === "object" &&
+      capabilities.textDocumentSync &&
+      typeof capabilities.textDocumentSync.change === "number"
+    ) {
+      return capabilities.textDocumentSync.change;
+    }
+    return null;
+  }
+
+  function enableFullTextSyncIfNeeded(lspClient) {
+    if (lspSyncPatched || !lspClient || !lspClient._connection) {
+      return;
+    }
+    var applyPatch = function () {
+      if (lspSyncPatched || !lspClient) {
+        return;
+      }
+      var registry = lspClient._capabilitiesRegistry;
+      var caps = registry ? registry._serverCapabilities : null;
+      var syncKind = getSyncKindFromCapabilities(caps);
+      if (syncKind !== 1) {
+        return;
+      }
+      var server = lspClient._connection.server;
+      if (!server || server.__fullTextSyncPatched) {
+        return;
+      }
+      var original = server.textDocumentDidChange;
+      if (typeof original !== "function") {
+        return;
+      }
+      server.textDocumentDidChange = function (params) {
+        try {
+          if (
+            params &&
+            params.textDocument &&
+            typeof params.textDocument.uri === "string"
+          ) {
+            var targetUri = params.textDocument.uri.toLowerCase();
+            var models = monaco.editor.getModels();
+            for (var i = 0; i < models.length; i++) {
+              var model = models[i];
+              if (model.uri.toString(true).toLowerCase() === targetUri) {
+                return original.call(server, {
+                  textDocument: {
+                    uri: params.textDocument.uri,
+                    version: params.textDocument.version,
+                  },
+                  contentChanges: [{ text: model.getValue() }],
+                });
+              }
+            }
+          }
+        } catch (e) {}
+        return original.call(server, params);
+      };
+      server.__fullTextSyncPatched = true;
+      lspSyncPatched = true;
+      monacoLog("info", "LSP server requests full document sync; patched didChange.");
+    };
+
+    var initPromise = lspClient._initPromise;
+    if (initPromise && typeof initPromise.then === "function") {
+      initPromise.then(applyPatch).catch(applyPatch);
+    } else {
+      applyPatch();
+    }
+  }
+
+  if (typeof window.__startMonacoLspClient !== "function") {
+    window.__startMonacoLspClient = function (lsp) {
+      var MonacoLspClient = lsp.MonacoLspClient;
+      var WebSocketTransport = lsp.WebSocketTransport;
+      patchLspInit(lsp);
+      return new Promise(function (resolve, reject) {
+        var socket = new WebSocket(lspWebSocketURL);
+        socket.binaryType = "arraybuffer";
+        socket.addEventListener("open", function () {
+          try {
+            var transport = new WebSocketTransport(socket);
+            resolve(new MonacoLspClient(transport));
+          } catch (e) {
+            reject(e);
+          }
+        });
+        socket.addEventListener("error", function (e) {
+          reject(e);
+        });
+        socket.addEventListener("close", function () {
+          if (!lspReady) {
+            reject(new Error("WebSocket closed before LSP client started."));
+          }
+        });
+      });
+    };
   }
 
   if (debugLoggingEnabled) {
@@ -236,6 +577,8 @@
         theme: pendingTheme || "vs",
       });
       editor = monaco.editor.create(document.getElementById("container"), createOptions);
+      ensureEditorModel();
+      logModelState("Editor created:");
       applyPending();
       monacoLog("info", "editor created");
 
@@ -273,6 +616,26 @@
           postMessage("monacoGutterTapped", e.target.position.lineNumber);
         }
       });
+
+      loadScript(
+        "monaco-lsp-client.js",
+        function () {
+          monacoLog("info", "Monaco LSP client script loaded");
+          startLspClient();
+        },
+        function () {
+          loadScript(
+            "../monaco-lsp-client.js",
+            function () {
+              monacoLog("info", "Monaco LSP client script loaded (parent)");
+              startLspClient();
+            },
+            function () {
+              monacoLog("warn", "Failed to load Monaco LSP client script");
+            }
+          );
+        }
+      );
 
       postMessage("monacoReady", true);
     });
