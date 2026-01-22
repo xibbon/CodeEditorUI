@@ -123,13 +123,6 @@
     if (documentPath && documentPath.indexOf("file://") === 0) {
       return documentPath;
     }
-    if (documentPath && documentPath.indexOf("res://") === 0) {
-      if (!lspWorkspaceRoot) {
-        return null;
-      }
-      var rel = documentPath.replace(/^res:\/\//, "");
-      return toFileUri(joinPath(lspWorkspaceRoot, rel));
-    }
     if (documentPath && documentPath[0] === "/") {
       return toFileUri(documentPath);
     }
@@ -202,7 +195,6 @@
       if (!bridge) {
         return;
       }
-      enforceFileScheme(bridge);
       if (!bridge._started) {
         bridge._started = true;
         monaco.editor.onDidCreateModel(function (m) {
@@ -228,25 +220,6 @@
     } else {
       startSync();
     }
-  }
-
-  function enforceFileScheme(bridge) {
-    if (!bridge || bridge.__fileSchemePatched) {
-      return;
-    }
-    if (typeof bridge._getOrCreateManagedModel !== "function") {
-      return;
-    }
-    var original = bridge._getOrCreateManagedModel;
-    bridge._getOrCreateManagedModel = function (m) {
-      try {
-        if (m && m.uri && m.uri.scheme && m.uri.scheme !== "file") {
-          return null;
-        }
-      } catch (e) {}
-      return original.call(bridge, m);
-    };
-    bridge.__fileSchemePatched = true;
   }
 
   function patchLspInit(lsp) {
