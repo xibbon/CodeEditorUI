@@ -134,7 +134,9 @@ public struct MonacoEditorView: PlatformViewRepresentable {
             "initialValue": contents,
             "lspWebSocketURL": state.lspWebSocketURL,
             "lspWorkspaceRoot": state.lspWorkspaceRoot as Any,
-            "documentPath": item.path
+            "documentPath": item.path,
+            "lspClientScriptURL": monacoLspClientURL()?.absoluteString as Any,
+            "monacoWorkerURLs": monacoWorkerURLs()
         ]
         let configJSON = Self.jsonStringLiteral(configObject)
         let configScript = "window.monacoConfig = \(configJSON);"
@@ -160,6 +162,54 @@ public struct MonacoEditorView: PlatformViewRepresentable {
             }
         }
         return nil
+    }
+
+    private func monacoLspClientURL() -> URL? {
+        let candidates: [URL?] = [
+            Bundle.module.url(forResource: "monaco-lsp-client", withExtension: "js"),
+            Bundle.main.url(forResource: "monaco-lsp-client", withExtension: "js")
+        ]
+        for url in candidates {
+            if let url {
+                return url
+            }
+        }
+        return nil
+    }
+
+    private func monacoWorkerURLs() -> [String: String] {
+        guard let baseURL = monacoBaseURL() else {
+            return [:]
+        }
+        let assetsURL = baseURL.appendingPathComponent("min/vs/assets", isDirectory: true)
+        guard let entries = try? FileManager.default.contentsOfDirectory(
+            at: assetsURL,
+            includingPropertiesForKeys: nil,
+            options: [.skipsHiddenFiles]
+        ) else {
+            return [:]
+        }
+        func find(prefix: String) -> URL? {
+            return entries.first { $0.lastPathComponent.hasPrefix(prefix) }
+        }
+        var map: [String: String] = [:]
+        if let url = find(prefix: "editor.worker-") {
+            map["editor"] = url.absoluteString
+        }
+        if let url = find(prefix: "json.worker-") {
+            map["json"] = url.absoluteString
+        }
+        if let url = find(prefix: "css.worker-") {
+            map["css"] = url.absoluteString
+        }
+        if let url = find(prefix: "html.worker-") {
+            map["html"] = url.absoluteString
+        }
+        if let url = find(prefix: "ts.worker-") {
+            map["typescript"] = url.absoluteString
+            map["javascript"] = url.absoluteString
+        }
+        return map
     }
 }
 

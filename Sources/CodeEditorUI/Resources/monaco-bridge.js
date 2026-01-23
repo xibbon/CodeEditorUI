@@ -12,6 +12,8 @@
   var lspWebSocketURL = config.lspWebSocketURL || "ws://127.0.0.1:6009";
   var lspWorkspaceRoot = config.lspWorkspaceRoot || null;
   var documentPath = config.documentPath || null;
+  var lspClientScriptURL = config.lspClientScriptURL || null;
+  var monacoWorkerURLs = config.monacoWorkerURLs || null;
   var lspInitPatched = false;
   var lspSyncForced = false;
   var lspSyncPatched = false;
@@ -19,6 +21,8 @@
   var gdshaderRegistered = false;
   var debugLoggingEnabled = !!config.debugLoggingEnabled;
   var contextMenuActionMap = Object.create(null);
+  var diagnosticsListenerInstalled = false;
+  var lastDiagnosticsFingerprint = null;
 
   function postMessage(handlerName, payload) {
     try {
@@ -44,6 +48,14 @@
     var script = document.createElement("script");
     script.src = src;
     script.async = true;
+    if (debugLoggingEnabled) {
+      script.addEventListener("error", function () {
+        monacoLog("error", "Script load error: " + src);
+      });
+      script.addEventListener("load", function () {
+        monacoLog("info", "Script loaded: " + src);
+      });
+    }
     script.onload = function () {
       if (onLoad) {
         onLoad();
@@ -55,6 +67,145 @@
       }
     };
     document.head.appendChild(script);
+  }
+
+  function ensureMonacoEnvironment(force) {
+    if (!force && window.MonacoEnvironment && window.MonacoEnvironment.getWorker) {
+      return;
+    }
+    if (!monacoWorkerURLs || Object.keys(monacoWorkerURLs).length === 0) {
+      if (force) {
+        monacoLog("warn", "Monaco worker map missing; keeping existing environment.");
+      }
+      return;
+    }
+    function normalizeWorkerLabel(label, moduleId) {
+      var value = (label || moduleId || "").toLowerCase();
+      if (value.indexOf("json") >= 0) return "json";
+      if (value.indexOf("css") >= 0) return "css";
+      if (value.indexOf("html") >= 0) return "html";
+      if (value.indexOf("typescript") >= 0 || value.indexOf("javascript") >= 0) {
+        return "typescript";
+      }
+      return "editor";
+    }
+
+    function resolveWorkerURL(label, moduleId) {
+      if (!monacoWorkerURLs) {
+        return null;
+      }
+      var key = normalizeWorkerLabel(label, moduleId);
+      return monacoWorkerURLs[key] || monacoWorkerURLs.editor || null;
+    }
+
+    if (debugLoggingEnabled) {
+      monacoLog(
+        "info",
+        "Monaco worker map=" + JSON.stringify(monacoWorkerURLs || {})
+      );
+    }
+
+    window.MonacoEnvironment = {
+      getWorker: function (moduleId, label) {
+        var workerSourceURL = resolveWorkerURL(label, moduleId);
+        if (!workerSourceURL) {
+          throw new Error(
+            "Missing Monaco worker URL for label=" +
+              label +
+              " moduleId=" +
+              moduleId
+          );
+        }
+        if (debugLoggingEnabled) {
+          monacoLog(
+            "info",
+            "Monaco getWorker label=" + label + " moduleId=" + moduleId
+          );
+        }
+        var source =
+          "self.addEventListener('error', function(e){try{self.postMessage({__monacoWorkerError:true,message:e.message,filename:e.filename,lineno:e.lineno,colno:e.colno});}catch(_){};});" +
+          "self.addEventListener('unhandledrejection', function(e){try{self.postMessage({__monacoWorkerRejection:true,reason:(e&&e.reason&&e.reason.message)?e.reason.message:String(e.reason)});}catch(_){};});" +
+          "try{importScripts('" +
+          workerSourceURL +
+          "');}catch(e){try{self.postMessage({__monacoWorkerError:true,message:e.message,stack:e.stack});}catch(_){};throw e;}";
+        var blob = new Blob([source], { type: "text/javascript" });
+        var workerUrl = URL.createObjectURL(blob);
+        var worker = new Worker(workerUrl);
+        if (debugLoggingEnabled) {
+          monacoLog(
+            "info",
+            "Monaco worker created label=" +
+              label +
+              " moduleId=" +
+              moduleId +
+              " source=" +
+              workerSourceURL
+          );
+        }
+        worker.addEventListener("message", function (e) {
+          if (e && e.data && e.data.__monacoWorkerError) {
+            monacoLog(
+              "error",
+              "Worker error (" +
+                label +
+                "): " +
+                e.data.message +
+                (e.data.filename
+                  ? " at " +
+                    e.data.filename +
+                    ":" +
+                    e.data.lineno +
+                    ":" +
+                    e.data.colno
+                  : "") +
+                (e.data.stack ? " stack=" + e.data.stack : "")
+            );
+          } else if (e && e.data && e.data.__monacoWorkerRejection) {
+            monacoLog(
+              "error",
+              "Worker unhandled rejection (" +
+                label +
+                "): " +
+                e.data.reason
+            );
+          }
+        });
+        worker.onerror = function (e) {
+          monacoLog(
+            "error",
+            "Worker error (" +
+              label +
+              "): " +
+              e.message +
+              " at " +
+              e.filename +
+              ":" +
+              e.lineno +
+              ":" +
+              e.colno
+          );
+        };
+        return worker;
+      },
+      getWorkerUrl: function (moduleId, label) {
+        var workerSourceURL = resolveWorkerURL(label, moduleId);
+        if (debugLoggingEnabled) {
+          monacoLog(
+            "info",
+            "Monaco getWorkerUrl label=" +
+              label +
+              " moduleId=" +
+              moduleId +
+              " url=" +
+              workerSourceURL
+          );
+        }
+        return workerSourceURL;
+      },
+    };
+    if (force && debugLoggingEnabled) {
+      monacoLog("info", "MonacoEnvironment overridden for worker URLs.");
+    }
   }
 
   function startLspClient() {
@@ -182,6 +333,102 @@
         " language=" +
         model.getLanguageId()
     );
+  }
+
+  function diagnosticsSeverityLabel(severity) {
+    switch (severity) {
+      case 8:
+        return "error";
+      case 4:
+        return "warning";
+      case 2:
+        return "info";
+      case 1:
+        return "hint";
+      default:
+        return "unknown";
+    }
+  }
+
+  function logModelDiagnostics(model, reason) {
+    if (!debugLoggingEnabled || !model || !monaco || !monaco.editor) {
+      return;
+    }
+    var markers = monaco.editor.getModelMarkers({ resource: model.uri }) || [];
+    var fingerprint = markers
+      .map(function (marker) {
+        return [
+          marker.severity,
+          marker.startLineNumber,
+          marker.startColumn,
+          marker.endLineNumber,
+          marker.endColumn,
+          marker.message,
+          marker.source,
+          marker.code,
+          marker.owner,
+        ]
+          .filter(function (entry) {
+            return entry !== undefined && entry !== null;
+          })
+          .join("|");
+      })
+      .join("::");
+    if (fingerprint === lastDiagnosticsFingerprint) {
+      return;
+    }
+    lastDiagnosticsFingerprint = fingerprint;
+    monacoLog(
+      "info",
+      "Diagnostics (" +
+        reason +
+        ") count=" +
+        markers.length +
+        " uri=" +
+        model.uri.toString()
+    );
+    markers.forEach(function (marker) {
+      monacoLog(
+        "info",
+        [
+          diagnosticsSeverityLabel(marker.severity),
+          "L" + marker.startLineNumber + ":" + marker.startColumn,
+          marker.message,
+          marker.source ? "source=" + marker.source : null,
+          marker.code ? "code=" + marker.code : null,
+          marker.owner ? "owner=" + marker.owner : null,
+        ]
+          .filter(function (entry) {
+            return entry;
+          })
+          .join(" | ")
+      );
+    });
+  }
+
+  function installDiagnosticsLogging() {
+    if (diagnosticsListenerInstalled || !monaco || !monaco.editor) {
+      return;
+    }
+    diagnosticsListenerInstalled = true;
+    monaco.editor.onDidChangeMarkers(function (uris) {
+      if (!editor) {
+        return;
+      }
+      var model = editor.getModel();
+      if (!model) {
+        return;
+      }
+      if (
+        Array.isArray(uris) &&
+        !uris.some(function (uri) {
+          return uri.toString() === model.uri.toString();
+        })
+      ) {
+        return;
+      }
+      logModelDiagnostics(model, "markersChanged");
+    });
   }
 
   function forceStartTextSync(lspClient) {
@@ -374,6 +621,23 @@
 
   if (debugLoggingEnabled) {
     monacoLog("info", "script loaded");
+    var isLoggingError = false;
+    var formatErrorDetail = function (message, source, line, col, error, extra) {
+      var parts = [];
+      parts.push("JS Error: " + message + " at " + source + ":" + line + ":" + col);
+      if (error) {
+        if (error.name || error.message) {
+          parts.push("error=" + (error.name ? error.name + ": " : "") + (error.message || ""));
+        }
+        if (error.stack) {
+          parts.push("stack=" + error.stack);
+        }
+      }
+      if (extra) {
+        parts.push(extra);
+      }
+      return parts.join(" ");
+    };
     var originalConsoleLog = console.log;
     var originalConsoleWarn = console.warn;
     var originalConsoleError = console.error;
@@ -389,19 +653,147 @@
       originalConsoleError.apply(console, arguments);
       monacoLog("error", Array.from(arguments).join(" "));
     };
+    var errorHandler = function (event, isCapture) {
+      if (isLoggingError) {
+        return;
+      }
+      isLoggingError = true;
+      try {
+        if (event && event.target && event.target.tagName === "SCRIPT") {
+          var src = event.target.src || "(inline)";
+          monacoLog("error", "Script load error: " + src);
+          return;
+        }
+        var message = event && event.message ? event.message : "unknown error";
+        var source = event && event.filename ? event.filename : "(unknown)";
+        var line = event && event.lineno ? event.lineno : 0;
+        var col = event && event.colno ? event.colno : 0;
+        var error = event && event.error ? event.error : null;
+        var targetInfo = "";
+        if (event && event.target && event.target.tagName) {
+          targetInfo =
+            " target=" +
+            event.target.tagName +
+            (event.target.src ? " src=" + event.target.src : "");
+        }
+        var phaseInfo = isCapture ? " capture" : "";
+        monacoLog(
+          "error",
+          formatErrorDetail(message, source, line, col, error, targetInfo + phaseInfo)
+        );
+      } finally {
+        isLoggingError = false;
+      }
+    };
     window.addEventListener("error", function (event) {
-      monacoLog(
-        "error",
-        "JS Error: " +
-          event.message +
-          " at " +
-          event.filename +
-          ":" +
-          event.lineno +
-          ":" +
-          event.colno
-      );
+      errorHandler(event, false);
     });
+    window.addEventListener(
+      "error",
+      function (event) {
+        errorHandler(event, true);
+      },
+      true
+    );
+    var previousOnError = window.onerror;
+    window.onerror = function (message, source, lineno, colno, error) {
+      if (!isLoggingError) {
+        isLoggingError = true;
+        try {
+          monacoLog(
+            "error",
+            formatErrorDetail(
+              message || "unknown error",
+              source || "(unknown)",
+              lineno || 0,
+              colno || 0,
+              error || null,
+              "onerror"
+            )
+          );
+        } finally {
+          isLoggingError = false;
+        }
+      }
+      if (typeof previousOnError === "function") {
+        try {
+          return previousOnError(message, source, lineno, colno, error);
+        } catch (e) {}
+      }
+      return false;
+    };
+    if (typeof window.Worker === "function") {
+      try {
+        var OriginalWorker = window.Worker;
+        var wrapWorkerScript = function (scriptURL) {
+          var source =
+            "self.addEventListener('error', function(e){try{self.postMessage({__wrappedWorkerError:true,message:e.message,filename:e.filename,lineno:e.lineno,colno:e.colno,stack:e.error&&e.error.stack});}catch(_){};});" +
+            "self.addEventListener('unhandledrejection', function(e){try{self.postMessage({__wrappedWorkerRejection:true,reason:(e&&e.reason&&e.reason.message)?e.reason.message:String(e.reason)});}catch(_){};});" +
+            "try{importScripts('" +
+            scriptURL +
+            "');}catch(e){try{self.postMessage({__wrappedWorkerError:true,message:e.message,stack:e.stack});}catch(_){};throw e;}";
+          return URL.createObjectURL(new Blob([source], { type: "text/javascript" }));
+        };
+        var WorkerWrapper = function (scriptURL, options) {
+          var urlString = scriptURL ? String(scriptURL) : "";
+          var useWrapper = !options || options.type !== "module";
+          var workerScript = useWrapper ? wrapWorkerScript(urlString) : urlString;
+          var worker = new OriginalWorker(workerScript, options);
+          try {
+            monacoLog(
+              "info",
+              "Worker created url=" + urlString + (useWrapper ? " (wrapped)" : "")
+            );
+          } catch (e) {}
+          worker.addEventListener("error", function (e) {
+            monacoLog(
+              "error",
+              "Worker error: " +
+                (e && e.message ? e.message : "unknown") +
+                " at " +
+                (e && e.filename ? e.filename : "(unknown)") +
+                ":" +
+                (e && e.lineno ? e.lineno : 0) +
+                ":" +
+                (e && e.colno ? e.colno : 0)
+            );
+          });
+          worker.addEventListener("message", function (e) {
+            var data = e && e.data ? e.data : null;
+            if (data && data.__wrappedWorkerError) {
+              monacoLog(
+                "error",
+                "Worker wrapped error: " +
+                  data.message +
+                  (data.filename
+                    ? " at " + data.filename + ":" + data.lineno + ":" + data.colno
+                    : "") +
+                  (data.stack ? " stack=" + data.stack : "")
+              );
+            } else if (data && data.__wrappedWorkerRejection) {
+              monacoLog("error", "Worker wrapped rejection: " + data.reason);
+            }
+          });
+          worker.addEventListener("messageerror", function () {
+            monacoLog("error", "Worker messageerror: " + urlString);
+          });
+          return worker;
+        };
+        WorkerWrapper.prototype = OriginalWorker.prototype;
+        try {
+          Object.setPrototypeOf(WorkerWrapper, OriginalWorker);
+        } catch (e) {}
+        window.Worker = WorkerWrapper;
+        monacoLog("info", "Worker wrapper installed");
+      } catch (e) {
+        monacoLog(
+          "error",
+          "Failed to wrap Worker: " +
+            (e && e.message ? e.message : String(e)) +
+            (e && e.stack ? " stack=" + e.stack : "")
+        );
+      }
+    }
     window.addEventListener("unhandledrejection", function (event) {
       var reason = event && event.reason ? event.reason.toString() : "unknown";
       monacoLog("error", "Unhandled promise rejection: " + reason);
@@ -700,24 +1092,97 @@
 
   function startEditor() {
     monacoLog("info", "startEditor");
+    ensureMonacoEnvironment();
     require.config({ paths: { vs: "min/vs" } });
+    if (typeof require !== "undefined") {
+      try {
+        require.onError = function (err) {
+          monacoLog(
+            "error",
+            "RequireJS error: " +
+              (err && err.message ? err.message : String(err)) +
+              (err && err.requireType ? " type=" + err.requireType : "") +
+              (err && err.requireModules
+                ? " modules=" + err.requireModules.join(",")
+                : "")
+          );
+        };
+      } catch (e) {}
+    }
     require(["vs/editor/editor.main"], function () {
       monacoLog("info", "editor.main loaded");
-      registerGDScript();
-      registerGodotShader();
-      var createOptions = Object.assign({}, pendingOptions || {}, {
-        value: pendingValue || "",
-        language: pendingLanguage || "plaintext",
-        theme: pendingTheme || "vs",
-      });
-      editor = monaco.editor.create(document.getElementById("container"), createOptions);
+      ensureMonacoEnvironment(true);
+      if (debugLoggingEnabled) {
+        try {
+          registerGDScript();
+        } catch (e) {
+          monacoLog(
+            "error",
+            "Failed to register gdscript: " +
+              (e && e.message ? e.message : String(e)) +
+              (e && e.stack ? " stack=" + e.stack : "")
+          );
+        }
+        try {
+          registerGodotShader();
+        } catch (e) {
+          monacoLog(
+            "error",
+            "Failed to register gdshader: " +
+              (e && e.message ? e.message : String(e)) +
+              (e && e.stack ? " stack=" + e.stack : "")
+          );
+        }
+      } else {
+        registerGDScript();
+        registerGodotShader();
+      }
+      if (debugLoggingEnabled) {
+        try {
+          var createOptions = Object.assign({}, pendingOptions || {}, {
+            value: pendingValue || "",
+            language: pendingLanguage || "plaintext",
+            theme: pendingTheme || "vs",
+          });
+          editor = monaco.editor.create(
+            document.getElementById("container"),
+            createOptions
+          );
+        } catch (e) {
+          monacoLog(
+            "error",
+            "Failed to create Monaco editor: " +
+              (e && e.message ? e.message : String(e)) +
+              (e && e.stack ? " stack=" + e.stack : "")
+          );
+          return;
+        }
+      } else {
+        var createOptions = Object.assign({}, pendingOptions || {}, {
+          value: pendingValue || "",
+          language: pendingLanguage || "plaintext",
+          theme: pendingTheme || "vs",
+        });
+        editor = monaco.editor.create(
+          document.getElementById("container"),
+          createOptions
+        );
+      }
+      installDiagnosticsLogging();
       ensureEditorModel();
       logModelState("Editor created:");
       applyPending();
       monacoLog("info", "editor created");
+      logModelDiagnostics(editor.getModel(), "editorCreated");
 
       editor.onDidChangeModelContent(function () {
         postMessage("monacoTextChanged", editor.getValue());
+      });
+
+      editor.onDidChangeModel(function () {
+        var model = editor.getModel();
+        logModelState("Model changed:");
+        logModelDiagnostics(model, "modelChanged");
       });
 
       editor.onDidChangeCursorSelection(function (e) {
@@ -823,25 +1288,36 @@
         );
       }
 
-      loadScript(
-        "monaco-lsp-client.js",
-        function () {
-          monacoLog("info", "Monaco LSP client script loaded");
-          startLspClient();
-        },
-        function () {
-          loadScript(
-            "../monaco-lsp-client.js",
-            function () {
-              monacoLog("info", "Monaco LSP client script loaded (parent)");
-              startLspClient();
-            },
-            function () {
-              monacoLog("warn", "Failed to load Monaco LSP client script");
-            }
-          );
+      var attemptedLspScripts = [];
+      var tryLoadLspClient = function (src, next) {
+        if (!src) {
+          next();
+          return;
         }
-      );
+        attemptedLspScripts.push(src);
+        loadScript(
+          src,
+          function () {
+            monacoLog("info", "Monaco LSP client script loaded: " + src);
+            startLspClient();
+          },
+          function () {
+            next();
+          }
+        );
+      };
+      var doneLspLoad = function () {
+        monacoLog(
+          "warn",
+          "Failed to load Monaco LSP client script. Tried: " +
+            attemptedLspScripts.join(", ")
+        );
+      };
+      tryLoadLspClient("monaco-lsp-client.js", function () {
+        tryLoadLspClient("../monaco-lsp-client.js", function () {
+          tryLoadLspClient(lspClientScriptURL, doneLspLoad);
+        });
+      });
 
       postMessage("monacoReady", true);
     });

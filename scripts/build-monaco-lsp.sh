@@ -5,6 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MONACO_LSP_DIR="${MONACO_LSP_DIR:-"$ROOT_DIR/../monaco-editor/monaco-lsp-client"}"
 OUT_DIR="${OUT_DIR:-"$ROOT_DIR/Sources/CodeEditorUI/Resources"}"
 OUT_FILE="${OUT_FILE:-"$OUT_DIR/monaco-lsp-client.js"}"
+MONACO_BUNDLE_DIR="${MONACO_BUNDLE_DIR:-"$OUT_DIR/monaco.bundle"}"
 
 if [[ ! -d "$MONACO_LSP_DIR" ]]; then
   echo "monaco-lsp-client not found at: $MONACO_LSP_DIR" >&2
@@ -101,6 +102,11 @@ if "completionContext" not in data:
 
 path.write_text(data, encoding="utf-8")
 PY
+
+if [[ -d "$MONACO_BUNDLE_DIR" ]]; then
+  cp -f "$OUT_FILE" "$MONACO_BUNDLE_DIR/monaco-lsp-client.js"
+  echo "Copied bundle into: $MONACO_BUNDLE_DIR/monaco-lsp-client.js"
+fi
 
 popd >/dev/null
 

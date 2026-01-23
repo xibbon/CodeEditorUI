@@ -26,7 +26,7 @@ public final class LspWebSocketProxy {
     private var activeConnections: [UUID: ConnectionState] = [:]
     private var dumpCounter: Int = 0
 
-    public var enableLogging: Bool = true
+    public var enableLogging: Bool = false
     public var maxLogBytes: Int = 2*1024
 
     public init(tcpHost: String = "127.0.0.1", tcpPort: UInt16 = 6005, wsPort: UInt16 = 6009) throws {
