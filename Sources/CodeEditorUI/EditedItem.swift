@@ -273,9 +273,15 @@ public protocol EditedItemDelegate: AnyObject {
     func closing (_ editedItem: EditedItem)
     /// Requests that the given item be saved, returns nil on success or details on error, if newPath is not-nil, save to a new filename
     func save(editedItem: EditedItem, contents: String, newPath: String?) -> HostServiceIOError?
+    /// Allows the host app to normalize a document path for Monaco/LSP usage.
+    func normalizedDocumentPath(_ path: String) -> String
 }
 
 public extension EditedItemDelegate {
+    func normalizedDocumentPath(_ path: String) -> String {
+        path
+    }
+
     func contextMenuRequested(_ editedItem: EditedItem, on: EditorTextView, request: MonacoContextMenuRequest) {
         _ = editedItem
         _ = on

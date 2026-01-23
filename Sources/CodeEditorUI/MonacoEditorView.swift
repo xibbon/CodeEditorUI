@@ -134,7 +134,7 @@ public struct MonacoEditorView: PlatformViewRepresentable {
             "initialValue": contents,
             "lspWebSocketURL": state.lspWebSocketURL,
             "lspWorkspaceRoot": state.lspWorkspaceRoot as Any,
-            "documentPath": item.path,
+            "documentPath": item.editedItemDelegate?.normalizedDocumentPath(item.path) ?? item.path,
             "lspClientScriptURL": monacoLspClientURL()?.absoluteString as Any,
             "monacoWorkerURLs": monacoWorkerURLs()
         ]
