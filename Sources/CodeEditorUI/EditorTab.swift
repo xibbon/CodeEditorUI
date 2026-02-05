@@ -7,6 +7,9 @@
 
 import Foundation
 import SwiftUI
+#if os(macOS)
+import AppKit
+#endif
 
 struct EditorTab2: View {
     @Binding var item: HostedItem
@@ -45,21 +48,45 @@ struct EditorTab2: View {
 
 struct EditorTab: View {
     @Binding var item: HostedItem
+#if os(macOS)
+    let internalPadding = 5.0
+    let font = Font.subheadline
+    static let popTint  = Color(.sRGB, red: 245/255, green: 245/255, blue: 245/255, opacity: 0.85)
+    @State var mouseOnTab = false
+    @State var mouseOnButton = false
+#else
     @ScaledMetric var internalPadding = 10
+    let font = Font.caption
+#endif
     @ScaledMetric var modifiedImageSize = 10
     let selected: Bool
     let close: () -> ()
     let select: () -> ()
+
+    func closeButton(icon: String, primary: Color, secondary: Color) -> some View {
+        Button(action: { close() }) {
+            Image(systemName: icon)
+                .foregroundStyle(selected ? primary : secondary)
+                .font(font)
+        }
+        .buttonStyle(.plain)
+    }
+
     var body: some View {
         HStack (spacing: 2) {
-            if selected {
-                Button (action: { close () }) {
-                    Image (systemName: "xmark.app.fill")
-                        .foregroundStyle(selected ? Color.accentColor : Color.secondary.opacity(0.8))
-                        .font(.caption)
+#if os(macOS)
+            closeButton(icon: "xmark", primary: .primary, secondary: .secondary)
+                .opacity(mouseOnTab ? 1 : 0.001)
+                .onHover { inside in
+                    mouseOnButton = inside
                 }
-                .buttonStyle(.plain)
+                .background(Circle().fill(mouseOnButton ? Color.black.opacity(0.05) : Color.clear).padding(-3))
+            Spacer()
+#else
+            if selected {
+                closeButton(icon: "xmark.app.fill", primary: Color.accentColor, secondary: Color.secondary.opacity(0.8))
             }
+#endif
             ZStack {
                 Text (item.title)
                     .fontWeight(.semibold)
@@ -67,31 +94,54 @@ struct EditorTab: View {
                     .opacity(0.001)
 
                 Text (item.title)
+#if os(macOS)
+                    .foregroundStyle(selected ? Color.primary : Color.secondary)
+#else
                     .fontWeight(selected ? .semibold : .regular)
                     .foregroundStyle(selected ? Color.accentColor : Color.secondary)
+#endif
             }
-            .font(.caption)
+            .font(font)
             .padding(.horizontal, 4)
+#if !os(macOS)
             .onTapGesture {
                 self.select ()
             }
+#endif
             if (item as? EditedItem)?.dirty ?? false {
                 Image (systemName: "circle.fill")
                     .fontWeight(.light)
                     .foregroundStyle(selected ? Color.accentColor : Color.secondary.opacity(0.8))
                     .font(.system(size: modifiedImageSize))
             }
+#if os(macOS)
+            Spacer()
+#endif
         }
         .padding(internalPadding)
         .padding(.horizontal, 1)
+        .frame(minWidth: 175)
+#if os(iOS)
         .background {
-            #if os(macOS)
-            selected ? Color.accentColor.opacity(0.2) : Color (.lightGray)
-            #else
             selected ? Color.accentColor.opacity(0.2) : Color (uiColor: .systemGray5)
-            #endif
         }
         .clipShape(UnevenRoundedRectangle(topLeadingRadius: 10, bottomLeadingRadius: 10, bottomTrailingRadius: 10, topTrailingRadius: 10, style: .continuous))
+#else
+        .contentShape(RoundedRectangle(cornerRadius: 12))
+        .onTapGesture {
+            self.select()
+        }
+        .onHover { x in
+            mouseOnTab = x
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(selected ? EditorTab.popTint : Color.clear)
+                .strokeBorder(selected ? Color(nsColor: .windowBackgroundColor).opacity(0.2) : Color.clear, lineWidth: 1)
+                .shadow(color: Color(nsColor: .black).opacity(0.1), radius: 20, x: 0, y: 0)
+        )
+        .padding(.horizontal, 1)
+#endif
     }
 }
 
@@ -224,7 +274,11 @@ struct EditorTabs: View {
     @Binding var items: [HostedItem]
     let closeRequest: (Int) -> ()
     @ScaledMetric var dividerSize = 12
+#if os(macOS)
+    let tabSpacing: CGFloat = 0
+#else
     @ScaledMetric var tabSpacing: CGFloat = 10
+#endif
 
     // Drag state
     @State private var draggingIndex: Int? = nil
@@ -258,6 +312,24 @@ struct EditorTabs: View {
     }
     private struct ScrollPositionStorage {
         var value: Any? = nil
+    }
+
+    @ViewBuilder
+    private func applyScrollTargetLayout<V: View>(_ view: V) -> some View {
+        if #available(iOS 17.0, macOS 14.0, *) {
+            view.scrollTargetLayout()
+        } else {
+            view
+        }
+    }
+
+    @ViewBuilder
+    private func applyScrollTargetBehavior<V: View>(_ view: V) -> some View {
+        if #available(iOS 17.0, macOS 14.0, *) {
+            view.scrollTargetBehavior(.viewAligned)
+        } else {
+            view
+        }
     }
 
     @available(iOS 18.0, macOS 15.0, *)
@@ -351,8 +423,10 @@ struct EditorTabs: View {
     }
 
     var body: some View {
-        let scrollView = ScrollView(.horizontal) {
-            HStack(spacing: tabSpacing) {
+        ScrollViewReader { proxy in
+            let scrollView = ScrollView(.horizontal) {
+                applyScrollTargetLayout(
+                    HStack(spacing: tabSpacing) {
                 if let selected {
                     ForEach(Array(items.enumerated()), id: \.offset) { idx, _ in
                         let isDragging = draggingIndex == idx
@@ -366,6 +440,8 @@ struct EditorTabs: View {
                         .opacity(isDragging ? 0.9 : 1.0)
                         .zIndex(isDragging ? 1 : 0)
                         .offset(x: adjustedOffset(for: idx))
+                        .padding(.vertical, 1)
+                        .id(idx)
 #if os(iOS)
                         .gesture(
                             LongPressDragGesture(
@@ -442,62 +518,100 @@ struct EditorTabs: View {
                                 .animation(.interactiveSpring(response: 0.25, dampingFraction: 0.8, blendDuration: 0.1), value: proposedIndex)
                                 .animation(.interactiveSpring(response: 0.25, dampingFraction: 0.8, blendDuration: 0.1), value: dragTranslationX)
                         }
-                    }
-                }
-            }
-            .captureOrigin()
-            .overlay(alignment: .topLeading) {
-                if let draggingIndex, let proposedIndex, !tabFrames.isEmpty {
-                    let total = items.count
-                    let xPos: CGFloat = {
-                        let sorted = tabFrames.keys.sorted { (tabFrames[$0]?.minX ?? 0) < (tabFrames[$1]?.minX ?? 0) }
-                        if proposedIndex <= 0 {
-                            return (tabFrames[sorted.first!]?.minX ?? 0) - tabSpacing/2
-                        } else if proposedIndex >= total {
-                            return (tabFrames[sorted.last!]?.maxX ?? 0) + tabSpacing/2
-                        } else {
-                            let leftIdx = sorted[proposedIndex - 1]
-                            let rightIdx = sorted[proposedIndex]
-                            let leftMax = tabFrames[leftIdx]?.maxX ?? 0
-                            let rightMin = tabFrames[rightIdx]?.minX ?? 0
-                            return (leftMax + rightMin) / 2
+                        // Divider always present; hide via opacity when adjacent to the selection
+                        if idx < items.count - 1 {
+                            let leftIsSelected = (selected == idx)
+                            let rightIsSelected = (selected == idx + 1)
+                            Rectangle()
+                                .fill(Color.secondary.opacity(0.25))
+                                .frame(width: 1, height: 16)
+                                .padding(.horizontal, tabSpacing / 2)
+                                .alignmentGuide(.firstTextBaseline) { d in d[.firstTextBaseline] }
+                                .opacity((!leftIsSelected && !rightIsSelected) ? 1.0 : 0.0001)
                         }
-                    }()
-
-                    let indicator = Rectangle()
-                        .fill(Color.accentColor)
-                        .frame(width: 2, height: 18)
-                        .offset(x: xPos, y: 6)
-
-                    if committingDrop {
-                        indicator
-                    } else {
-                        indicator
-                            .animation(.interactiveSpring(response: 0.25, dampingFraction: 0.8, blendDuration: 0.1), value: proposedIndex)
                     }
                 }
             }
-        }
-        .coordinateSpace(name: "TabScrollSpace")
-        .scrollDisabled(draggingIndex != nil)
-        .onPreferenceChange(TabFramePreferenceKey.self) { tabFrames = $0 }
-        .onPreferenceChange(HStackOriginPreferenceKey.self) { hstackOrigin = $0 }
-        .scrollIndicators(.hidden)
-        .onDisappear {
-            stopAutoscroll()
-        }
-        if #available(iOS 18.0, macOS 15.0, *) {
-            scrollView
-                .scrollPosition(scrollPositionBinding())
-                .onScrollGeometryChange(for: ScrollGeometry.self) { geo in
-                    ScrollGeometry(containerSize: geo.containerSize, contentSize: geo.contentSize, contentOffsetX: geo.contentOffset.x)
-                } action: { _, new in
-                    containerSize = new.containerSize
-                    contentSize = new.contentSize
-                    contentOffsetX = new.contentOffsetX
+                )
+                .captureOrigin()
+                .overlay(alignment: .topLeading) {
+                    if let draggingIndex, let proposedIndex, !tabFrames.isEmpty {
+                        let total = items.count
+                        let xPos: CGFloat = {
+                            let sorted = tabFrames.keys.sorted { (tabFrames[$0]?.minX ?? 0) < (tabFrames[$1]?.minX ?? 0) }
+                            if proposedIndex <= 0 {
+                                return (tabFrames[sorted.first!]?.minX ?? 0) - tabSpacing/2
+                            } else if proposedIndex >= total {
+                                return (tabFrames[sorted.last!]?.maxX ?? 0) + tabSpacing/2
+                            } else {
+                                let leftIdx = sorted[proposedIndex - 1]
+                                let rightIdx = sorted[proposedIndex]
+                                let leftMax = tabFrames[leftIdx]?.maxX ?? 0
+                                let rightMin = tabFrames[rightIdx]?.minX ?? 0
+                                return (leftMax + rightMin) / 2
+                            }
+                        }()
+
+                        let indicator = Rectangle()
+                            .fill(Color.accentColor)
+                            .frame(width: 2, height: 18)
+                            .offset(x: xPos, y: 6)
+
+                        if committingDrop {
+                            indicator
+                        } else {
+                            indicator
+                                .animation(.interactiveSpring(response: 0.25, dampingFraction: 0.8, blendDuration: 0.1), value: proposedIndex)
+                        }
+                    }
                 }
-        } else {
-            scrollView
+            }
+            .coordinateSpace(name: "TabScrollSpace")
+#if os(macOS)
+            .scrollIndicators(.hidden)
+#endif
+            .scrollDisabled(draggingIndex != nil)
+            .onPreferenceChange(TabFramePreferenceKey.self) { tabFrames = $0 }
+            .onPreferenceChange(HStackOriginPreferenceKey.self) { hstackOrigin = $0 }
+            .onDisappear {
+                stopAutoscroll()
+            }
+            .onChange(of: selected) { _, new in
+                guard let new, let frame = tabFrames[new] else { return }
+
+                let visibleLeft = contentOffsetX
+                let visibleRight = contentOffsetX + containerSize.width
+
+                let isFullyVisible = frame.minX >= visibleLeft && frame.maxX <= visibleRight
+
+                guard !isFullyVisible else { return }
+
+                DispatchQueue.main.async {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        proxy.scrollTo(new, anchor: .leading)
+                    }
+                }
+            }
+#if os(macOS)
+            .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Material.regular))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .padding(.horizontal, 2)
+#endif
+            if #available(iOS 18.0, macOS 15.0, *) {
+                applyScrollTargetBehavior(
+                    scrollView
+                        .scrollPosition(scrollPositionBinding())
+                        .onScrollGeometryChange(for: ScrollGeometry.self) { geo in
+                            ScrollGeometry(containerSize: geo.containerSize, contentSize: geo.contentSize, contentOffsetX: geo.contentOffset.x)
+                        } action: { _, new in
+                            containerSize = new.containerSize
+                            contentSize = new.contentSize
+                            contentOffsetX = new.contentOffsetX
+                        }
+                )
+            } else {
+                applyScrollTargetBehavior(scrollView)
+            }
         }
     }
 }
