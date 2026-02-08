@@ -285,7 +285,7 @@ public struct CodeEditorShell<
                         codeEditorMenu()
                     }
 #if os(macOS)
-                    if state.openFiles.count >1 {
+                    if state.openFiles.count > 1 {
                         EditorTabs(selected: $state.currentEditor, items: $state.openFiles, closeRequest: { idx in
                             state.attemptClose (idx)
                         })
