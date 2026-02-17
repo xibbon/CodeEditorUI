@@ -49,9 +49,11 @@ struct EditorTab2: View {
 struct EditorTab: View {
     @Binding var item: HostedItem
 #if os(macOS)
+    @Environment(\.colorScheme) var colorScheme
     let internalPadding = 5.0
     let font = Font.subheadline
-    static let popTint  = Color(.sRGB, red: 245/255, green: 245/255, blue: 245/255, opacity: 0.85)
+    static let popTintLight  = Color(.sRGB, red: 245/255, green: 245/255, blue: 245/255, opacity: 0.85)
+    static let popTintDark  = Color(.sRGB, red: 84/255, green: 84/255, blue: 88/255, opacity: 0.85)
     @State var mouseOnTab = false
     @State var mouseOnButton = false
 #else
@@ -120,13 +122,13 @@ struct EditorTab: View {
         }
         .padding(internalPadding)
         .padding(.horizontal, 1)
-        .frame(minWidth: 175)
 #if os(iOS)
         .background {
             selected ? Color.accentColor.opacity(0.2) : Color (uiColor: .systemGray5)
         }
         .clipShape(UnevenRoundedRectangle(topLeadingRadius: 10, bottomLeadingRadius: 10, bottomTrailingRadius: 10, topTrailingRadius: 10, style: .continuous))
 #else
+        .frame(minWidth: 175)
         .contentShape(RoundedRectangle(cornerRadius: 12))
         .onTapGesture {
             self.select()
@@ -136,12 +138,43 @@ struct EditorTab: View {
         }
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(selected ? EditorTab.popTint : Color.clear)
-                .strokeBorder(selected ? Color(nsColor: .windowBackgroundColor).opacity(0.2) : Color.clear, lineWidth: 1)
-                .shadow(color: Color(nsColor: .black).opacity(0.1), radius: 20, x: 0, y: 0)
+                .fill(selected ? colorScheme == .light ? EditorTab.popTintLight : EditorTab.popTintDark : Color.clear)
         )
+        .modifier(GlassIfAvailable(selected: selected))
         .padding(.horizontal, 1)
 #endif
+    }
+}
+
+private struct GlassIfAvailable: ViewModifier {
+    let selected: Bool
+    func body(content: Content) -> some View {
+        #if os(macOS)
+        if #available(macOS 26.0, *) {
+            if selected {
+                content.glassEffect()
+            } else {
+                content
+            }
+        } else {
+            // Fallback styling when glassEffect isn't available
+            if selected {
+                content
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .strokeBorder(Color(nsColor: .windowBackgroundColor).opacity(0.2), lineWidth: 1)
+                    )
+                    .shadow(
+                        color: Color(nsColor: .black).opacity(0.1),
+                        radius: 20, x: 0, y: 0
+                    )
+            } else {
+                content
+            }
+        }
+        #else
+        content
+        #endif
     }
 }
 
@@ -427,112 +460,113 @@ struct EditorTabs: View {
             let scrollView = ScrollView(.horizontal) {
                 applyScrollTargetLayout(
                     HStack(spacing: tabSpacing) {
-                if let selected {
-                    ForEach(Array(items.enumerated()), id: \.offset) { idx, _ in
-                        let isDragging = draggingIndex == idx
-                        let tab = EditorTab(
-                            item: $items[idx],
-                            selected: idx == selected,
-                            close: { closeRequest(idx) },
-                            select: { self.selected = idx }
-                        )
-                        .scaleEffect(isDragging ? 1.05 : 1.0)
-                        .opacity(isDragging ? 0.9 : 1.0)
-                        .zIndex(isDragging ? 1 : 0)
-                        .offset(x: adjustedOffset(for: idx))
-                        .padding(.vertical, 1)
-                        .id(idx)
+                        if let selected {
+                            ForEach(Array(items.enumerated()), id: \.offset) { idx, _ in
+                                let isDragging = draggingIndex == idx
+                                let tab = EditorTab(
+                                    item: $items[idx],
+                                    selected: idx == selected,
+                                    close: { closeRequest(idx) },
+                                    select: { self.selected = idx }
+                                )
+                                    .scaleEffect(isDragging ? 1.05 : 1.0)
+                                    .opacity(isDragging ? 0.9 : 1.0)
+                                    .zIndex(isDragging ? 1 : 0)
+                                    .offset(x: adjustedOffset(for: idx))
+                                    .padding(.vertical, 1)
+                                    .id(idx)
 #if os(iOS)
-                        .gesture(
-                            LongPressDragGesture(
-                                onLongPressBegin: {
-                                    let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-                                    impactFeedback.impactOccurred()
-
-                                    draggingIndex = idx
-                                    dragTranslationX = 0
-                                    proposedIndex = idx
-                                    startAutoscroll()
-                                },
-                                onDragChanged: { translation in
-                                    guard draggingIndex == idx else { return }
-                                    dragTranslationX = translation.x
-
-                                    if let frame = tabFrames[idx] {
-                                        let movingMidX = frame.midX + dragTranslationX
-                                        if let newProposed = targetIndex(for: movingMidX), newProposed != proposedIndex {
-                                            withAnimation(.interactiveSpring(response: 0.25, dampingFraction: 0.8, blendDuration: 0.1)) {
-                                                proposedIndex = newProposed
+                                    .gesture(
+                                        LongPressDragGesture(
+                                            onLongPressBegin: {
+                                                let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                                                impactFeedback.impactOccurred()
+                                                
+                                                draggingIndex = idx
+                                                dragTranslationX = 0
+                                                proposedIndex = idx
+                                                startAutoscroll()
+                                            },
+                                            onDragChanged: { translation in
+                                                guard draggingIndex == idx else { return }
+                                                dragTranslationX = translation.x
+                                                
+                                                if let frame = tabFrames[idx] {
+                                                    let movingMidX = frame.midX + dragTranslationX
+                                                    if let newProposed = targetIndex(for: movingMidX), newProposed != proposedIndex {
+                                                        withAnimation(.interactiveSpring(response: 0.25, dampingFraction: 0.8, blendDuration: 0.1)) {
+                                                            proposedIndex = newProposed
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            onDragEnded: {
+                                                guard draggingIndex == idx else { return }
+                                                
+                                                stopAutoscroll()
+                                                
+                                                let dragging = draggingIndex
+                                                let finalProposed = proposedIndex ?? draggingIndex ?? 0
+                                                
+                                                // Begin no-animation commit
+                                                committingDrop = true
+                                                if let dragging, finalProposed != dragging {
+                                                    let movedItemID = items[dragging].id
+                                                    let newItems = reorderedItems(source: dragging, destination: finalProposed)
+                                                    
+                                                    withTransaction(Transaction(animation: nil)) {
+                                                        items = newItems
+                                                        draggingIndex = nil
+                                                        proposedIndex = nil
+                                                        dragTranslationX = 0
+                                                    }
+                                                    if let newIndex = items.firstIndex(where: { $0.id == movedItemID }) {
+                                                        withTransaction(Transaction(animation: nil)) {
+                                                            self.selected = newIndex
+                                                        }
+                                                    }
+                                                } else {
+                                                    withTransaction(Transaction(animation: nil)) {
+                                                        draggingIndex = nil
+                                                        proposedIndex = nil
+                                                        dragTranslationX = 0
+                                                    }
+                                                }
+                                                // End of commit; re-enable animations on the next runloop tick
+                                                DispatchQueue.main.async {
+                                                    committingDrop = false
+                                                }
                                             }
-                                        }
-                                    }
-                                },
-                                onDragEnded: {
-                                    guard draggingIndex == idx else { return }
-
-                                    stopAutoscroll()
-
-                                    let dragging = draggingIndex
-                                    let finalProposed = proposedIndex ?? draggingIndex ?? 0
-
-                                    // Begin no-animation commit
-                                    committingDrop = true
-                                    if let dragging, finalProposed != dragging {
-                                        let movedItemID = items[dragging].id
-                                        let newItems = reorderedItems(source: dragging, destination: finalProposed)
-
-                                        withTransaction(Transaction(animation: nil)) {
-                                            items = newItems
-                                            draggingIndex = nil
-                                            proposedIndex = nil
-                                            dragTranslationX = 0
-                                        }
-                                        if let newIndex = items.firstIndex(where: { $0.id == movedItemID }) {
-                                            withTransaction(Transaction(animation: nil)) {
-                                                self.selected = newIndex
-                                            }
-                                        }
-                                    } else {
-                                        withTransaction(Transaction(animation: nil)) {
-                                            draggingIndex = nil
-                                            proposedIndex = nil
-                                            dragTranslationX = 0
-                                        }
-                                    }
-                                    // End of commit; re-enable animations on the next runloop tick
-                                    DispatchQueue.main.async {
-                                        committingDrop = false
-                                    }
-                                }
-                            )
-                        )
+                                        )
+                                    )
 #endif
-                        .captureFrame(index: idx)
-
-                        // Attach animations only when not committing the drop
-                        if committingDrop {
-                            tab
-                        } else {
-                            tab
-                                .animation(.interactiveSpring(response: 0.25, dampingFraction: 0.8, blendDuration: 0.1), value: draggingIndex)
-                                .animation(.interactiveSpring(response: 0.25, dampingFraction: 0.8, blendDuration: 0.1), value: proposedIndex)
-                                .animation(.interactiveSpring(response: 0.25, dampingFraction: 0.8, blendDuration: 0.1), value: dragTranslationX)
-                        }
-                        // Divider always present; hide via opacity when adjacent to the selection
-                        if idx < items.count - 1 {
-                            let leftIsSelected = (selected == idx)
-                            let rightIsSelected = (selected == idx + 1)
-                            Rectangle()
-                                .fill(Color.secondary.opacity(0.25))
-                                .frame(width: 1, height: 16)
-                                .padding(.horizontal, tabSpacing / 2)
-                                .alignmentGuide(.firstTextBaseline) { d in d[.firstTextBaseline] }
-                                .opacity((!leftIsSelected && !rightIsSelected) ? 1.0 : 0.0001)
+                                    .captureFrame(index: idx)
+                                
+                                // Attach animations only when not committing the drop
+                                if committingDrop {
+                                    tab
+                                } else {
+                                    tab
+                                        .animation(.interactiveSpring(response: 0.25, dampingFraction: 0.8, blendDuration: 0.1), value: draggingIndex)
+                                        .animation(.interactiveSpring(response: 0.25, dampingFraction: 0.8, blendDuration: 0.1), value: proposedIndex)
+                                        .animation(.interactiveSpring(response: 0.25, dampingFraction: 0.8, blendDuration: 0.1), value: dragTranslationX)
+                                }
+                                // Divider always present; hide via opacity when adjacent to the selection
+                                if idx < items.count - 1 {
+                                    let leftIsSelected = (selected == idx)
+                                    let rightIsSelected = (selected == idx + 1)
+                                    Rectangle()
+                                        .fill(Color.secondary.opacity(0.25))
+                                        .frame(width: 1, height: 16)
+                                        .padding(.horizontal, tabSpacing / 2)
+                                        .alignmentGuide(.firstTextBaseline) { d in d[.firstTextBaseline] }
+                                        .opacity((!leftIsSelected && !rightIsSelected) ? 1.0 : 0.0001)
+                                }
+                            }
                         }
                     }
-                }
-            }
                 )
+                .scrollTargetLayout()
                 .captureOrigin()
                 .overlay(alignment: .topLeading) {
                     if let draggingIndex, let proposedIndex, !tabFrames.isEmpty {
