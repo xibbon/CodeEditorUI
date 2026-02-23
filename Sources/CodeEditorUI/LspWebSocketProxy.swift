@@ -178,7 +178,7 @@ public final class LspWebSocketProxy {
             if enableLogging {
                 log(direction: "TCP->WS", data: payload)
             }
-            dumpWebSocketPayload(payload)
+            //dumpWebSocketPayload(payload)
             let meta = NWProtocolWebSocket.Metadata(opcode: .text)
             let ctx = NWConnection.ContentContext(identifier: "ws-send", metadata: [meta])
             wsConn.send(content: payload, contentContext: ctx, isComplete: true, completion: .contentProcessed { _ in })
