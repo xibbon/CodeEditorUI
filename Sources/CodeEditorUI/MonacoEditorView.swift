@@ -17,12 +17,20 @@ public struct MonacoEditorView: PlatformViewRepresentable {
     let item: EditedItem
     let state: CodeEditorState
     let breakpoints: Set<Int>
+    let highlightedLine: Int?
 
-    public init(state: CodeEditorState, item: EditedItem, contents: Binding<String>, breakpoints: Set<Int> = []) {
+    public init(
+        state: CodeEditorState,
+        item: EditedItem,
+        contents: Binding<String>,
+        breakpoints: Set<Int> = [],
+        highlightedLine: Int? = nil
+    ) {
         self.state = state
         self.item = item
         self._contents = contents
         self.breakpoints = breakpoints
+        self.highlightedLine = highlightedLine
     }
 
     public func makeCoordinator() -> Coordinator {
@@ -91,8 +99,10 @@ public struct MonacoEditorView: PlatformViewRepresentable {
             context.coordinator.lastKnownText = contents
             context.coordinator.lastConfiguration = config
             context.coordinator.lastBreakpoints = breakpoints
+            context.coordinator.lastHighlightedLine = highlightedLine
             context.coordinator.setContents(contents)
             context.coordinator.setBreakpoints(breakpoints)
+            context.coordinator.setHighlightedLine(highlightedLine)
         } else {
             if state.monacoDebugLogging {
                 print("[Monaco] Base URL not found for assets.")
@@ -121,6 +131,11 @@ public struct MonacoEditorView: PlatformViewRepresentable {
         if breakpoints != context.coordinator.lastBreakpoints {
             context.coordinator.lastBreakpoints = breakpoints
             context.coordinator.setBreakpoints(breakpoints)
+        }
+
+        if highlightedLine != context.coordinator.lastHighlightedLine {
+            context.coordinator.lastHighlightedLine = highlightedLine
+            context.coordinator.setHighlightedLine(highlightedLine)
         }
     }
 
@@ -243,9 +258,12 @@ extension MonacoEditorView {
         var lastKnownText: String = ""
         var lastConfiguration: MonacoConfiguration?
         var lastBreakpoints: Set<Int> = []
+        var lastHighlightedLine: Int? = nil
         private var pendingText: String?
         private var pendingConfiguration: MonacoConfiguration?
         private var pendingBreakpoints: Set<Int>?
+        private var pendingHighlightedLine: Int? = nil
+        private var pendingHighlightedLineUpdate: Bool = false
         private var isReady = false
         private var hasStarted = false
 
@@ -494,6 +512,27 @@ extension MonacoEditorView {
             webView.evaluateJavaScript(js, completionHandler: nil)
         }
 
+        func setHighlightedLine(_ line: Int?) {
+            guard let webView else {
+                pendingHighlightedLine = line
+                pendingHighlightedLineUpdate = true
+                return
+            }
+            if !isReady {
+                pendingHighlightedLine = line
+                pendingHighlightedLineUpdate = true
+                return
+            }
+            let jsValue: String
+            if let line, line >= 0 {
+                jsValue = String(line + 1)
+            } else {
+                jsValue = "null"
+            }
+            let js = "window.setHighlightedLine(\(jsValue));"
+            webView.evaluateJavaScript(js, completionHandler: nil)
+        }
+
         private func flushPendingUpdates() {
             if let pendingText {
                 setContents(pendingText)
@@ -506,6 +545,11 @@ extension MonacoEditorView {
             if let pendingBreakpoints {
                 setBreakpoints(pendingBreakpoints)
                 self.pendingBreakpoints = nil
+            }
+            if pendingHighlightedLineUpdate {
+                setHighlightedLine(pendingHighlightedLine)
+                pendingHighlightedLineUpdate = false
+                pendingHighlightedLine = nil
             }
         }
     }
@@ -633,13 +677,63 @@ extension MonacoEditorView {
                 overflow: hidden;
                 background: transparent;
               }
-              .monaco-breakpoint {
+              .monaco-breakpoint-glyph {
+                position: relative;
+                background: transparent !important;
+              }
+              .monaco-breakpoint-glyph::after {
+                content: "";
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                transform: translate(-50%, -50%);
                 background: #e05a50;
-                border-radius: 6px;
-                width: 10px;
-                height: 10px;
-                margin-left: 4px;
-                margin-top: 4px;
+              }
+              .monaco-editor .line-numbers.monaco-breakpoint-line-number {
+                color: #ffffff !important;
+                position: relative;
+                overflow: visible !important;
+                background-image: linear-gradient(to right, transparent 8px, #2f8cff 8px);
+                background-repeat: no-repeat;
+                background-size: 100% calc(100% - 8px);
+                background-position: 0 4px;
+                border-radius: 6px 0 0 6px;
+              }
+              .monaco-editor .line-numbers.monaco-breakpoint-line-number::before {
+                content: "";
+                position: absolute;
+                top: 4px;
+                bottom: 4px;
+                right: -6px;
+                width: 6px;
+                background: #2f8cff;
+              }
+              .monaco-editor .line-numbers.monaco-breakpoint-line-number::after {
+                content: "";
+                position: absolute;
+                top: 4px;
+                bottom: 4px;
+                right: -14px;
+                width: 8px;
+                background: #2f8cff;
+                clip-path: polygon(
+                  0% 0%,
+                  100% 50%,
+                  0% 100%
+                );
+              }
+              .monaco-editor .margin {
+                overflow: visible !important;
+              }
+              .monaco-editor .margin-view-overlays {
+                overflow: visible !important;
+              }
+              .monaco-highlighted-line {
+                background: rgba(255, 204, 0, 0.16);
+                box-shadow: inset 2px 0 0 rgba(255, 153, 0, 0.9);
               }
             </style>
             <script src=\"min/vs/loader.js\"></script>

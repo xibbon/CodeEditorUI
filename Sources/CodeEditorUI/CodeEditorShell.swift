@@ -113,7 +113,8 @@ public struct CodeEditorShell<
             }, set: { newV in
                 editedItem.content = newV
             }),
-            breakpoints: editedItem.breakpoints
+            breakpoints: editedItem.breakpoints,
+            highlightedLine: editedItem.currentLine
         )
 #else
         CodeEditorView(

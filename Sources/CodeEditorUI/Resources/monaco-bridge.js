@@ -7,6 +7,9 @@
   var pendingTheme = config.theme || "vs";
   var pendingBreakpoints = [];
   var breakpointDecorations = [];
+  var pendingHighlightedLine =
+    typeof config.highlightedLine === "number" ? config.highlightedLine : null;
+  var highlightedLineDecorations = [];
   var lspClient = null;
   var lspReady = false;
   var lspWebSocketURL = config.lspWebSocketURL || "ws://127.0.0.1:6009";
@@ -817,6 +820,7 @@
       editor.setValue(pendingValue);
     }
     applyBreakpoints();
+    applyHighlightedLine();
   }
 
   function applyBreakpoints() {
@@ -826,16 +830,61 @@
     if (!pendingBreakpoints) {
       return;
     }
+    var lineNumbersEnabled = !(
+      pendingOptions &&
+      (pendingOptions.lineNumbers === "off" || pendingOptions.lineNumbers === false)
+    );
     var decorations = pendingBreakpoints.map(function (lineNumber) {
+      var options = {
+        isWholeLine: true,
+      };
+      if (lineNumbersEnabled) {
+        options.lineNumberClassName = "monaco-breakpoint-line-number";
+      } else {
+        options.glyphMarginClassName = "monaco-breakpoint-glyph";
+      }
       return {
         range: new monaco.Range(lineNumber, 1, lineNumber, 1),
-        options: {
-          isWholeLine: true,
-          glyphMarginClassName: "monaco-breakpoint",
-        },
+        options: options,
       };
     });
     breakpointDecorations = editor.deltaDecorations(breakpointDecorations, decorations);
+  }
+
+  function clearHighlightedLine() {
+    if (!editor) {
+      highlightedLineDecorations = [];
+      return;
+    }
+    highlightedLineDecorations = editor.deltaDecorations(highlightedLineDecorations, []);
+  }
+
+  function applyHighlightedLine() {
+    if (!editor) {
+      return;
+    }
+    var model = editor.getModel();
+    if (!model || typeof pendingHighlightedLine !== "number" || pendingHighlightedLine < 1) {
+      clearHighlightedLine();
+      return;
+    }
+    var lineCount = model.getLineCount();
+    if (lineCount < 1) {
+      clearHighlightedLine();
+      return;
+    }
+    var lineNumber = Math.min(Math.floor(pendingHighlightedLine), lineCount);
+    highlightedLineDecorations = editor.deltaDecorations(highlightedLineDecorations, [
+      {
+        range: new monaco.Range(lineNumber, 1, lineNumber, 1),
+        options: {
+          isWholeLine: true,
+          className: "monaco-highlighted-line",
+          stickiness:
+            monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
+        },
+      },
+    ]);
   }
 
   window.setEditorValue = function (value) {
@@ -857,6 +906,15 @@
       pendingBreakpoints = lines;
     }
     applyBreakpoints();
+  };
+
+  window.setHighlightedLine = function (lineNumber) {
+    if (typeof lineNumber === "number" && isFinite(lineNumber) && lineNumber >= 1) {
+      pendingHighlightedLine = lineNumber;
+    } else {
+      pendingHighlightedLine = null;
+    }
+    applyHighlightedLine();
   };
 
   window.focusEditor = function () {
@@ -1177,12 +1235,14 @@
 
       editor.onDidChangeModelContent(function () {
         postMessage("monacoTextChanged", editor.getValue());
+        applyHighlightedLine();
       });
 
       editor.onDidChangeModel(function () {
         var model = editor.getModel();
         logModelState("Model changed:");
         logModelDiagnostics(model, "modelChanged");
+        applyHighlightedLine();
       });
 
       editor.onDidChangeCursorSelection(function (e) {
