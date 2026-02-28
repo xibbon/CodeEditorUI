@@ -107,9 +107,18 @@ open class CodeEditorState {
         }
     }
 
+    /// Controls font weight for Monaco (for example: "normal", "300", "light", "bold").
+    public var fontWeight: String = "normal"
+
     public func setFont(family: String, size: CGFloat) {
         self.fontFamily = family
         self.fontSize = size
+    }
+
+    public func setFont(family: String, size: CGFloat, weight: String) {
+        self.fontFamily = family
+        self.fontSize = size
+        self.fontWeight = weight
     }
 
     /// Controls indentation strategy

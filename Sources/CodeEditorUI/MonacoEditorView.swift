@@ -231,6 +231,7 @@ public struct MonacoEditorView: PlatformViewRepresentable {
 struct MonacoConfiguration: Equatable {
     let language: String
     let fontFamily: String
+    let fontWeight: String
     let fontSize: Int
     let lineHeight: Int
     let showLineNumbers: Bool
@@ -592,6 +593,7 @@ extension MonacoEditorView {
 
     private func monacoConfiguration(for environment: EnvironmentValues) -> MonacoConfiguration {
         let fontFamily = normalizedFontFamily(state.fontFamily)
+        let fontWeight = normalizedFontWeight(state.fontWeight)
         let fontSize = max(1, Int(state.fontSize.rounded()))
         let lineHeight = max(1, Int((state.fontSize * state.lineHeightMultiplier).rounded()))
         let language = MonacoLanguageResolver.language(for: item.path)
@@ -599,6 +601,7 @@ extension MonacoEditorView {
         return MonacoConfiguration(
             language: language,
             fontFamily: fontFamily,
+            fontWeight: fontWeight,
             fontSize: fontSize,
             lineHeight: lineHeight,
             showLineNumbers: state.showLines,
@@ -616,12 +619,21 @@ extension MonacoEditorView {
         return family
     }
 
+    private func normalizedFontWeight(_ weight: String) -> String {
+        let cleaned = weight.trimmingCharacters(in: .whitespacesAndNewlines)
+        if cleaned.isEmpty {
+            return "normal"
+        }
+        return cleaned
+    }
+
     private static func optionsDictionary(for configuration: MonacoConfiguration) -> [String: Any] {
         [
             "lineNumbers": configuration.showLineNumbers ? "on" : "off",
             "wordWrap": configuration.wordWrap ? "on" : "off",
             "renderWhitespace": configuration.renderWhitespace ? "all" : "none",
             "fontFamily": configuration.fontFamily,
+            "fontWeight": configuration.fontWeight,
             "fontSize": configuration.fontSize,
             "lineHeight": configuration.lineHeight,
             "minimap": ["enabled": false],
